@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Esquema de color Material Design verde -->
+    <!-- Paleta de modo claro -->
+    <color name="colorPrimary">#2E7D32</color> <!-- Verde 800 - Principal más oscuro para mejor contraste -->
+    <color name="colorPrimaryVariant">#1B5E20</color> <!-- Verde 900 - Variante más oscura -->
+    <color name="colorSecondary">#66BB6A</color> <!-- Verde 400 - Secundario más claro -->
+    <color name="colorPrimaryDark">#1B5E20</color> <!-- Verde 900 - Para barras de estado -->
+    <color name="colorAccent">#81C784</color> <!-- Verde 300 - Acentuado para controles -->
+    <color name="colorSurface">#FFFFFF</color> <!-- Superficie blanca -->
+    <color name="colorBackground">#F5F5F5</color> <!-- Fondo gris muy claro -->
+    <color name="colorOnPrimary">#FFFFFF</color> <!-- Texto sobre primario -->
+    <color name="colorOnSecondary">#000000</color> <!-- Texto sobre secundario -->
+    <color name="colorOnBackground">#000000</color> <!-- Texto sobre fondo -->
+    <color name="colorOnSurface">#000000</color> <!-- Texto sobre superficie -->
+
+    <!-- Paleta de modo oscuro -->
+    <color name="colorPrimaryNight">#43A047</color> <!-- Verde 600 - Principal más brillante para modo oscuro -->
+    <color name="colorPrimaryVariantNight">#2E7D32</color> <!-- Verde 800 - Variante para modo oscuro -->
+    <color name="colorSecondaryNight">#81C784</color> <!-- Verde 300 - Secundario más brillante para modo oscuro -->
+    <color name="colorPrimaryDarkNight">#1B5E20</color> <!-- Verde 900 - Para barras en modo oscuro -->
+    <color name="colorAccentNight">#A5D6A7</color> <!-- Verde 200 - Acentuado más claro para modo oscuro -->
+    <color name="colorSurfaceNight">#121212</color> <!-- Superficie oscura estándar de Material -->
+    <color name="colorBackgroundNight">#000000</color> <!-- Fondo negro para modo oscuro -->
+    <color name="colorOnPrimaryNight">#FFFFFF</color> <!-- Texto sobre primario noche -->
+    <color name="colorOnSecondaryNight">#000000</color> <!-- Texto sobre secundario noche -->
+    <color name="colorOnBackgroundNight">#FFFFFF</color> <!-- Texto sobre fondo noche -->
+    <color name="colorOnSurfaceNight">#FFFFFF</color> <!-- Texto sobre superficie noche -->
+
+    <!-- Colores Material Design mantenidos -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+
+    <!-- Colores básicos -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Paleta verde extendida -->
+    <color name="green_50">#E8F5E9</color> <!-- Verde 50 - Muy claro -->
+    <color name="green_100">#C8E6C9</color> <!-- Verde 100 -->
+    <color name="green_200">#A5D6A7</color> <!-- Verde 200 -->
+    <color name="green_300">#81C784</color> <!-- Verde 300 -->
+    <color name="green_400">#66BB6A</color> <!-- Verde 400 -->
+    <color name="green_500">#4CAF50</color> <!-- Verde 500 - Base -->
+    <color name="green_600">#43A047</color> <!-- Verde 600 -->
+    <color name="green_700">#388E3C</color> <!-- Verde 700 -->
+    <color name="green_800">#2E7D32</color> <!-- Verde 800 -->
+    <color name="green_900">#1B5E20</color> <!-- Verde 900 - Muy oscuro -->
+
+    <!-- Colores para tarjetas de menú (diferentes tonos de verde) -->
+    <color name="card_pedidos">#2E7D32</color> <!-- Verde 800 -->
+    <color name="card_mapa">#388E3C</color> <!-- Verde 700 -->
+    <color name="card_reportes">#43A047</color> <!-- Verde 600 -->
+    <color name="card_incidencias">#4CAF50</color> <!-- Verde 500 -->
+
+    <!-- Colores para estados y acciones -->
+    <color name="success">#4CAF50</color> <!-- Verde - Éxito -->
+    <color name="info">#2196F3</color> <!-- Azul - Información -->
+    <color name="warning">#FFC107</color> <!-- Ámbar - Advertencia -->
+    <color name="error">#F44336</color> <!-- Rojo - Error -->
+    <color name="disabled">#9E9E9E</color> <!-- Gris - Deshabilitado -->
+
+    <!-- Grises útiles -->
+    <color name="gray_50">#FAFAFA</color> <!-- Gris 50 - Muy claro -->
+    <color name="gray_100">#F5F5F5</color> <!-- Gris 100 -->
+    <color name="gray_200">#EEEEEE</color> <!-- Gris 200 -->
+    <color name="gray_300">#E0E0E0</color> <!-- Gris 300 -->
+    <color name="gray_400">#BDBDBD</color> <!-- Gris 400 -->
+    <color name="gray_500">#9E9E9E</color> <!-- Gris 500 - Base -->
+    <color name="gray_600">#757575</color> <!-- Gris 600 -->
+    <color name="gray_700">#616161</color> <!-- Gris 700 -->
+    <color name="gray_800">#424242</color> <!-- Gris 800 -->
+    <color name="gray_900">#212121</color> <!-- Gris 900 - Muy oscuro -->
+
+    <!-- Colores heredados (mantener por compatibilidad) -->
+    <color name="green_light">@color/green_300</color>
+    <color name="green_primary">@color/colorPrimary</color>
+    <color name="green_dark">@color/colorPrimaryDark</color>
+    <color name="dark_gray">@color/gray_900</color>
+    <color name="red">@color/error</color>
+</resources>

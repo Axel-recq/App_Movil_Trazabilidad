@@ -1,0 +1,109 @@
+<resources>
+    <!-- Nombre de la aplicación -->
+    <string name="app_name">Trazabilidad</string>
+
+    <!-- Indicaciones para campos de entrada -->
+    <string name="username_hint">Correo electrónico</string>
+    <string name="password_hint">Contraseña</string>
+
+    <!-- Botón de acción -->
+    <string name="login_button_text">Iniciar sesión</string>
+
+    <!-- Descripciones de accesibilidad para campos de texto -->
+    <string name="username_content_description">Campo para ingresar el correo electrónico del usuario</string>
+    <string name="password_content_description">Campo para ingresar la contraseña del usuario</string>
+    <string name="login_button_content_description">Botón para iniciar sesión</string>
+    <string name="loading_content_description">Cargando, por favor espere...</string>
+
+    <string name="user_avatar_desc">Avatar del usuario</string>
+
+    <!-- Descripciones de elementos visuales -->
+    <string name="app_logo_desc">Logo de la aplicación, pantalla de bienvenida</string>
+
+    <!-- Mensajes de bienvenida -->
+    <string name="login_welcome">¡Bienvenido!</string>
+    <string name="welcome_user">Hola, ¡bienvenido!</string>
+    <!-- Títulos de los ítems -->
+    <string name="menu_logout">Cerrar sesión</string>
+
+    <!-- Descripciones para accesibilidad -->
+    <string name="profile_desc">Accede a tu perfil de usuario</string>
+    <string name="logout_desc">Cerrar sesión de la aplicación</string>
+
+
+    <!-- Texto de las etiquetas -->
+    <string name="pedido_numero">Pedido: %s</string>
+
+    <string name="cliente">Cliente: %1$s</string>
+    <string name="direccion">Dirección: %1$s</string>
+    <string name="fecha">Fecha: %1$s</string>
+    <string name="estado">Estado: %1$s</string>
+
+    <!-- Textos de botones -->
+    <string name="ver_mapa">Ver Mapa</string>
+    <string name="entregado">Entregado</string>
+    <string name="incidencia">Incidencia</string>
+
+    <!-- Mensajes -->
+    <string name="error_pedido_no_encontrado">Error: Pedido no encontrado</string>
+    <string name="pedido_marcado_entregado">Pedido marcado como entregado</string>
+    <string name="error_pedido_numero_invalido">Número de pedido inválido</string>
+
+    <string name="fecha_reporte">Fecha: dd/MM/yyyy</string>
+
+    <string name="detalle_pedido">Detalle del Pedido</string>
+
+
+    <string name="no_orders_description">No hay pedidos disponibles</string>
+    <string name="orders_list_description">Lista de pedidos</string>
+
+    <string name="map_fragment_description">Mapa interactivo para visualizar la ubicación</string>
+
+    <string name="default_spinner_item">Seleccione un tipo de reporte</string>
+
+    <string-array name="tipos_reportes">
+        <item>Seleccione un tipo de reporte</item>
+        <item>Pedidos por Estado</item>
+        <item>Incidencias por Tipo</item>
+        <item>Resumen de Entregas</item>
+    </string-array>
+
+    <string name="welcome_format">¡Bienvenido, %1$s!</string>
+    <string name="welcome_subtitle">¿Qué deseas hacer hoy?</string>
+    <string name="main_menu_title">Menú Principal</string>
+
+    <!-- Menú principal -->
+    <string name="menu_orders">Pedidos</string>
+    <string name="orders_subtitle">Gestiona tus pedidos</string>
+    <string name="orders_desc">Icono de pedidos</string>
+
+    <string name="menu_map">Mapa</string>
+    <string name="map_subtitle">Visualiza ubicaciones</string>
+    <string name="map_desc">Icono de mapa</string>
+
+    <string name="menu_reports">Reportes</string>
+    <string name="reports_subtitle">Analiza estadísticas</string>
+    <string name="reports_desc">Icono de reportes</string>
+
+    <string name="menu_incidents">Incidencias</string>
+    <string name="incidents_subtitle">Gestiona problemas</string>
+    <string name="incidents_desc">Icono de incidencias</string>
+
+    <!-- Menú de opciones -->
+    <string name="menu_profile">Perfil</string>
+    <string name="menu_settings">Configuración</string>
+    <string name="menu_help">Ayuda</string>
+
+    <!-- FAB -->
+    <string name="new_order_desc">Crear nuevo pedido</string>
+    <string name="new_order_action">¿Crear nuevo pedido?</string>
+    <string name="action_create">Crear</string>
+
+    <!-- Diálogos -->
+    <string name="help_title">Ayuda</string>
+    <string name="help_message">Esta es la pantalla principal donde puedes acceder a todas las funcionalidades de la aplicación.</string>
+    <string name="ok">Aceptar</string>
+    <string name="new_order">Nueva Orden</string>
+
+
+</resources>
