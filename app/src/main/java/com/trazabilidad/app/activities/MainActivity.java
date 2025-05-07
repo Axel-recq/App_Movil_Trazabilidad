@@ -7,10 +7,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.models.Usuario;
 import com.trazabilidad.app.utils.SessionManager;
@@ -59,6 +61,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cardMapa.setOnClickListener(this);
         cardReportes.setOnClickListener(this);
         cardIncidencias.setOnClickListener(this);
+
+        // Ocultar el botón de nueva orden por el momento
+        ExtendedFloatingActionButton fabNewOrder = findViewById(R.id.fabNewOrder);
+        fabNewOrder.setVisibility(View.GONE);
     }
 
     @Override
@@ -88,12 +94,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         MenuItem logoutItem = menu.findItem(R.id.menu_logout);
 
         int iconColor = ContextCompat.getColor(this, R.color.white);
-
-
         if (profileItem.getIcon() != null) {
             profileItem.getIcon().setTint(iconColor);
         }
-
         if (logoutItem.getIcon() != null) {
             logoutItem.getIcon().setTint(iconColor);
         }
@@ -109,12 +112,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startActivity(new Intent(MainActivity.this, PerfilActivity.class));
             return true;
         } else if (id == R.id.menu_logout) {
-            sessionManager.logout();
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            finish();
+            // Mostrar diálogo de confirmación antes de cerrar sesión
+            mostrarDialogoConfirmacionCerrarSesion();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    private void mostrarDialogoConfirmacionCerrarSesion() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Cerrar sesión");
+        builder.setMessage("¿Está seguro que desea cerrar sesión?");
+
+        // Botón Confirmar
+        builder.setPositiveButton("Sí, cerrar sesión", (dialog, which) -> {
+            // Cerrar sesión y redirigir al login
+            sessionManager.logout();
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            finish();
+        });
+
+        // Botón Cancelar
+        builder.setNegativeButton("Cancelar", (dialog, which) -> {
+            dialog.dismiss();
+        });
+
+        // Mostrar el diálogo
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

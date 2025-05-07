@@ -6,45 +6,62 @@
     android:id="@+id/swipeRefreshLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/windowBackground"
+    android:background="@color/colorBackground"
     tools:context=".activities.ListaPedidosActivity">
 
-<LinearLayout
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="vertical"
-android:padding="16dp"> <!-- Agregar padding para separación -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
-<!-- ProgressBar -->
-<ProgressBar
-    android:id="@+id/progressBar"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:visibility="gone"
-    android:contentDescription="@string/loading_content_description" /> <!-- Descripción de accesibilidad -->
+        <!-- ProgressBar -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:indeterminateTint="@color/colorPrimary"
+            android:contentDescription="@string/loading_content_description"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-<!-- TextView de vacio -->
-<TextView
-    android:id="@+id/tvEmpty"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="No hay pedidos"
-    android:gravity="center"
-    android:visibility="gone"
-    android:padding="16dp"
-    android:contentDescription="@string/no_orders_description" /> <!-- Descripción de accesibilidad -->
+        <!-- TextView de vacio -->
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="No hay pedidos"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/gray_600"
+            android:gravity="center"
+            android:visibility="gone"
+            android:padding="16dp"
+            android:drawableTop="@android:drawable/ic_menu_info_details"
+            android:drawablePadding="16dp"
+            android:drawableTint="@color/gray_500"
+            android:contentDescription="@string/no_orders_description"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-<!-- ListView -->
-<ListView
-    android:id="@+id/listViewPedidos"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1"
-    android:divider="@android:color/darker_gray"
-    android:dividerHeight="0.5dp"
-    android:scrollingCache="false"
-    android:contentDescription="@string/orders_list_description" /> <!-- Descripción de accesibilidad -->
+        <!-- ListView -->
+        <ListView
+            android:id="@+id/listViewPedidos"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:divider="@color/gray_200"
+            android:dividerHeight="1dp"
+            android:scrollingCache="false"
+            android:clipToPadding="false"
+            android:contentDescription="@string/orders_list_description"
+            android:layoutAnimation="@anim/layout_animation_fall_down"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-</LinearLayout>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

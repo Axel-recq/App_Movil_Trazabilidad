@@ -8,6 +8,7 @@ import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.card.MaterialCardView;
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.controllers.ReporteController;
 import com.trazabilidad.app.utils.DateUtils;
@@ -21,7 +22,10 @@ public class ReporteActivity extends AppCompatActivity {
     private Spinner spinnerTipoReporte;
     private Button btnGenerar;
     private ProgressBar progressBar;
-    private TextView tvResultados, tvFechaReporte;
+    private TextView tvResultados;
+    private TextView tvFechaReporte;
+    // Nuevo elemento de la UI
+    private MaterialCardView cardResultados;
 
     private ReporteController reporteController;
     private SessionManager sessionManager;
@@ -48,6 +52,8 @@ public class ReporteActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         tvResultados = findViewById(R.id.tvResultados);
         tvFechaReporte = findViewById(R.id.tvFechaReporte);
+        // Inicializar el nuevo componente
+        cardResultados = findViewById(R.id.cardResultados);
 
         tvFechaReporte.setText("Fecha: " + DateUtils.formatDate(new Date()));
     }
@@ -79,7 +85,7 @@ public class ReporteActivity extends AppCompatActivity {
         int usuarioId = sessionManager.getUsuarioDetails().getId();
 
         progressBar.setVisibility(View.VISIBLE);
-        tvResultados.setVisibility(View.GONE);
+        cardResultados.setVisibility(View.GONE); // Ocultar resultados mientras carga
 
         reporteController.generarReporte(tipoReporte, usuarioId, new ReporteController.ReporteCallback() {
             @Override
@@ -91,7 +97,7 @@ public class ReporteActivity extends AppCompatActivity {
             @Override
             public void onError(String message) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(ReporteActivity.this, message, Toast.LENGTH_SHORT).show();  // Mostrar mensaje de error
+                Toast.makeText(ReporteActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -104,7 +110,7 @@ public class ReporteActivity extends AppCompatActivity {
         }
 
         tvResultados.setText(sb.toString());
-        tvResultados.setVisibility(View.VISIBLE);
+        cardResultados.setVisibility(View.VISIBLE); // Hacer visible la tarjeta de resultados
     }
 
     @Override

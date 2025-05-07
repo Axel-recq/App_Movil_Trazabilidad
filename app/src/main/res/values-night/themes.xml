@@ -1,0 +1,29 @@
+<resources>
+    <!-- Tema para modo oscuro -->
+    <style name="Theme.Trazabilidad" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary noche -->
+        <item name="colorPrimary">@color/colorPrimaryNight</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryVariantNight</item>
+        <item name="colorOnPrimary">@color/colorOnPrimaryNight</item>
+
+        <!-- Secondary noche -->
+        <item name="colorSecondary">@color/colorSecondaryNight</item>
+        <item name="colorSecondaryVariant">@color/colorSecondaryNight</item>
+        <item name="colorOnSecondary">@color/colorOnSecondaryNight</item>
+
+        <!-- Surface & Background noche -->
+        <item name="colorSurface">@color/colorSurfaceNight</item>
+        <item name="colorOnSurface">@color/colorOnSurfaceNight</item>
+        <item name="android:colorBackground">@color/colorBackgroundNight</item>
+        <item name="colorOnBackground">@color/colorOnBackgroundNight</item>
+
+        <!-- Error -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/white</item>
+
+        <!-- System bars noche -->
+        <item name="android:statusBarColor">@color/colorPrimaryDarkNight</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/colorPrimaryNight</item>
+    </style>
+</resources>

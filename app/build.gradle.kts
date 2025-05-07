@@ -1,3 +1,6 @@
+
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,7 +9,15 @@ plugins {
 android {
     namespace = "com.trazabilidad.app"
     compileSdk = 34
-    val apiKey: String = project.findProperty("MAPS_API_KEY") as? String ?: ""
+
+    // Carga de local.properties
+    val localProperties = Properties().apply {
+        rootProject
+            .file("local.properties")
+            .inputStream()
+            .use { load(it) }
+    }
+
     defaultConfig {
         applicationId = "com.trazabilidad.app"
         minSdk = 23
@@ -16,12 +27,14 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
-        manifestPlaceholders["googleMapsKey"] = apiKey
+
+        // Inyecta la clave en el Manifest
+        manifestPlaceholders["googleMapsKey"] = localProperties.getProperty("MAPS_API_KEY")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled   = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -29,7 +42,7 @@ android {
             )
         }
         debug {
-            isDebuggable = true
+            isDebuggable        = true
             applicationIdSuffix = ".debug"
         }
     }
@@ -41,7 +54,7 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        freeCompilerArgs = freeCompilerArgs + listOf(
+        freeCompilerArgs += listOf(
             "-Xjvm-default=all",
             "-opt-in=kotlin.RequiresOptIn"
         )
@@ -52,12 +65,10 @@ android {
     }
 
     packaging {
-        resources.excludes.addAll(
-            listOf(
-                "META-INF/*.kotlin_module",
-                "META-INF/AL2.0",
-                "META-INF/LGPL2.1"
-            )
+        resources.excludes += listOf(
+            "META-INF/*.kotlin_module",
+            "META-INF/AL2.0",
+            "META-INF/LGPL2.1"
         )
     }
 }

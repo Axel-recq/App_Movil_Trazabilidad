@@ -1,4 +1,4 @@
-/*package com.trazabilidad.app
+ /*package com.trazabilidad.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

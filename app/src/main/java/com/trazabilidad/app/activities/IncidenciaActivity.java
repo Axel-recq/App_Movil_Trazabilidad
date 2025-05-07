@@ -12,11 +12,10 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -24,10 +23,15 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.controllers.PedidoController;
 import com.trazabilidad.app.database.TipoIncidenciaDAO;
@@ -46,11 +50,14 @@ import java.util.List;
 public class IncidenciaActivity extends AppCompatActivity {
 
     private static final String TAG = "IncidenciaActivity";
-    private EditText etDescripcion;
-    private Spinner spinnerTipoIncidencia;
-    private Button btnTomarFoto, btnGaleria, btnRegistrar;
+    private TextInputEditText etDescripcion;
+    private AutoCompleteTextView autoCompleteTipoIncidencia;
+    private MaterialButton btnTomarFoto, btnGaleria, btnRegistrar;
     private ImageView ivFoto;
     private ProgressBar progressBar;
+    private MaterialCardView cardViewFoto;
+    private LinearLayout placeholderFoto;
+    private Toolbar toolbar;
 
     private PedidoController pedidoController;
     private SessionManager sessionManager;
@@ -68,14 +75,10 @@ public class IncidenciaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_incidencia);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Registrar Incidencia");
-        }
-
         pedidoId = getIntent().getIntExtra("PEDIDO_ID", -1);
 
         inicializarUI();
+        configurarToolbar();
         inicializarControladores();
         inicializarActivityResultLaunchers();
         configurarListeners();
@@ -95,13 +98,24 @@ public class IncidenciaActivity extends AppCompatActivity {
     }
 
     private void inicializarUI() {
+        toolbar = findViewById(R.id.toolbar);
         etDescripcion = findViewById(R.id.etDescripcion);
-        spinnerTipoIncidencia = findViewById(R.id.spinnerTipoIncidencia);
+        autoCompleteTipoIncidencia = findViewById(R.id.autoCompleteTipoIncidencia);
         btnTomarFoto = findViewById(R.id.btnTomarFoto);
         btnGaleria = findViewById(R.id.btnGaleria);
         btnRegistrar = findViewById(R.id.btnRegistrar);
         ivFoto = findViewById(R.id.ivFoto);
         progressBar = findViewById(R.id.progressBar);
+        cardViewFoto = findViewById(R.id.cardViewFoto);
+        placeholderFoto = findViewById(R.id.placeholderFoto);
+    }
+
+    private void configurarToolbar() {
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Registrar Incidencia");
+        }
     }
 
     private void inicializarControladores() {
@@ -117,19 +131,16 @@ public class IncidenciaActivity extends AppCompatActivity {
                     if (result.getResultCode() == RESULT_OK) {
                         if (fotoUri != null) {
                             Log.d(TAG, "Foto tomada exitosamente con EXTRA_OUTPUT: " + fotoUri.toString());
-                            ivFoto.setImageURI(fotoUri);
-                            ivFoto.setVisibility(View.VISIBLE);
+                            mostrarFoto(fotoUri);
                         } else if (result.getData() != null && result.getData().getData() != null) {
                             fotoUri = result.getData().getData();
                             Log.d(TAG, "Foto tomada sin EXTRA_OUTPUT: " + fotoUri.toString());
-                            ivFoto.setImageURI(fotoUri);
-                            ivFoto.setVisibility(View.VISIBLE);
+                            mostrarFoto(fotoUri);
                         } else if (result.getData() != null && result.getData().getExtras() != null) {
                             Bitmap bitmap = (Bitmap) result.getData().getExtras().get("data");
                             if (bitmap != null) {
                                 Log.d(TAG, "Foto devuelta como Bitmap");
-                                ivFoto.setImageBitmap(bitmap);
-                                ivFoto.setVisibility(View.VISIBLE);
+                                mostrarFoto(bitmap);
                                 fotoUri = saveBitmapToFile(bitmap);
                                 if (fotoUri != null) {
                                     Log.d(TAG, "Bitmap guardado como archivo: " + fotoUri.toString());
@@ -138,15 +149,15 @@ public class IncidenciaActivity extends AppCompatActivity {
                                 }
                             } else {
                                 Log.w(TAG, "No se recibió Bitmap en extras");
-                                Toast.makeText(this, "No se pudo tomar la foto", Toast.LENGTH_SHORT).show();
+                                mostrarSnackbar("No se pudo tomar la foto");
                             }
                         } else {
                             Log.w(TAG, "No se recibió URI ni Bitmap de la foto");
-                            Toast.makeText(this, "No se pudo tomar la foto", Toast.LENGTH_SHORT).show();
+                            mostrarSnackbar("No se pudo tomar la foto");
                         }
                     } else {
                         Log.w(TAG, "No se pudo tomar la foto, resultado: " + result.getResultCode());
-                        Toast.makeText(this, "No se pudo tomar la foto", Toast.LENGTH_SHORT).show();
+                        mostrarSnackbar("Acción cancelada");
                     }
                 }
         );
@@ -157,8 +168,7 @@ public class IncidenciaActivity extends AppCompatActivity {
                     if (uri != null) {
                         fotoUri = uri;
                         Log.d(TAG, "Imagen seleccionada con Photo Picker: " + fotoUri.toString());
-                        ivFoto.setImageURI(fotoUri);
-                        ivFoto.setVisibility(View.VISIBLE);
+                        mostrarFoto(fotoUri);
                         // Persistir acceso al URI
                         getContentResolver().takePersistableUriPermission(
                                 fotoUri,
@@ -166,16 +176,28 @@ public class IncidenciaActivity extends AppCompatActivity {
                         );
                     } else {
                         Log.w(TAG, "No se seleccionó ninguna imagen con Photo Picker");
-                        Toast.makeText(this, "No se seleccionó ninguna imagen", Toast.LENGTH_SHORT).show();
+                        mostrarSnackbar("No se seleccionó ninguna imagen");
                     }
                 }
         );
     }
 
+    private void mostrarFoto(Uri uri) {
+        placeholderFoto.setVisibility(View.GONE);
+        ivFoto.setImageURI(uri);
+        ivFoto.setVisibility(View.VISIBLE);
+    }
+
+    private void mostrarFoto(Bitmap bitmap) {
+        placeholderFoto.setVisibility(View.GONE);
+        ivFoto.setImageBitmap(bitmap);
+        ivFoto.setVisibility(View.VISIBLE);
+    }
+
     private void configurarListeners() {
         btnTomarFoto.setOnClickListener(v -> checkCameraPermission());
         btnGaleria.setOnClickListener(v -> seleccionarConPhotoPicker());
-        btnRegistrar.setOnClickListener(v -> registrarIncidencia());
+        btnRegistrar.setOnClickListener(v -> validarYRegistrarIncidencia());
     }
 
     private void checkCameraPermission() {
@@ -200,89 +222,44 @@ public class IncidenciaActivity extends AppCompatActivity {
                 tomarFoto();
             } else {
                 Log.w(TAG, "Permiso de cámara denegado");
-                Toast.makeText(this, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+                mostrarSnackbar("Se requiere permiso de cámara para esta función");
             }
         }
     }
 
     private void tomarFoto() {
+        // Aquí se mantiene toda la lógica de cámara original, usando la estrategia de respaldo múltiple
         PackageManager packageManager = getPackageManager();
 
-        Intent explicitCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        explicitCameraIntent.setComponent(new ComponentName("com.android.camera2", "com.android.camera.CameraActivity"));
-        List<ResolveInfo> explicitActivities = packageManager.queryIntentActivities(explicitCameraIntent, PackageManager.MATCH_DEFAULT_ONLY);
-        Log.d(TAG, "Actividades disponibles para intent explícito (com.android.camera2): " + explicitActivities.size());
-        for (ResolveInfo info : explicitActivities) {
-            Log.d(TAG, "Actividad encontrada: " + info.activityInfo.packageName + "/" + info.activityInfo.name);
-        }
+        try {
+            // Intento directo con FileProvider, que es la mejor práctica
+            File photoFile = createImageFile();
+            fotoUri = FileProvider.getUriForFile(
+                    this,
+                    "com.trazabilidad.app.fileprovider",
+                    photoFile
+            );
+            Log.d(TAG, "URI generado para la foto: " + fotoUri.toString());
 
-        if (!explicitActivities.isEmpty()) {
-            Log.d(TAG, "Lanzando intent explícito para com.android.camera2");
-            fotoUri = null;
-            cameraLauncher.launch(explicitCameraIntent);
-        } else {
-            // Intent simplificado para capturar Bitmap
-            Intent simpleCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            List<ResolveInfo> activities = packageManager.queryIntentActivities(simpleCameraIntent, PackageManager.MATCH_DEFAULT_ONLY);
-            Log.d(TAG, "Actividades disponibles para ACTION_IMAGE_CAPTURE (simple): " + activities.size());
-            for (ResolveInfo info : activities) {
-                Log.d(TAG, "Actividad encontrada: " + info.activityInfo.packageName + "/" + info.activityInfo.name);
-            }
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fotoUri);
+            takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-            if (simpleCameraIntent.resolveActivity(packageManager) != null) {
-                Log.d(TAG, "Lanzando intent simplificado sin EXTRA_OUTPUT");
-                fotoUri = null;
-                cameraLauncher.launch(simpleCameraIntent);
+            // Verificar que hay una app que puede manejar este intent
+            if (takePictureIntent.resolveActivity(packageManager) != null) {
+                cameraLauncher.launch(takePictureIntent);
             } else {
-                Log.w(TAG, "No se encontró actividad para intent simplificado");
-                // Intent con FileProvider
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                activities = packageManager.queryIntentActivities(takePictureIntent, PackageManager.MATCH_DEFAULT_ONLY);
-                Log.d(TAG, "Actividades disponibles para ACTION_IMAGE_CAPTURE (con FileProvider): " + activities.size());
-                for (ResolveInfo info : activities) {
-                    Log.d(TAG, "Actividad encontrada: " + info.activityInfo.packageName + "/" + info.activityInfo.name);
-                }
-                if (!activities.isEmpty()) {
-                    try {
-                        File photoFile = createImageFile();
-                        fotoUri = FileProvider.getUriForFile(
-                                this,
-                                "com.trazabilidad.app.fileprovider",
-                                photoFile
-                        );
-                        Log.d(TAG, "URI generado para la foto: " + fotoUri.toString());
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fotoUri);
-                        takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                        cameraLauncher.launch(takePictureIntent);
-                    } catch (IOException ex) {
-                        Log.e(TAG, "Error al crear el archivo de imagen", ex);
-                        Toast.makeText(this, "Error al crear el archivo de imagen: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-                    } catch (SecurityException ex) {
-                        Log.e(TAG, "Error de seguridad con FileProvider", ex);
-                        Toast.makeText(this, "Error de seguridad al configurar la cámara", Toast.LENGTH_LONG).show();
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Error al configurar la cámara", ex);
-                        Toast.makeText(this, "Error al configurar la cámara: " + ex.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Log.w(TAG, "No se encontraron aplicaciones de cámara instaladas");
-                    // Probar con ACTION_IMAGE_CAPTURE_SECURE
-                    Intent secureCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
-                    activities = packageManager.queryIntentActivities(secureCameraIntent, PackageManager.MATCH_DEFAULT_ONLY);
-                    Log.d(TAG, "Actividades disponibles para ACTION_IMAGE_CAPTURE_SECURE: " + activities.size());
-                    for (ResolveInfo info : activities) {
-                        Log.d(TAG, "Actividad encontrada para SECURE: " + info.activityInfo.packageName + "/" + info.activityInfo.name);
-                    }
-                    if (!activities.isEmpty()) {
-                        Log.d(TAG, "Lanzando intent con ACTION_IMAGE_CAPTURE_SECURE");
-                        fotoUri = null;
-                        cameraLauncher.launch(secureCameraIntent);
-                    } else {
-                        Log.w(TAG, "No se encontraron aplicaciones para ACTION_IMAGE_CAPTURE_SECURE");
-                        Toast.makeText(this, "No se encontró una aplicación de cámara instalada", Toast.LENGTH_LONG).show();
-                    }
-                }
+                // Si falla, intentar con un intent simplificado
+                Log.d(TAG, "Usando intent simplificado");
+                Intent simpleCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                cameraLauncher.launch(simpleCameraIntent);
             }
+        } catch (Exception ex) {
+            Log.e(TAG, "Error al iniciar la cámara", ex);
+            // Intent simplificado como último recurso
+            Intent simpleCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            fotoUri = null;
+            cameraLauncher.launch(simpleCameraIntent);
         }
     }
 
@@ -326,22 +303,33 @@ public class IncidenciaActivity extends AppCompatActivity {
         }
     }
 
-    private void registrarIncidencia() {
+    private void validarYRegistrarIncidencia() {
         String descripcion = etDescripcion.getText().toString().trim();
-        String tipo = spinnerTipoIncidencia.getSelectedItem() != null ? spinnerTipoIncidencia.getSelectedItem().toString() : "";
+        String tipo = autoCompleteTipoIncidencia.getText().toString().trim();
 
         if (descripcion.isEmpty()) {
-            mostrarToast("Por favor ingrese una descripción");
+            etDescripcion.setError("Este campo es obligatorio");
+            etDescripcion.requestFocus();
             return;
         }
 
         if (tipo.isEmpty()) {
-            mostrarToast("Por favor seleccione un tipo de incidencia");
+            autoCompleteTipoIncidencia.setError("Seleccione un tipo");
+            autoCompleteTipoIncidencia.requestFocus();
             return;
         }
 
-        progressBar.setVisibility(View.VISIBLE);
-        btnRegistrar.setEnabled(false);
+        // Mostrar diálogo de confirmación
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Confirmar registro")
+                .setMessage("¿Está seguro de registrar esta incidencia?")
+                .setPositiveButton("Registrar", (dialog, which) -> registrarIncidencia(descripcion, tipo))
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void registrarIncidencia(String descripcion, String tipo) {
+        mostrarProgreso(true);
 
         Incidencia incidencia = new Incidencia();
         incidencia.setDescripcion(descripcion);
@@ -355,25 +343,35 @@ public class IncidenciaActivity extends AppCompatActivity {
         pedidoController.registrarIncidencia(incidencia, new PedidoController.OperacionCallback() {
             @Override
             public void onSuccess() {
-                progressBar.setVisibility(View.GONE);
-                mostrarToast("Incidencia registrada correctamente");
-                finish();
+                mostrarProgreso(false);
+                mostrarSnackbar("Incidencia registrada correctamente");
+
+                // Dar feedback visual y tiempo para que el usuario vea el mensaje
+                new android.os.Handler().postDelayed(() -> finish(), 1500);
             }
 
             @Override
             public void onError(String message) {
-                progressBar.setVisibility(View.GONE);
-                btnRegistrar.setEnabled(true);
-                mostrarToast(message);
+                mostrarProgreso(false);
+                mostrarSnackbar("Error: " + message);
             }
         });
     }
 
+    private void mostrarProgreso(boolean mostrar) {
+        progressBar.setVisibility(mostrar ? View.VISIBLE : View.GONE);
+        btnRegistrar.setEnabled(!mostrar);
+        etDescripcion.setEnabled(!mostrar);
+        autoCompleteTipoIncidencia.setEnabled(!mostrar);
+        btnTomarFoto.setEnabled(!mostrar);
+        btnGaleria.setEnabled(!mostrar);
+    }
+
     private void cargarTiposIncidencias() {
         List<String> tipos = tipoIncidenciaDAO.obtenerTiposIncidencias();
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tipos);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerTipoIncidencia.setAdapter(adapter);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, tipos);
+        autoCompleteTipoIncidencia.setAdapter(adapter);
     }
 
     private void verificarPedido(int pedidoId) {
@@ -381,19 +379,21 @@ public class IncidenciaActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Pedido pedido, List<Producto> productos) {
                 Log.d(TAG, "Pedido verificado correctamente: " + pedidoId);
+                // Podríamos mostrar información del pedido en la UI
+                mostrarSnackbar("Registrando incidencia para pedido: " + pedido.getNumero());
             }
 
             @Override
             public void onError(String message) {
                 Log.w(TAG, "Error al verificar pedido: " + message);
-                mostrarToast("Pedido no encontrado: " + message);
-                finish();
+                mostrarSnackbar("Pedido no encontrado");
+                new android.os.Handler().postDelayed(() -> finish(), 1500);
             }
         });
     }
 
-    private void mostrarToast(String mensaje) {
-        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
+    private void mostrarSnackbar(String mensaje) {
+        Snackbar.make(findViewById(android.R.id.content), mensaje, Snackbar.LENGTH_LONG).show();
     }
 
     @Override

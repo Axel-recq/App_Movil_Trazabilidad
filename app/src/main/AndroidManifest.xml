@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.trazabilidad.app">
 
@@ -19,6 +19,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- Aquí se inyecta tu API Key correctamente -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${googleMapsKey}" />
@@ -42,28 +43,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.MainActivity" />
+        <activity android:name=".activities.ListaPedidosActivity" />
+        <activity android:name=".activities.MapaActivity" />
+        <activity android:name=".activities.ReporteActivity" />
+        <activity android:name=".activities.IncidenciaActivity" />
+        <activity android:name=".activities.PerfilActivity" />
 
         <activity
-            android:name=".activities.MainActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".activities.ListaPedidosActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".activities.MapaActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".activities.ReporteActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".activities.IncidenciaActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".activities.PerfilActivity"
-            android:theme="@style/AppTheme" />
-        <activity
             android:name=".activities.DetallePedidoActivity"
-            android:theme="@style/AppTheme" />
+            android:label="@string/detalle_pedido"
+            android:parentActivityName=".activities.ListaPedidosActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.ListaPedidosActivity" />
+        </activity>
 
     </application>
 </manifest>

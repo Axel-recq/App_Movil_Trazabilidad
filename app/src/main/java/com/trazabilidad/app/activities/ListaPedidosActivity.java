@@ -9,7 +9,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -65,10 +65,29 @@ public class ListaPedidosActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(this::cargarPedidos);
 
         listViewPedidos.setOnItemClickListener((parent, view, position, id) -> {
-            Pedido pedidoSeleccionado = pedidosList.get(position);
-            Intent intent = new Intent(this, DetallePedidoActivity.class);
-            intent.putExtra("PEDIDO_ID", pedidoSeleccionado.getId());
-            startActivity(intent);
+            try {
+                Pedido pedidoSeleccionado = pedidosList.get(position);
+                int pedidoId = pedidoSeleccionado.getId();
+
+                // Añadir log para verificar el ID del pedido
+                Log.d("ListaPedidos", "ID del pedido seleccionado: " + pedidoId);
+
+                // Verificar que el ID sea válido antes de pasar a la siguiente actividad
+                if (pedidoId <= 0) {
+                    Toast.makeText(this, "ID de pedido no válido: " + pedidoId, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                Intent intent = new Intent(ListaPedidosActivity.this, DetallePedidoActivity.class);
+                intent.putExtra("PEDIDO_ID", pedidoId);
+                startActivity(intent);
+
+                // Añadir log para confirmar que se lanzó el intent
+                Log.d("ListaPedidos", "Intent lanzado para abrir DetallePedidoActivity con ID: " + pedidoId);
+            } catch (Exception e) {
+                Log.e("ListaPedidos", "Error al abrir detalle: " + e.getMessage(), e);
+                Toast.makeText(this, "Error al abrir el detalle del pedido: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

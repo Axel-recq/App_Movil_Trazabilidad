@@ -1,11 +1,14 @@
 package com.trazabilidad.app.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.models.Pedido;
@@ -22,10 +25,12 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
         this.context = context;
         this.pedidos = pedidos;
     }
+
     static class ViewHolder {
         TextView tvNumeroPedido;
         TextView tvCliente;
         TextView tvEstado;
+        View viewStatusIndicator;
     }
 
     @Override
@@ -37,6 +42,7 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
             holder.tvNumeroPedido = convertView.findViewById(R.id.tvNumeroPedido);
             holder.tvCliente = convertView.findViewById(R.id.tvCliente);
             holder.tvEstado = convertView.findViewById(R.id.tvEstado);
+            holder.viewStatusIndicator = convertView.findViewById(R.id.viewStatusIndicator);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -47,6 +53,55 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
         holder.tvCliente.setText(context.getString(R.string.cliente, pedido.getCliente()));
         holder.tvEstado.setText(context.getString(R.string.estado, pedido.getEstado()));
 
+        // Ajustar colores según el estado del pedido
+        setColorSegunEstado(pedido.getEstado(), holder);
+
         return convertView;
+    }
+
+    private void setColorSegunEstado(String estado, ViewHolder holder) {
+        int colorIndicador;
+        int colorFondo;
+        int colorTexto;
+
+
+        switch (estado.toLowerCase()) {
+            case "entregado":
+                colorIndicador = R.color.success;
+                colorFondo = R.color.green_50;
+                colorTexto = R.color.green_900;
+                break;
+            case "en camino":
+                colorIndicador = R.color.info;
+                colorFondo = R.color.green_100;
+                colorTexto = R.color.green_900;
+                break;
+            case "pendiente":
+                colorIndicador = R.color.warning;
+                colorFondo = R.color.green_50;
+                colorTexto = R.color.green_900;
+                break;
+            case "incidencia":
+                colorIndicador = R.color.error;
+                colorFondo = R.color.green_50;
+                colorTexto = R.color.error;
+                break;
+            default:
+                colorIndicador = R.color.colorPrimary;
+                colorFondo = R.color.green_50;
+                colorTexto = R.color.colorPrimary;
+                break;
+        }
+
+        // Aplicar colores al indicador de estado
+        holder.viewStatusIndicator.setBackgroundColor(ContextCompat.getColor(context, colorIndicador));
+
+        // Aplicar colores al fondo del TextView de estado
+        GradientDrawable estadoBackground = (GradientDrawable) holder.tvEstado.getBackground();
+        estadoBackground.setColor(ContextCompat.getColor(context, colorFondo));
+        estadoBackground.setStroke(1, ContextCompat.getColor(context, colorIndicador));
+
+        // Aplicar color al texto de estado
+        holder.tvEstado.setTextColor(ContextCompat.getColor(context, colorTexto));
     }
 }
