@@ -1,8 +1,8 @@
 package com.trazabilidad.app.controllers;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 
-import com.trazabilidad.app.controllers.GPSController;
 import com.trazabilidad.app.database.DatabaseHelper;
 import com.trazabilidad.app.database.IncidenciaDAO;
 import com.trazabilidad.app.database.PedidoDAO;
@@ -13,6 +13,7 @@ import com.trazabilidad.app.models.Producto;
 import com.trazabilidad.app.models.Ubicacion;
 import com.trazabilidad.app.services.APIService;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class PedidoController {
 
     public PedidoController(Context context) {
         this.context = context;
-        dbHelper = DatabaseHelper.getInstance(context);
+        dbHelper = DatabaseHelper.getInstance(context); // Instancia única
         pedidoDAO = new PedidoDAO(context);
         productoDAO = new ProductoDAO(context);
         incidenciaDAO = new IncidenciaDAO(context);
@@ -168,7 +169,7 @@ public class PedidoController {
         }
     }
 
-    // Método para obtener incidencias por usuario
+    
     public List<Incidencia> obtenerIncidenciasPorUsuario(int usuarioId) {
         return incidenciaDAO.obtenerIncidenciasPorUsuario(usuarioId);
     }
