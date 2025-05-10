@@ -5,14 +5,17 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "trazabilidad.db";
-    private static final int DATABASE_VERSION = 3; // Incrementado para nuevas mejoras
-
-
+    private static final int DATABASE_VERSION = 5;
     private static DatabaseHelper sInstance;
 
+    // Table and column names
     public static final String TABLE_USUARIOS = "usuarios";
     public static final String COLUMN_USUARIO_ID = "id";
     public static final String COLUMN_USUARIO_NOMBRE = "nombre";
@@ -33,6 +36,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PEDIDO_LATITUD = "latitud";
     public static final String COLUMN_PEDIDO_LONGITUD = "longitud";
     public static final String COLUMN_PEDIDO_OBSERVACIONES = "observaciones";
+    public static final String COLUMN_PEDIDO_HORA_SALIDA = "hora_salida";
+    public static final String COLUMN_PEDIDO_HORA_ESTIMADA = "hora_estimada";
+    public static final String COLUMN_PEDIDO_HORA_ENTREGA = "hora_entrega";
+    public static final String COLUMN_PEDIDO_ALERTA_DEMORA = "alerta_demora";
+    public static final String COLUMN_PEDIDO_MOTIVO_DEMORA = "motivo_demora";
+    public static final String COLUMN_PEDIDO_CONFIRMADO = "confirmado";
 
     public static final String TABLE_PRODUCTOS = "productos";
     public static final String COLUMN_PRODUCTO_ID = "id";
@@ -64,6 +73,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_TIPO_ID = "id";
     public static final String COLUMN_TIPO_NOMBRE = "nombre";
 
+    public static final String TABLE_DEVOLUCIONES = "devoluciones";
+    public static final String COLUMN_DEVOLUCION_ID = "id";
+    public static final String COLUMN_DEVOLUCION_PEDIDO_ID = "pedido_id";
+    public static final String COLUMN_DEVOLUCION_PRODUCTO_ID = "producto_id";
+    public static final String COLUMN_DEVOLUCION_CANTIDAD = "cantidad";
+    public static final String COLUMN_DEVOLUCION_MOTIVO = "motivo";
+    public static final String COLUMN_DEVOLUCION_FECHA = "fecha";
+    public static final String COLUMN_DEVOLUCION_USUARIO_ID = "usuario_id";
+
+    public static final String TABLE_CALIFICACIONES = "calificaciones";
+    public static final String COLUMN_CALIFICACION_ID = "id";
+    public static final String COLUMN_CALIFICACION_PEDIDO_ID = "pedido_id";
+    public static final String COLUMN_CALIFICACION_VALOR = "valor";
+    public static final String COLUMN_CALIFICACION_COMENTARIO = "comentario";
+    public static final String COLUMN_CALIFICACION_FECHA = "fecha";
+    public static final String COLUMN_INCIDENCIA_ESTADO = "estado";
     // SQL creation statements
     private static final String SQL_CREATE_USUARIOS =
             "CREATE TABLE " + TABLE_USUARIOS + " (" +
@@ -88,6 +113,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_PEDIDO_LATITUD + " REAL, " +
                     COLUMN_PEDIDO_LONGITUD + " REAL, " +
                     COLUMN_PEDIDO_OBSERVACIONES + " TEXT, " +
+                    COLUMN_PEDIDO_HORA_SALIDA + " INTEGER, " +
+                    COLUMN_PEDIDO_HORA_ESTIMADA + " INTEGER, " +
+                    COLUMN_PEDIDO_HORA_ENTREGA + " INTEGER, " +
+                    COLUMN_PEDIDO_ALERTA_DEMORA + " INTEGER DEFAULT 0, " +
+                    COLUMN_PEDIDO_MOTIVO_DEMORA + " TEXT, " +
+                    COLUMN_PEDIDO_CONFIRMADO + " INTEGER DEFAULT 0, " +
                     "FOREIGN KEY(" + COLUMN_PEDIDO_USUARIO_ID + ") REFERENCES " +
                     TABLE_USUARIOS + "(" + COLUMN_USUARIO_ID + ")" +
                     ")";
@@ -114,6 +145,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_INCIDENCIA_FOTO_URI + " TEXT, " +
                     COLUMN_INCIDENCIA_USUARIO_ID + " INTEGER NOT NULL, " +
                     COLUMN_INCIDENCIA_PEDIDO_ID + " INTEGER, " +
+                    COLUMN_INCIDENCIA_ESTADO + " TEXT NOT NULL DEFAULT '" + IncidenciaDAO.ESTADO_PENDIENTE + "', " +
                     "FOREIGN KEY(" + COLUMN_INCIDENCIA_USUARIO_ID + ") REFERENCES " +
                     TABLE_USUARIOS + "(" + COLUMN_USUARIO_ID + "), " +
                     "FOREIGN KEY(" + COLUMN_INCIDENCIA_PEDIDO_ID + ") REFERENCES " +
@@ -140,27 +172,81 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_TIPO_NOMBRE + " TEXT NOT NULL UNIQUE" +
                     ")";
 
+    private static final String SQL_CREATE_DEVOLUCIONES =
+            "CREATE TABLE " + TABLE_DEVOLUCIONES + " (" +
+                    COLUMN_DEVOLUCION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_DEVOLUCION_PEDIDO_ID + " INTEGER NOT NULL, " +
+                    COLUMN_DEVOLUCION_PRODUCTO_ID + " INTEGER NOT NULL, " +
+                    COLUMN_DEVOLUCION_CANTIDAD + " INTEGER NOT NULL, " +
+                    COLUMN_DEVOLUCION_MOTIVO + " TEXT NOT NULL, " +
+                    COLUMN_DEVOLUCION_FECHA + " INTEGER NOT NULL, " +
+                    COLUMN_DEVOLUCION_USUARIO_ID + " INTEGER NOT NULL, " +
+                    "FOREIGN KEY(" + COLUMN_DEVOLUCION_PEDIDO_ID + ") REFERENCES " +
+                    TABLE_PEDIDOS + "(" + COLUMN_PEDIDO_ID + ") ON DELETE CASCADE, " +
+                    "FOREIGN KEY(" + COLUMN_DEVOLUCION_PRODUCTO_ID + ") REFERENCES " +
+                    TABLE_PRODUCTOS + "(" + COLUMN_PRODUCTO_ID + ") ON DELETE CASCADE, " +
+                    "FOREIGN KEY(" + COLUMN_DEVOLUCION_USUARIO_ID + ") REFERENCES " +
+                    TABLE_USUARIOS + "(" + COLUMN_USUARIO_ID + ")" +
+                    ")";
 
+    private static final String SQL_CREATE_CALIFICACIONES =
+            "CREATE TABLE " + TABLE_CALIFICACIONES + " (" +
+                    COLUMN_CALIFICACION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COLUMN_CALIFICACION_PEDIDO_ID + " INTEGER NOT NULL, " +
+                    COLUMN_CALIFICACION_VALOR + " INTEGER NOT NULL CHECK(valor BETWEEN 1 AND 5), " +
+                    COLUMN_CALIFICACION_COMENTARIO + " TEXT, " +
+                    COLUMN_CALIFICACION_FECHA + " INTEGER NOT NULL, " +
+                    "FOREIGN KEY(" + COLUMN_CALIFICACION_PEDIDO_ID + ") REFERENCES " +
+                    TABLE_PEDIDOS + "(" + COLUMN_PEDIDO_ID + ") ON DELETE CASCADE" +
+                    ")";
+
+    // Indices
     private static final String SQL_CREATE_INDEX_PEDIDOS_USUARIO =
             "CREATE INDEX idx_pedidos_usuario ON " + TABLE_PEDIDOS + "(" + COLUMN_PEDIDO_USUARIO_ID + ")";
-
     private static final String SQL_CREATE_INDEX_PRODUCTOS_PEDIDO =
             "CREATE INDEX idx_productos_pedido ON " + TABLE_PRODUCTOS + "(" + COLUMN_PRODUCTO_PEDIDO_ID + ")";
-
     private static final String SQL_CREATE_INDEX_INCIDENCIAS_PEDIDO =
             "CREATE INDEX idx_incidencias_pedido ON " + TABLE_INCIDENCIAS + "(" + COLUMN_INCIDENCIA_PEDIDO_ID + ")";
-
     private static final String SQL_CREATE_INDEX_INCIDENCIAS_USUARIO =
             "CREATE INDEX idx_incidencias_usuario ON " + TABLE_INCIDENCIAS + "(" + COLUMN_INCIDENCIA_USUARIO_ID + ")";
+    private static final String SQL_CREATE_INDEX_UBICACIONES_PEDIDO =
+            "CREATE INDEX idx_ubicaciones_pedido ON " + TABLE_UBICACIONES + "(" + COLUMN_UBICACION_PEDIDO_ID + ")";
+    private static final String SQL_CREATE_INDEX_UBICACIONES_USUARIO =
+            "CREATE INDEX idx_ubicaciones_usuario ON " + TABLE_UBICACIONES + "(" + COLUMN_UBICACION_USUARIO_ID + ")";
+    private static final String SQL_CREATE_INDEX_DEVOLUCIONES_PEDIDO =
+            "CREATE INDEX idx_devoluciones_pedido ON " + TABLE_DEVOLUCIONES + "(" + COLUMN_DEVOLUCION_PEDIDO_ID + ")";
+    private static final String SQL_CREATE_INDEX_CALIFICACIONES_PEDIDO =
+            "CREATE INDEX idx_calificaciones_pedido ON " + TABLE_CALIFICACIONES + "(" + COLUMN_CALIFICACION_PEDIDO_ID + ")";
 
-
-    private static final String SQL_DELETE_USUARIOS = "DROP TABLE IF EXISTS " + TABLE_USUARIOS;
-    private static final String SQL_DELETE_PEDIDOS = "DROP TABLE IF EXISTS " + TABLE_PEDIDOS;
-    private static final String SQL_DELETE_PRODUCTOS = "DROP TABLE IF EXISTS " + TABLE_PRODUCTOS;
-    private static final String SQL_DELETE_INCIDENCIAS = "DROP TABLE IF EXISTS " + TABLE_INCIDENCIAS;
+    // SQL drop statements
+    private static final String SQL_DELETE_DEVOLUCIONES = "DROP TABLE IF EXISTS " + TABLE_DEVOLUCIONES;
+    private static final String SQL_DELETE_CALIFICACIONES = "DROP TABLE IF EXISTS " + TABLE_CALIFICACIONES;
     private static final String SQL_DELETE_UBICACIONES = "DROP TABLE IF EXISTS " + TABLE_UBICACIONES;
+    private static final String SQL_DELETE_INCIDENCIAS = "DROP TABLE IF EXISTS " + TABLE_INCIDENCIAS;
+    private static final String SQL_DELETE_PRODUCTOS = "DROP TABLE IF EXISTS " + TABLE_PRODUCTOS;
+    private static final String SQL_DELETE_PEDIDOS = "DROP TABLE IF EXISTS " + TABLE_PEDIDOS;
     private static final String SQL_DELETE_TIPOS_INCIDENCIAS = "DROP TABLE IF EXISTS " + TABLE_TIPOS_INCIDENCIAS;
+    private static final String SQL_DELETE_USUARIOS = "DROP TABLE IF EXISTS " + TABLE_USUARIOS;
 
+    // Vista para reportes de eficiencia
+    private static final String SQL_CREATE_VIEW_REPORTES =
+            "CREATE VIEW IF NOT EXISTS view_reportes AS " +
+                    "SELECT " +
+                    "p." + COLUMN_PEDIDO_ID + ", " +
+                    "p." + COLUMN_PEDIDO_NUMERO + ", " +
+                    "p." + COLUMN_PEDIDO_ESTADO + ", " +
+                    "p." + COLUMN_PEDIDO_USUARIO_ID + ", " +
+                    "u." + COLUMN_USUARIO_NOMBRE + " AS nombre_repartidor, " +
+                    "p." + COLUMN_PEDIDO_HORA_SALIDA + ", " +
+                    "p." + COLUMN_PEDIDO_HORA_ENTREGA + ", " +
+                    "(p." + COLUMN_PEDIDO_HORA_ENTREGA + " - p." + COLUMN_PEDIDO_HORA_SALIDA + ") / 60000 AS tiempo_entrega_minutos, " +
+                    "(CASE WHEN p." + COLUMN_PEDIDO_HORA_ENTREGA + " <= p." + COLUMN_PEDIDO_HORA_ESTIMADA + " THEN 1 ELSE 0 END) AS entrega_a_tiempo, " +
+                    "p." + COLUMN_PEDIDO_CONFIRMADO + " AS entrega_exitosa, " +
+                    "(SELECT COUNT(*) FROM " + TABLE_DEVOLUCIONES + " d WHERE d." + COLUMN_DEVOLUCION_PEDIDO_ID + " = p." + COLUMN_PEDIDO_ID + ") AS tiene_devoluciones, " +
+                    "(SELECT " + COLUMN_CALIFICACION_VALOR + " FROM " + TABLE_CALIFICACIONES + " c WHERE c." + COLUMN_CALIFICACION_PEDIDO_ID + " = p." + COLUMN_PEDIDO_ID + ") AS calificacion " +
+                    "FROM " + TABLE_PEDIDOS + " p " +
+                    "LEFT JOIN " + TABLE_USUARIOS + " u ON p." + COLUMN_PEDIDO_USUARIO_ID + " = u." + COLUMN_USUARIO_ID + " " +
+                    "WHERE p." + COLUMN_PEDIDO_ESTADO + " = 'ENTREGADO' OR p." + COLUMN_PEDIDO_ESTADO + " = 'RECHAZADO'";
 
     public static synchronized DatabaseHelper getInstance(Context context) {
         if (sInstance == null) {
@@ -177,25 +263,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.beginTransaction();
         try {
-
+            // Crear tablas principales
             db.execSQL(SQL_CREATE_USUARIOS);
             db.execSQL(SQL_CREATE_PEDIDOS);
             db.execSQL(SQL_CREATE_PRODUCTOS);
             db.execSQL(SQL_CREATE_INCIDENCIAS);
             db.execSQL(SQL_CREATE_UBICACIONES);
             db.execSQL(SQL_CREATE_TIPOS_INCIDENCIAS);
-
-
+            db.execSQL(SQL_CREATE_DEVOLUCIONES);
+            db.execSQL(SQL_CREATE_CALIFICACIONES);
+            // Crear índices
             db.execSQL(SQL_CREATE_INDEX_PEDIDOS_USUARIO);
             db.execSQL(SQL_CREATE_INDEX_PRODUCTOS_PEDIDO);
             db.execSQL(SQL_CREATE_INDEX_INCIDENCIAS_PEDIDO);
             db.execSQL(SQL_CREATE_INDEX_INCIDENCIAS_USUARIO);
-
-
+            db.execSQL(SQL_CREATE_INDEX_UBICACIONES_PEDIDO);
+            db.execSQL(SQL_CREATE_INDEX_UBICACIONES_USUARIO);
+            db.execSQL(SQL_CREATE_INDEX_DEVOLUCIONES_PEDIDO);
+            db.execSQL(SQL_CREATE_INDEX_CALIFICACIONES_PEDIDO);
+            // Crear vista para reportes
+            db.execSQL(SQL_CREATE_VIEW_REPORTES);
+            // Insertar datos de prueba
             insertarDatosPrueba(db);
             db.setTransactionSuccessful();
         } catch (Exception e) {
             Log.e(TAG, "Error creating database", e);
+            // Consider adding user notification here
         } finally {
             db.endTransaction();
         }
@@ -206,24 +299,55 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.beginTransaction();
         try {
             if (oldVersion < 2) {
-
+                // Mejoras versión 2
                 db.execSQL(SQL_CREATE_TIPOS_INCIDENCIAS);
-
                 insertarTiposIncidenciasPrueba(db);
             }
-
             if (oldVersion < 3) {
-
+                // Mejoras versión 3
                 db.execSQL(SQL_CREATE_INDEX_PEDIDOS_USUARIO);
                 db.execSQL(SQL_CREATE_INDEX_PRODUCTOS_PEDIDO);
                 db.execSQL(SQL_CREATE_INDEX_INCIDENCIAS_PEDIDO);
                 db.execSQL(SQL_CREATE_INDEX_INCIDENCIAS_USUARIO);
-
             }
+            if (oldVersion < 4) {
+                // Mejoras versión 4 - Actualizar tabla de pedidos con nuevos campos
+                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
+                        " ADD COLUMN " + COLUMN_PEDIDO_HORA_SALIDA + " INTEGER");
+                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
+                        " ADD COLUMN " + COLUMN_PEDIDO_HORA_ESTIMADA + " INTEGER");
+                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
+                        " ADD COLUMN " + COLUMN_PEDIDO_HORA_ENTREGA + " INTEGER");
+                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
+                        " ADD COLUMN " + COLUMN_PEDIDO_ALERTA_DEMORA + " INTEGER DEFAULT 0");
+                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
+                        " ADD COLUMN " + COLUMN_PEDIDO_MOTIVO_DEMORA + " TEXT");
+                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
+                        " ADD COLUMN " + COLUMN_PEDIDO_CONFIRMADO + " INTEGER DEFAULT 0");
 
+                // Crear nuevas tablas
+                db.execSQL(SQL_CREATE_DEVOLUCIONES);
+                db.execSQL(SQL_CREATE_CALIFICACIONES);
+
+                // Crear nuevos índices
+                db.execSQL(SQL_CREATE_INDEX_UBICACIONES_PEDIDO);
+                db.execSQL(SQL_CREATE_INDEX_UBICACIONES_USUARIO);
+                db.execSQL(SQL_CREATE_INDEX_DEVOLUCIONES_PEDIDO);
+                db.execSQL(SQL_CREATE_INDEX_CALIFICACIONES_PEDIDO);
+
+                // Crear vista para reportes
+                db.execSQL(SQL_CREATE_VIEW_REPORTES);
+            }
+            if (oldVersion < 5) {
+                // Mejoras versión 5 - Agregar columna estado a incidencias
+                db.execSQL("ALTER TABLE " + TABLE_INCIDENCIAS +
+                        " ADD COLUMN " + COLUMN_INCIDENCIA_ESTADO +
+                        " TEXT NOT NULL DEFAULT '" + IncidenciaDAO.ESTADO_PENDIENTE + "'");
+            }
             db.setTransactionSuccessful();
         } catch (Exception e) {
             Log.e(TAG, "Error upgrading database", e);
+            // Consider adding user notification here
         } finally {
             db.endTransaction();
         }
@@ -236,7 +360,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void insertarDatosPrueba(SQLiteDatabase db) {
-        // Insert test user
+        // Insertar usuario de prueba con contraseña hasheada
+        String hashedPassword = hashPassword("juan123");
         db.execSQL("INSERT INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +
@@ -244,69 +369,182 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USUARIO_ROL + ", " +
                 COLUMN_USUARIO_TELEFONO + ", " +
                 COLUMN_USUARIO_ACTIVO + ") " +
-                "VALUES ('Usuario', 'demo@example.com', 'demo123', 'REPARTIDOR', '555-123-4567', 1)");
+                "VALUES ('Juan Pérez', 'juan.perez@example.pe', '" + hashedPassword + "', 'REPARTIDOR', '999-123-456', 1)");
 
-        // Insert test orders
-        long fechaActual = System.currentTimeMillis();
 
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
-                " (" + COLUMN_PEDIDO_NUMERO + ", " +
-                COLUMN_PEDIDO_CLIENTE + ", " +
-                COLUMN_PEDIDO_DIRECCION + ", " +
-                COLUMN_PEDIDO_FECHA + ", " +
-                COLUMN_PEDIDO_ESTADO + ", " +
-                COLUMN_PEDIDO_USUARIO_ID + ", " +
-                COLUMN_PEDIDO_LATITUD + ", " +
-                COLUMN_PEDIDO_LONGITUD + ", " +
-                COLUMN_PEDIDO_OBSERVACIONES + ") " +
-                "VALUES ('PED-001', 'Cliente Uno', 'Calle Principal 123', " + fechaActual + ", 'ASIGNADO', 1, 19.4326, -99.1332, 'Entregar en horario de oficina')");
+        hashedPassword = hashPassword("admin123");
+        db.execSQL("INSERT INTO " + TABLE_USUARIOS +
+                " (" + COLUMN_USUARIO_NOMBRE + ", " +
+                COLUMN_USUARIO_EMAIL + ", " +
+                COLUMN_USUARIO_PASSWORD + ", " +
+                COLUMN_USUARIO_ROL + ", " +
+                COLUMN_USUARIO_TELEFONO + ", " +
+                COLUMN_USUARIO_ACTIVO + ") " +
+                "VALUES ('Admin Perú', 'admin@example.pe', '" + hashedPassword + "', 'ADMINISTRADOR', '999-987-654', 1)");
 
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
-                " (" + COLUMN_PEDIDO_NUMERO + ", " +
-                COLUMN_PEDIDO_CLIENTE + ", " +
-                COLUMN_PEDIDO_DIRECCION + ", " +
-                COLUMN_PEDIDO_FECHA + ", " +
-                COLUMN_PEDIDO_ESTADO + ", " +
-                COLUMN_PEDIDO_USUARIO_ID + ", " +
-                COLUMN_PEDIDO_LATITUD + ", " +
-                COLUMN_PEDIDO_LONGITUD + ", " +
-                COLUMN_PEDIDO_OBSERVACIONES + ") " +
-                "VALUES ('PED-002', 'Cliente Dos', 'Avenida Central 456', " + fechaActual + ", 'EN_RUTA', 1, 19.4287, -99.1277, 'Llamar antes de entregar')");
+        hashedPassword = hashPassword("maria123");
+        db.execSQL("INSERT INTO " + TABLE_USUARIOS +
+                " (" + COLUMN_USUARIO_NOMBRE + ", " +
+                COLUMN_USUARIO_EMAIL + ", " +
+                COLUMN_USUARIO_PASSWORD + ", " +
+                COLUMN_USUARIO_ROL + ", " +
+                COLUMN_USUARIO_TELEFONO + ", " +
+                COLUMN_USUARIO_ACTIVO + ") " +
+                "VALUES ('María López', 'maria.lopez@example.pe', '" + hashedPassword + "', 'REPARTIDOR', '999-222-333', 1)");
 
-        // Insert test products
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
-                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
-                COLUMN_PRODUCTO_NOMBRE + ", " +
-                COLUMN_PRODUCTO_DESCRIPCION + ", " +
-                COLUMN_PRODUCTO_PRECIO + ", " +
-                COLUMN_PRODUCTO_CANTIDAD + ", " +
-                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
-                "VALUES ('PROD-001', 'Producto Uno', 'Descripción del producto uno', 100.50, 2, 1)");
+        hashedPassword = hashPassword("carlos123");
+        db.execSQL("INSERT INTO " + TABLE_USUARIOS +
+                " (" + COLUMN_USUARIO_NOMBRE + ", " +
+                COLUMN_USUARIO_EMAIL + ", " +
+                COLUMN_USUARIO_PASSWORD + ", " +
+                COLUMN_USUARIO_ROL + ", " +
+                COLUMN_USUARIO_TELEFONO + ", " +
+                COLUMN_USUARIO_ACTIVO + ") " +
+                "VALUES ('Carlos Gómez', 'carlos.gomez@example.pe', '" + hashedPassword + "', 'REPARTIDOR', '999-444-555', 1)");
 
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
-                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
-                COLUMN_PRODUCTO_NOMBRE + ", " +
-                COLUMN_PRODUCTO_DESCRIPCION + ", " +
-                COLUMN_PRODUCTO_PRECIO + ", " +
-                COLUMN_PRODUCTO_CANTIDAD + ", " +
-                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
-                "VALUES ('PROD-002', 'Producto Dos', 'Descripción del producto dos', 75.25, 1, 1)");
-
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
-                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
-                COLUMN_PRODUCTO_NOMBRE + ", " +
-                COLUMN_PRODUCTO_DESCRIPCION + ", " +
-                COLUMN_PRODUCTO_PRECIO + ", " +
-                COLUMN_PRODUCTO_CANTIDAD + ", " +
-                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
-                "VALUES ('PROD-003', 'Producto Tres', 'Descripción del producto tres', 200.00, 3, 2)");
-
+        // Insertar tipos de incidencias
         insertarTiposIncidenciasPrueba(db);
+
+        // Insertar pedidos de prueba (adaptados a Perú)
+        long fechaActual = System.currentTimeMillis();
+        long horaEstimadaEntrega = fechaActual + (2 * 60 * 60 * 1000); // 2 horas después
+
+        // Pedido ASIGNADO
+        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+                " (" + COLUMN_PEDIDO_NUMERO + ", " +
+                COLUMN_PEDIDO_CLIENTE + ", " +
+                COLUMN_PEDIDO_DIRECCION + ", " +
+                COLUMN_PEDIDO_FECHA + ", " +
+                COLUMN_PEDIDO_ESTADO + ", " +
+                COLUMN_PEDIDO_USUARIO_ID + ", " +
+                COLUMN_PEDIDO_LATITUD + ", " +
+                COLUMN_PEDIDO_LONGITUD + ", " +
+                COLUMN_PEDIDO_OBSERVACIONES + ", " +
+                COLUMN_PEDIDO_HORA_SALIDA + ", " +
+                COLUMN_PEDIDO_HORA_ESTIMADA + ") " +
+                "VALUES ('PED-001', 'Cliente Uno', 'Av. Larco 123, Miraflores, Lima', " +
+                fechaActual + ", 'ASIGNADO', 1, -12.1194, -77.0286, 'Entregar en horario de oficina', " +
+                fechaActual + ", " + horaEstimadaEntrega + ")");
+
+        // Pedido EN_RUTA
+        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+                " (" + COLUMN_PEDIDO_NUMERO + ", " +
+                COLUMN_PEDIDO_CLIENTE + ", " +
+                COLUMN_PEDIDO_DIRECCION + ", " +
+                COLUMN_PEDIDO_FECHA + ", " +
+                COLUMN_PEDIDO_ESTADO + ", " +
+                COLUMN_PEDIDO_USUARIO_ID + ", " +
+                COLUMN_PEDIDO_LATITUD + ", " +
+                COLUMN_PEDIDO_LONGITUD + ", " +
+                COLUMN_PEDIDO_OBSERVACIONES + ", " +
+                COLUMN_PEDIDO_HORA_SALIDA + ", " +
+                COLUMN_PEDIDO_HORA_ESTIMADA + ") " +
+                "VALUES ('PED-002', 'Cliente Dos', 'Jr. de la Unión 456, Cercado de Lima', " +
+                fechaActual + ", 'EN_RUTA', 1, -12.0464, -77.0428, 'Llamar antes de entregar', " +
+                (fechaActual - (30 * 60 * 1000)) + ", " + (horaEstimadaEntrega - (30 * 60 * 1000)) + ")");
+
+        // Pedido ENTREGADO
+        long fechaPedidoAnterior = fechaActual - (2 * 24 * 60 * 60 * 1000); // 2 días antes
+        long horaSalidaAnterior = fechaPedidoAnterior + (30 * 60 * 1000); // 30 minutos después del pedido
+        long horaEntregaAnterior = horaSalidaAnterior + (90 * 60 * 1000); // 1.5 horas después de la salida
+
+        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+                " (" + COLUMN_PEDIDO_NUMERO + ", " +
+                COLUMN_PEDIDO_CLIENTE + ", " +
+                COLUMN_PEDIDO_DIRECCION + ", " +
+                COLUMN_PEDIDO_FECHA + ", " +
+                COLUMN_PEDIDO_ESTADO + ", " +
+                COLUMN_PEDIDO_USUARIO_ID + ", " +
+                COLUMN_PEDIDO_LATITUD + ", " +
+                COLUMN_PEDIDO_LONGITUD + ", " +
+                COLUMN_PEDIDO_OBSERVACIONES + ", " +
+                COLUMN_PEDIDO_HORA_SALIDA + ", " +
+                COLUMN_PEDIDO_HORA_ESTIMADA + ", " +
+                COLUMN_PEDIDO_HORA_ENTREGA + ", " +
+                COLUMN_PEDIDO_CONFIRMADO + ") " +
+                "VALUES ('PED-003', 'Cliente Tres', 'Calle Schell 789, Miraflores, Lima', " +
+                fechaPedidoAnterior + ", 'ENTREGADO', 1, -12.1199, -77.0291, 'Entregar en la recepción', " +
+                horaSalidaAnterior + ", " + (horaSalidaAnterior + (60 * 60 * 1000)) + ", " +
+                horaEntregaAnterior + ", 1)");
+
+        // Insertar productos para los pedidos (precios en soles peruanos)
+        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
+                COLUMN_PRODUCTO_NOMBRE + ", " +
+                COLUMN_PRODUCTO_DESCRIPCION + ", " +
+                COLUMN_PRODUCTO_PRECIO + ", " +
+                COLUMN_PRODUCTO_CANTIDAD + ", " +
+                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
+                "VALUES ('PROD-001', 'Chompa de Alpaca', 'Chompa tejida a mano', 150.00, 2, 1)");
+
+        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
+                COLUMN_PRODUCTO_NOMBRE + ", " +
+                COLUMN_PRODUCTO_DESCRIPCION + ", " +
+                COLUMN_PRODUCTO_PRECIO + ", " +
+                COLUMN_PRODUCTO_CANTIDAD + ", " +
+                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
+                "VALUES ('PROD-002', 'Poncho Tradicional', 'Poncho de lana', 120.50, 1, 1)");
+
+        // Insertar incidencias
+        db.execSQL("INSERT INTO " + TABLE_INCIDENCIAS +
+                " (" + COLUMN_INCIDENCIA_TIPO + ", " +
+                COLUMN_INCIDENCIA_DESCRIPCION + ", " +
+                COLUMN_INCIDENCIA_FECHA + ", " +
+                COLUMN_INCIDENCIA_USUARIO_ID + ", " +
+                COLUMN_INCIDENCIA_PEDIDO_ID + ") " +
+                "VALUES ('Retraso', 'Tráfico en Jr. de la Unión', " +
+                fechaActual + ", 1, 2)");
+
+        // Insertar ubicaciones para PED-002 (en ruta)
+        db.execSQL("INSERT INTO " + TABLE_UBICACIONES +
+                " (" + COLUMN_UBICACION_LATITUD + ", " +
+                COLUMN_UBICACION_LONGITUD + ", " +
+                COLUMN_UBICACION_FECHA + ", " +
+                COLUMN_UBICACION_USUARIO_ID + ", " +
+                COLUMN_UBICACION_PEDIDO_ID + ") " +
+                "VALUES (-12.0460, -77.0420, " + (fechaActual - (20 * 60 * 1000)) + ", 1, 2)");
+
+        // Insertar devolución para PED-003
+        db.execSQL("INSERT INTO " + TABLE_DEVOLUCIONES +
+                " (" + COLUMN_DEVOLUCION_PEDIDO_ID + ", " +
+                COLUMN_DEVOLUCION_PRODUCTO_ID + ", " +
+                COLUMN_DEVOLUCION_CANTIDAD + ", " +
+                COLUMN_DEVOLUCION_MOTIVO + ", " +
+                COLUMN_DEVOLUCION_FECHA + ", " +
+                COLUMN_DEVOLUCION_USUARIO_ID + ") " +
+                "VALUES (3, 1, 1, 'Producto defectuoso', " +
+                (fechaActual - (1 * 24 * 60 * 60 * 1000)) + ", 1)");
+
+        // Insertar calificación para PED-003
+        db.execSQL("INSERT INTO " + TABLE_CALIFICACIONES +
+                " (" + COLUMN_CALIFICACION_PEDIDO_ID + ", " +
+                COLUMN_CALIFICACION_VALOR + ", " +
+                COLUMN_CALIFICACION_COMENTARIO + ", " +
+                COLUMN_CALIFICACION_FECHA + ") " +
+                "VALUES (3, 4, 'Buen servicio, pero el producto llegó dañado', " +
+                (fechaActual - (1 * 24 * 60 * 60 * 1000)) + ")");
     }
 
     private void insertarTiposIncidenciasPrueba(SQLiteDatabase db) {
         db.execSQL("INSERT INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Retraso')");
         db.execSQL("INSERT INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Producto dañado')");
         db.execSQL("INSERT INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Dirección incorrecta')");
+    }
+
+    // Método para hashear contraseñas
+    private String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashedBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "Error hashing password", e);
+            return password; // Fallback, though not recommended
+        }
     }
 }

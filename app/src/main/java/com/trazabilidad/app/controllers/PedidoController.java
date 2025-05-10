@@ -1,7 +1,9 @@
 package com.trazabilidad.app.controllers;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 
+import com.trazabilidad.app.database.DatabaseHelper;
 import com.trazabilidad.app.database.IncidenciaDAO;
 import com.trazabilidad.app.database.PedidoDAO;
 import com.trazabilidad.app.database.ProductoDAO;
@@ -11,6 +13,7 @@ import com.trazabilidad.app.models.Producto;
 import com.trazabilidad.app.models.Ubicacion;
 import com.trazabilidad.app.services.APIService;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -22,9 +25,11 @@ public class PedidoController {
     private GPSController gpsController;
     private APIService apiService;
     private Context context;
+    private DatabaseHelper dbHelper;
 
     public PedidoController(Context context) {
         this.context = context;
+        dbHelper = DatabaseHelper.getInstance(context); // Instancia única
         pedidoDAO = new PedidoDAO(context);
         productoDAO = new ProductoDAO(context);
         incidenciaDAO = new IncidenciaDAO(context);
@@ -34,6 +39,19 @@ public class PedidoController {
 
     private boolean isNetworkAvailable() {
         return apiService.isNetworkAvailable();
+    }
+
+    public void registrarPedido(Pedido pedido, OperacionCallback callback) {
+        try {
+            boolean resultado = pedidoDAO.insertarPedido(pedido);
+            if (resultado) {
+                callback.onSuccess();
+            } else {
+                callback.onError("Error al insertar el pedido en la base de datos");
+            }
+        } catch (Exception e) {
+            callback.onError("Error al registrar el pedido: " + e.getMessage());
+        }
     }
 
     public void obtenerPedidosAsignados(int usuarioId, PedidosCallback callback) {
@@ -149,6 +167,11 @@ public class PedidoController {
         } catch (Exception e) {
             callback.onError("Error al registrar incidencia: " + e.getMessage());
         }
+    }
+
+    // Método para obtener incidencias por usuario
+    public List<Incidencia> obtenerIncidenciasPorUsuario(int usuarioId) {
+        return incidenciaDAO.obtenerIncidenciasPorUsuario(usuarioId);
     }
 
     public interface PedidosCallback {

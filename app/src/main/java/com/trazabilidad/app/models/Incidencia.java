@@ -12,11 +12,12 @@ public class Incidencia implements Serializable {
     private String fotoUri;
     private int usuarioId;
     private int pedidoId;
-
+    private String estado;
     public Incidencia() {
     }
 
-    public Incidencia(int id, String tipo, String descripcion, Date fecha, String fotoUri, int usuarioId, int pedidoId) {
+    public Incidencia(int id, String tipo, String descripcion, Date fecha,
+                      String fotoUri, int usuarioId, int pedidoId, String estado) {
         this.id = id;
         this.tipo = tipo;
         this.descripcion = descripcion;
@@ -24,6 +25,7 @@ public class Incidencia implements Serializable {
         this.fotoUri = fotoUri;
         this.usuarioId = usuarioId;
         this.pedidoId = pedidoId;
+        this.estado = estado;
     }
 
     public int getId() {
@@ -81,7 +83,8 @@ public class Incidencia implements Serializable {
     public void setPedidoId(int pedidoId) {
         this.pedidoId = pedidoId;
     }
-
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
     @Override
     public String toString() {
         return "Incidencia{" +
@@ -92,6 +95,7 @@ public class Incidencia implements Serializable {
                 ", fotoUri='" + fotoUri + '\'' +
                 ", usuarioId=" + usuarioId +
                 ", pedidoId=" + pedidoId +
+                ", estado='" + estado + '\'' +
                 '}';
     }
 }

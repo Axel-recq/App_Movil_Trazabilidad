@@ -60,39 +60,37 @@ public class PedidoAdapter extends ArrayAdapter<Pedido> {
     }
 
     private void setColorSegunEstado(String estado, ViewHolder holder) {
-        int colorIndicador;
-        int colorFondo;
-        int colorTexto;
-
+        int colorIndicador;  // Color del indicador de estado
+        int colorFondo;      // Color del fondo del TextView
+        int colorTexto;      // Color del texto del estado
 
         switch (estado.toLowerCase()) {
             case "entregado":
-                colorIndicador = R.color.success;
-                colorFondo = R.color.green_50;
-                colorTexto = R.color.green_900;
+                colorIndicador = R.color.success;      // #4CAF50 (verde)
+                colorFondo = R.color.custom_50;        // #FEFEFF (blanco claro)
+                colorTexto = R.color.success;          // #4CAF50 (verde)
                 break;
             case "en camino":
-                colorIndicador = R.color.info;
-                colorFondo = R.color.green_100;
-                colorTexto = R.color.green_900;
+                colorIndicador = R.color.info;         // #2196F3 (azul)
+                colorFondo = R.color.custom_100;       // #D8D0E7 (acento claro)
+                colorTexto = R.color.info;             // #2196F3 (azul)
                 break;
             case "pendiente":
-                colorIndicador = R.color.warning;
-                colorFondo = R.color.green_50;
-                colorTexto = R.color.green_900;
+                colorIndicador = R.color.warning;      // #FFC107 (amarillo)
+                colorFondo = R.color.custom_50;        // #FEFEFF (blanco claro)
+                colorTexto = R.color.warning;          // #FFC107 (amarillo)
                 break;
             case "incidencia":
-                colorIndicador = R.color.error;
-                colorFondo = R.color.green_50;
-                colorTexto = R.color.error;
+                colorIndicador = R.color.error;        // #F44336 (rojo)
+                colorFondo = R.color.custom_50;        // #FEFEFF (blanco claro)
+                colorTexto = R.color.error;            // #F44336 (rojo)
                 break;
             default:
-                colorIndicador = R.color.colorPrimary;
-                colorFondo = R.color.green_50;
-                colorTexto = R.color.colorPrimary;
+                colorIndicador = R.color.colorPrimary; // #312A94 (principal oscuro)
+                colorFondo = R.color.custom_50;        // #FEFEFF (blanco claro)
+                colorTexto = R.color.colorPrimary;     // #312A94 (principal oscuro)
                 break;
         }
-
         // Aplicar colores al indicador de estado
         holder.viewStatusIndicator.setBackgroundColor(ContextCompat.getColor(context, colorIndicador));
 

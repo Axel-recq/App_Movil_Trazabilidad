@@ -52,16 +52,18 @@
             android:id="@+id/listViewPedidos"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:divider="@color/gray_200"
-            android:dividerHeight="1dp"
-            android:scrollingCache="false"
             android:clipToPadding="false"
             android:contentDescription="@string/orders_list_description"
+            android:divider="@color/gray_200"
+            android:dividerHeight="1dp"
             android:layoutAnimation="@anim/layout_animation_fall_down"
-            app:layout_constraintTop_toTopOf="parent"
+            android:scrollingCache="false"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

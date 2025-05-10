@@ -9,7 +9,7 @@
 
             <!-- Colores secundarios -->
             <item name="colorSecondary">@color/colorSecondary</item>
-            <item name="colorSecondaryVariant">@color/green_700</item>
+            <item name="colorSecondaryVariant">@color/teal_700</item> <!-- Usar teal_700 -->
             <item name="colorOnSecondary">@color/colorOnSecondary</item>
 
             <!-- Colores de superficies -->

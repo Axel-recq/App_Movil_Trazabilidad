@@ -10,7 +10,6 @@ android {
     namespace = "com.trazabilidad.app"
     compileSdk = 34
 
-    // Carga de local.properties
     val localProperties = Properties().apply {
         rootProject
             .file("local.properties")
@@ -28,7 +27,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        // Inyecta la clave en el Manifest
+
         manifestPlaceholders["googleMapsKey"] = localProperties.getProperty("MAPS_API_KEY")
     }
 
