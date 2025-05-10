@@ -169,7 +169,7 @@ public class PedidoController {
         }
     }
 
-    
+
     public List<Incidencia> obtenerIncidenciasPorUsuario(int usuarioId) {
         return incidenciaDAO.obtenerIncidenciasPorUsuario(usuarioId);
     }
