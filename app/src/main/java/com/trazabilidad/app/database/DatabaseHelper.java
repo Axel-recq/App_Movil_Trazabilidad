@@ -360,8 +360,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void insertarDatosPrueba(SQLiteDatabase db) {
-        // Insertar usuario de prueba con contraseña hasheada
-        String hashedPassword = hashPassword("juan123");
+        // Insertar usuario de prueba
         db.execSQL("INSERT INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +
@@ -369,10 +368,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USUARIO_ROL + ", " +
                 COLUMN_USUARIO_TELEFONO + ", " +
                 COLUMN_USUARIO_ACTIVO + ") " +
-                "VALUES ('Juan Pérez', 'juan.perez@example.pe', '" + hashedPassword + "', 'REPARTIDOR', '999-123-456', 1)");
+                "VALUES ('Juan Pérez', 'juan.perez@example.pe', 'juan123', 'REPARTIDOR', '999-123-456', 1)");
 
-
-        hashedPassword = hashPassword("admin123");
         db.execSQL("INSERT INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +
@@ -380,9 +377,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USUARIO_ROL + ", " +
                 COLUMN_USUARIO_TELEFONO + ", " +
                 COLUMN_USUARIO_ACTIVO + ") " +
-                "VALUES ('Admin Perú', 'admin@example.pe', '" + hashedPassword + "', 'ADMINISTRADOR', '999-987-654', 1)");
+                "VALUES ('Admin Perú', 'admin@example.pe', 'admin123', 'ADMINISTRADOR', '999-987-654', 1)");
 
-        hashedPassword = hashPassword("maria123");
         db.execSQL("INSERT INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +
@@ -390,9 +386,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USUARIO_ROL + ", " +
                 COLUMN_USUARIO_TELEFONO + ", " +
                 COLUMN_USUARIO_ACTIVO + ") " +
-                "VALUES ('María López', 'maria.lopez@example.pe', '" + hashedPassword + "', 'REPARTIDOR', '999-222-333', 1)");
+                "VALUES ('María López', 'maria.lopez@example.pe', 'maria123', 'REPARTIDOR', '999-222-333', 1)");
 
-        hashedPassword = hashPassword("carlos123");
         db.execSQL("INSERT INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +
@@ -400,7 +395,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USUARIO_ROL + ", " +
                 COLUMN_USUARIO_TELEFONO + ", " +
                 COLUMN_USUARIO_ACTIVO + ") " +
-                "VALUES ('Carlos Gómez', 'carlos.gomez@example.pe', '" + hashedPassword + "', 'REPARTIDOR', '999-444-555', 1)");
+                "VALUES ('Carlos Gómez', 'carlos.gomez@example.pe', 'carlos123', 'SUPERVISOR', '999-444-555', 1)");
 
         // Insertar tipos de incidencias
         insertarTiposIncidenciasPrueba(db);
@@ -467,6 +462,48 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 horaSalidaAnterior + ", " + (horaSalidaAnterior + (60 * 60 * 1000)) + ", " +
                 horaEntregaAnterior + ", 1)");
 
+        // Pedido PENDIENTE
+        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+                " (" + COLUMN_PEDIDO_NUMERO + ", " +
+                COLUMN_PEDIDO_CLIENTE + ", " +
+                COLUMN_PEDIDO_DIRECCION + ", " +
+                COLUMN_PEDIDO_FECHA + ", " +
+                COLUMN_PEDIDO_ESTADO + ", " +
+                COLUMN_PEDIDO_USUARIO_ID + ", " +
+                COLUMN_PEDIDO_LATITUD + ", " +
+                COLUMN_PEDIDO_LONGITUD + ", " +
+                COLUMN_PEDIDO_OBSERVACIONES + ") " +
+                "VALUES ('PED-004', 'Ana Martínez', 'Av. Arequipa 456, Lince, Lima', " +
+                fechaActual + ", 'PENDIENTE', NULL, -12.0856, -77.0306, 'Pendiente de asignación')");
+
+        // Pedido EN_PREPARACION
+        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+                " (" + COLUMN_PEDIDO_NUMERO + ", " +
+                COLUMN_PEDIDO_CLIENTE + ", " +
+                COLUMN_PEDIDO_DIRECCION + ", " +
+                COLUMN_PEDIDO_FECHA + ", " +
+                COLUMN_PEDIDO_ESTADO + ", " +
+                COLUMN_PEDIDO_USUARIO_ID + ", " +
+                COLUMN_PEDIDO_LATITUD + ", " +
+                COLUMN_PEDIDO_LONGITUD + ", " +
+                COLUMN_PEDIDO_OBSERVACIONES + ") " +
+                "VALUES ('PED-005', 'José López', 'Av. Javier Prado 789, San Isidro, Lima', " +
+                fechaActual + ", 'EN_PREPARACION', 1, -12.0972, -77.0272, 'Preparando en almacén')");
+
+        // Pedido CANCELADO
+        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+                " (" + COLUMN_PEDIDO_NUMERO + ", " +
+                COLUMN_PEDIDO_CLIENTE + ", " +
+                COLUMN_PEDIDO_DIRECCION + ", " +
+                COLUMN_PEDIDO_FECHA + ", " +
+                COLUMN_PEDIDO_ESTADO + ", " +
+                COLUMN_PEDIDO_USUARIO_ID + ", " +
+                COLUMN_PEDIDO_LATITUD + ", " +
+                COLUMN_PEDIDO_LONGITUD + ", " +
+                COLUMN_PEDIDO_OBSERVACIONES + ") " +
+                "VALUES ('PED-006', 'Laura Sánchez', 'Calle Los Olivos 101, San Miguel, Lima', " +
+                fechaActual + ", 'CANCELADO', 3, -12.0756, -77.0833, 'Cancelado por el cliente')");
+
         // Insertar productos para los pedidos (precios en soles peruanos)
         db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
                 " (" + COLUMN_PRODUCTO_CODIGO + ", " +
@@ -486,6 +523,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PRODUCTO_PEDIDO_ID + ") " +
                 "VALUES ('PROD-002', 'Poncho Tradicional', 'Poncho de lana', 120.50, 1, 1)");
 
+        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
+                COLUMN_PRODUCTO_NOMBRE + ", " +
+                COLUMN_PRODUCTO_DESCRIPCION + ", " +
+                COLUMN_PRODUCTO_PRECIO + ", " +
+                COLUMN_PRODUCTO_CANTIDAD + ", " +
+                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
+                "VALUES ('PROD-003', 'Sombrero de Paja', 'Sombrero típico', 50.00, 3, 2)");
+
+        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
+                COLUMN_PRODUCTO_NOMBRE + ", " +
+                COLUMN_PRODUCTO_DESCRIPCION + ", " +
+                COLUMN_PRODUCTO_PRECIO + ", " +
+                COLUMN_PRODUCTO_CANTIDAD + ", " +
+                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
+                "VALUES ('PROD-004', 'Chalina de Alpaca', 'Chalina tejida', 80.00, 1, 4)");
+
+        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
+                COLUMN_PRODUCTO_NOMBRE + ", " +
+                COLUMN_PRODUCTO_DESCRIPCION + ", " +
+                COLUMN_PRODUCTO_PRECIO + ", " +
+                COLUMN_PRODUCTO_CANTIDAD + ", " +
+                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
+                "VALUES ('PROD-005', 'Bufanda de Lana', 'Bufanda abrigadora', 60.00, 2, 5)");
+
+        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
+                COLUMN_PRODUCTO_NOMBRE + ", " +
+                COLUMN_PRODUCTO_DESCRIPCION + ", " +
+                COLUMN_PRODUCTO_PRECIO + ", " +
+                COLUMN_PRODUCTO_CANTIDAD + ", " +
+                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
+                "VALUES ('PROD-006', 'Gorro Andino', 'Gorro de lana', 40.00, 3, 6)");
+
+
         // Insertar incidencias
         db.execSQL("INSERT INTO " + TABLE_INCIDENCIAS +
                 " (" + COLUMN_INCIDENCIA_TIPO + ", " +
@@ -496,6 +570,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "VALUES ('Retraso', 'Tráfico en Jr. de la Unión', " +
                 fechaActual + ", 1, 2)");
 
+        db.execSQL("INSERT INTO " + TABLE_INCIDENCIAS +
+                " (" + COLUMN_INCIDENCIA_TIPO + ", " +
+                COLUMN_INCIDENCIA_DESCRIPCION + ", " +
+                COLUMN_INCIDENCIA_FECHA + ", " +
+                COLUMN_INCIDENCIA_USUARIO_ID + ", " +
+                COLUMN_INCIDENCIA_PEDIDO_ID + ") " +
+                "VALUES ('Producto dañado', 'Caja aplastada al llegar', " +
+                (fechaActual - (2 * 24 * 60 * 60 * 1000)) + ", 1, 3)");
+
         // Insertar ubicaciones para PED-002 (en ruta)
         db.execSQL("INSERT INTO " + TABLE_UBICACIONES +
                 " (" + COLUMN_UBICACION_LATITUD + ", " +
@@ -505,6 +588,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_UBICACION_PEDIDO_ID + ") " +
                 "VALUES (-12.0460, -77.0420, " + (fechaActual - (20 * 60 * 1000)) + ", 1, 2)");
 
+        db.execSQL("INSERT INTO " + TABLE_UBICACIONES +
+                " (" + COLUMN_UBICACION_LATITUD + ", " +
+                COLUMN_UBICACION_LONGITUD + ", " +
+                COLUMN_UBICACION_FECHA + ", " +
+                COLUMN_UBICACION_USUARIO_ID + ", " +
+                COLUMN_UBICACION_PEDIDO_ID + ") " +
+                "VALUES (-12.0462, -77.0425, " + (fechaActual - (10 * 60 * 1000)) + ", 1, 2)");
+
+        db.execSQL("INSERT INTO " + TABLE_UBICACIONES +
+                " (" + COLUMN_UBICACION_LATITUD + ", " +
+                COLUMN_UBICACION_LONGITUD + ", " +
+                COLUMN_UBICACION_FECHA + ", " +
+                COLUMN_UBICACION_USUARIO_ID + ", " +
+                COLUMN_UBICACION_PEDIDO_ID + ") " +
+                "VALUES (-12.0464, -77.0428, " + fechaActual + ", 1, 2)");
+
         // Insertar devolución para PED-003
         db.execSQL("INSERT INTO " + TABLE_DEVOLUCIONES +
                 " (" + COLUMN_DEVOLUCION_PEDIDO_ID + ", " +
@@ -513,7 +612,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_DEVOLUCION_MOTIVO + ", " +
                 COLUMN_DEVOLUCION_FECHA + ", " +
                 COLUMN_DEVOLUCION_USUARIO_ID + ") " +
-                "VALUES (3, 1, 1, 'Producto defectuoso', " +
+                "VALUES (3, 3, 1, 'Producto defectuoso', " +
                 (fechaActual - (1 * 24 * 60 * 60 * 1000)) + ", 1)");
 
         // Insertar calificación para PED-003
@@ -524,27 +623,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_CALIFICACION_FECHA + ") " +
                 "VALUES (3, 4, 'Buen servicio, pero el producto llegó dañado', " +
                 (fechaActual - (1 * 24 * 60 * 60 * 1000)) + ")");
+
+        // Insertar otro pedido ENTREGADO para calificación
+        long fechaAnterior = fechaActual - (3 * 24 * 60 * 60 * 1000);
+        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+                " (" + COLUMN_PEDIDO_NUMERO + ", " +
+                COLUMN_PEDIDO_CLIENTE + ", " +
+                COLUMN_PEDIDO_DIRECCION + ", " +
+                COLUMN_PEDIDO_FECHA + ", " +
+                COLUMN_PEDIDO_ESTADO + ", " +
+                COLUMN_PEDIDO_USUARIO_ID + ", " +
+                COLUMN_PEDIDO_LATITUD + ", " +
+                COLUMN_PEDIDO_LONGITUD + ", " +
+                COLUMN_PEDIDO_OBSERVACIONES + ", " +
+                COLUMN_PEDIDO_HORA_SALIDA + ", " +
+                COLUMN_PEDIDO_HORA_ESTIMADA + ", " +
+                COLUMN_PEDIDO_HORA_ENTREGA + ", " +
+                COLUMN_PEDIDO_CONFIRMADO + ") " +
+                "VALUES ('PED-007', 'Pedro Ramírez', 'Av. Brasil 202, Breña, Lima', " +
+                fechaAnterior + ", 'ENTREGADO', 3, -12.0556, -77.0511, 'Entregado sin problemas', " +
+                (fechaAnterior + (30 * 60 * 1000)) + ", " +
+                (fechaAnterior + (90 * 60 * 1000)) + ", " +
+                (fechaAnterior + (120 * 60 * 1000)) + ", 1)");
+
+        // Producto para PED-007
+        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+                " (" + COLUMN_PRODUCTO_CODIGO + ", " +
+                COLUMN_PRODUCTO_NOMBRE + ", " +
+                COLUMN_PRODUCTO_DESCRIPCION + ", " +
+                COLUMN_PRODUCTO_PRECIO + ", " +
+                COLUMN_PRODUCTO_CANTIDAD + ", " +
+                COLUMN_PRODUCTO_PEDIDO_ID + ") " +
+                "VALUES ('PROD-007', 'Chullo Peruano', 'Gorro tradicional', 30.00, 1, 7)");
+
+        // Calificación para PED-007
+        db.execSQL("INSERT INTO " + TABLE_CALIFICACIONES +
+                " (" + COLUMN_CALIFICACION_PEDIDO_ID + ", " +
+                COLUMN_CALIFICACION_VALOR + ", " +
+                COLUMN_CALIFICACION_COMENTARIO + ", " +
+                COLUMN_CALIFICACION_FECHA + ") " +
+                "VALUES (7, 5, 'Excelente servicio', " +
+                (fechaAnterior + (24 * 60 * 60 * 1000)) + ")");
     }
 
     private void insertarTiposIncidenciasPrueba(SQLiteDatabase db) {
         db.execSQL("INSERT INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Retraso')");
         db.execSQL("INSERT INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Producto dañado')");
         db.execSQL("INSERT INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Dirección incorrecta')");
-    }
-
-    // Método para hashear contraseñas
-    private String hashPassword(String password) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hashedBytes = md.digest(password.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hashedBytes) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, "Error hashing password", e);
-            return password; // Fallback, though not recommended
-        }
     }
 }
