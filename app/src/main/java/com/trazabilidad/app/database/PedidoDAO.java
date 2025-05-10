@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.trazabilidad.app.models.Pedido;
 
@@ -40,12 +41,19 @@ public class PedidoDAO {
                 pedidos.add(cursorToPedido(cursor));
             }
         } catch (Exception e) {
-            // Loggear el error o manejarlo según sea necesario
+            Log.e("PedidoDAO", "Error al obtener pedidos recientes", e);
         }
         return pedidos;
     }
+    private int getPedidosCount(DatabaseHelper dbHelper) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS, null);
+        cursor.moveToFirst();
+        int count = cursor.getInt(0);
+        cursor.close();
+        return count;
+    }
 
-    // Métodos existentes...
     public boolean insertarPedido(Pedido pedido) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = getPedidoContentValues(pedido);
@@ -136,6 +144,7 @@ public class PedidoDAO {
         values.put(DatabaseHelper.COLUMN_PEDIDO_LATITUD, pedido.getLatitud());
         values.put(DatabaseHelper.COLUMN_PEDIDO_LONGITUD, pedido.getLongitud());
         values.put(DatabaseHelper.COLUMN_PEDIDO_OBSERVACIONES, pedido.getObservaciones());
+
         return values;
     }
 
@@ -150,7 +159,13 @@ public class PedidoDAO {
                 DatabaseHelper.COLUMN_PEDIDO_USUARIO_ID,
                 DatabaseHelper.COLUMN_PEDIDO_LATITUD,
                 DatabaseHelper.COLUMN_PEDIDO_LONGITUD,
-                DatabaseHelper.COLUMN_PEDIDO_OBSERVACIONES
+                DatabaseHelper.COLUMN_PEDIDO_OBSERVACIONES,
+                DatabaseHelper.COLUMN_PEDIDO_HORA_SALIDA,
+                DatabaseHelper.COLUMN_PEDIDO_HORA_ESTIMADA,
+                DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA,
+                DatabaseHelper.COLUMN_PEDIDO_ALERTA_DEMORA,
+                DatabaseHelper.COLUMN_PEDIDO_MOTIVO_DEMORA,
+                DatabaseHelper.COLUMN_PEDIDO_CONFIRMADO
         };
     }
 
@@ -167,6 +182,15 @@ public class PedidoDAO {
         pedido.setLatitud(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_LATITUD)));
         pedido.setLongitud(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_LONGITUD)));
         pedido.setObservaciones(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_OBSERVACIONES)));
+
+        // Campos adicionales
+        pedido.setHoraSalida(cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_HORA_SALIDA)));
+        pedido.setHoraEstimada(cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_HORA_ESTIMADA)));
+        pedido.setHoraEntrega(cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA)));
+        pedido.setAlertaDemora(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_ALERTA_DEMORA)) == 1);
+        pedido.setMotivoDemora(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_MOTIVO_DEMORA)));
+        pedido.setConfirmado(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_CONFIRMADO)) == 1);
+
         return pedido;
     }
 }

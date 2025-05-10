@@ -9,7 +9,7 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "trazabilidad.db";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
     private static DatabaseHelper sInstance;
 
     // Table and column names
@@ -339,6 +339,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.execSQL("ALTER TABLE " + TABLE_INCIDENCIAS +
                         " ADD COLUMN " + COLUMN_INCIDENCIA_ESTADO +
                         " TEXT NOT NULL DEFAULT '" + IncidenciaDAO.ESTADO_PENDIENTE + "'");
+            }if (oldVersion < 6) {
+                // Eliminar tablas existentes
+                db.execSQL(SQL_DELETE_CALIFICACIONES);
+                db.execSQL(SQL_DELETE_DEVOLUCIONES);
+                db.execSQL(SQL_DELETE_UBICACIONES);
+                db.execSQL(SQL_DELETE_INCIDENCIAS);
+                db.execSQL(SQL_DELETE_PRODUCTOS);
+                db.execSQL(SQL_DELETE_PEDIDOS);
+                db.execSQL(SQL_DELETE_TIPOS_INCIDENCIAS);
+                db.execSQL(SQL_DELETE_USUARIOS);
+                // Recrear la base de datos
+                onCreate(db);
             }
             db.setTransactionSuccessful();
         } catch (Exception e) {
@@ -401,8 +413,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long horaEstimadaEntrega = fechaActual + (2 * 60 * 60 * 1000); // 2 horas después
 
         // Pedido ASIGNADO
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
-                " (" + COLUMN_PEDIDO_NUMERO + ", " +
+        db.execSQL("INSERT INTO " + TABLE_PEDIDOS + " (" +
+                COLUMN_PEDIDO_NUMERO + ", " +
                 COLUMN_PEDIDO_CLIENTE + ", " +
                 COLUMN_PEDIDO_DIRECCION + ", " +
                 COLUMN_PEDIDO_FECHA + ", " +
@@ -412,10 +424,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_LONGITUD + ", " +
                 COLUMN_PEDIDO_OBSERVACIONES + ", " +
                 COLUMN_PEDIDO_HORA_SALIDA + ", " +
-                COLUMN_PEDIDO_HORA_ESTIMADA + ") " +
+                COLUMN_PEDIDO_HORA_ESTIMADA + ", " +
+                COLUMN_PEDIDO_HORA_ENTREGA + ", " +
+                COLUMN_PEDIDO_ALERTA_DEMORA + ", " +
+                COLUMN_PEDIDO_MOTIVO_DEMORA + ", " +
+                COLUMN_PEDIDO_CONFIRMADO + ") " +
                 "VALUES ('PED-001', 'Cliente Uno', 'Av. Larco 123, Miraflores, Lima', " +
-                fechaActual + ", 'ASIGNADO', 1, -12.1194, -77.0286, 'Entregar en horario de oficina', " +
-                fechaActual + ", " + horaEstimadaEntrega + ")");
+                fechaActual + ", 'ASIGNADO', 1, -12.1194, -77.0286, " +
+                "'Entregar en horario de oficina', " +
+                fechaActual + ", " +
+                horaEstimadaEntrega + ", " +
+                (fechaActual + 30 * 60 * 1000) + ", " +
+                0 + ", " +  // alerta_demora
+                "'Sin demoras', " +  // motivo_demora
+                1 + ")");  // confirmado
 
         // Pedido EN_RUTA
         db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
