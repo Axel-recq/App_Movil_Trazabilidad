@@ -51,9 +51,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Inicializa DB Helper
-        dbHelper = DatabaseHelper.getInstance(this);
-        SQLiteDatabase trazDb = dbHelper.getWritableDatabase();
+        // apertura de BD
+        SQLiteDatabase trazDb = DatabaseHelper
+                .getInstance(this)
+                .getWritableDatabase();
 
         // Inicializa Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);

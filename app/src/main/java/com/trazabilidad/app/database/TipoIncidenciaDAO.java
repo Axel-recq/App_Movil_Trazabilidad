@@ -12,7 +12,7 @@ public class TipoIncidenciaDAO {
     private DatabaseHelper dbHelper;
 
     public TipoIncidenciaDAO(Context context) {
-        dbHelper = new DatabaseHelper(context);
+        dbHelper = DatabaseHelper.getInstance(context);
     }
 
     public List<String> obtenerTiposIncidencias() {

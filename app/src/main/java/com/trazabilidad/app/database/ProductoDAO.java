@@ -16,7 +16,7 @@ public class ProductoDAO {
     private final DatabaseHelper dbHelper;
 
     public ProductoDAO(Context context) {
-        dbHelper = new DatabaseHelper(context);
+        dbHelper = DatabaseHelper.getInstance(context);
     }
     public boolean insertarProducto(Producto producto) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {

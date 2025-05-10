@@ -15,7 +15,7 @@ public class UsuarioDAO {
     private final DatabaseHelper dbHelper;
 
     public UsuarioDAO(Context context) {
-        dbHelper = new DatabaseHelper(context);
+        dbHelper = DatabaseHelper.getInstance(context);
     }
 
     public boolean insertarUsuario(Usuario usuario) {

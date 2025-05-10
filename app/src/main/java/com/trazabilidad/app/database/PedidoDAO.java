@@ -16,7 +16,7 @@ public class PedidoDAO {
     private final DatabaseHelper dbHelper;
 
     public PedidoDAO(Context context) {
-        dbHelper = new DatabaseHelper(context);
+        dbHelper = DatabaseHelper.getInstance(context);
     }
 
     public PedidoDAO(DatabaseHelper dbHelper) {
@@ -124,26 +124,7 @@ public class PedidoDAO {
         }
         return pedidos;
     }
-    public List<Pedido> obtenerPedidosPorEstado(String estado) {
-        List<Pedido> pedidos = new ArrayList<>();
-        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
-             Cursor cursor = db.query(
-                     DatabaseHelper.TABLE_PEDIDOS,
-                     getPedidoColumns(),
-                     DatabaseHelper.COLUMN_PEDIDO_ESTADO + " = ?",
-                     new String[]{estado},
-                     null,
-                     null,
-                     DatabaseHelper.COLUMN_PEDIDO_FECHA + " DESC"
-             )) {
-            while (cursor.moveToNext()) {
-                pedidos.add(cursorToPedido(cursor));
-            }
-        } catch (Exception e) {
-            // Loggear el error o manejarlo según sea necesario
-        }
-        return pedidos;
-    }
+
     private ContentValues getPedidoContentValues(Pedido pedido) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COLUMN_PEDIDO_NUMERO, pedido.getNumero());
