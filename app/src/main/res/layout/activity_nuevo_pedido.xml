@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorBackground">
+    android:background="@color/colorBackground"
+    tools:context=".activities.NuevoPedidoActivity">
 
-    <!-- Toolbar -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        style="@style/App.Toolbar" />
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
-    <!-- Contenido principal -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,7 +32,14 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Número de pedido -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/new_order"
+                android:textAppearance="?attr/textAppearanceHeadline5"
+                android:textColor="@color/colorOnBackground"
+                android:layout_marginBottom="16dp" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilNumero"
                 style="@style/App.TextInputLayout"
@@ -39,9 +53,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text" />
+
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Cliente -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilCliente"
                 style="@style/App.TextInputLayout"
@@ -54,10 +68,10 @@
                     android:id="@+id/etCliente"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:inputType="textPersonName" />
+
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Dirección -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilDireccion"
                 style="@style/App.TextInputLayout"
@@ -70,10 +84,27 @@
                     android:id="@+id/etDireccion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text" />
+                    android:inputType="textPostalAddress" />
+
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Observaciones -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEstado"
+                style="@style/App.TextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:hint="@string/estado_pedido_hint"
+                app:endIconMode="dropdown_menu">
+
+                <AutoCompleteTextView
+                    android:id="@+id/actvEstado"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilObservaciones"
                 style="@style/App.TextInputLayout"
@@ -86,59 +117,61 @@
                     android:id="@+id/etObservaciones"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="top"
                     android:inputType="textMultiLine"
                     android:minLines="3" />
+
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Estado -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilEstado"
-                style="@style/App.TextInputLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:hint="@string/estado_pedido_hint">
-
-                <AutoCompleteTextView
-                    android:id="@+id/actvEstado"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Botones -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="end"
-                android:layout_marginTop="16dp">
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Ubicación"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    android:textColor="@color/colorOnBackground"
+                    android:layout_gravity="center_vertical" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUbicacion"
-                    style="@style/App.Button"
+                    style="@style/App.Button.Outlined"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/obtener_ubicacion" />
+                    android:text="@string/obtener_ubicacion"
+                    app:icon="@drawable/ic_map" />
+
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnRegistrar"
                     style="@style/App.Button"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/registrar_pedido" />
-            </LinearLayout>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:visibility="gone" />
+
+            </FrameLayout>
 
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
 
-    <!-- ProgressBar -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

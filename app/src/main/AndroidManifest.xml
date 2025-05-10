@@ -43,6 +43,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.NuevoPedidoActivity" />
         <activity android:name=".activities.MainActivity" />
         <activity android:name=".activities.ListaPedidosActivity" />
         <activity android:name=".activities.MapaActivity" />
