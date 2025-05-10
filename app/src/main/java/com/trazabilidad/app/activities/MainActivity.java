@@ -3,6 +3,7 @@ package com.trazabilidad.app.activities;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +23,7 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.trazabilidad.app.R;
+import com.trazabilidad.app.adapter.RecentOrdersAdapter;
 import com.trazabilidad.app.database.DatabaseHelper;
 import com.trazabilidad.app.database.IncidenciaDAO;
 import com.trazabilidad.app.database.PedidoDAO;
@@ -51,10 +53,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // apertura de BD
-        SQLiteDatabase trazDb = DatabaseHelper
-                .getInstance(this)
-                .getWritableDatabase();
+        // Inicializa DB Helper
+        dbHelper = DatabaseHelper.getInstance(this);
+        SQLiteDatabase trazDb = dbHelper.getWritableDatabase();
 
         // Inicializa Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -139,8 +140,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void loadRecentOrders() {
         PedidoDAO pedidoDao = new PedidoDAO(dbHelper);
         List<Pedido> recentOrders = pedidoDao.getRecentPedidos(3);
-
-        com.trazabilidad.app.adapter.RecentOrdersAdapter adapter = new com.trazabilidad.app.adapter.RecentOrdersAdapter(this, recentOrders);
+        Log.d("MainActivity", "Pedidos recientes: " + recentOrders.size());
+        RecentOrdersAdapter adapter = new RecentOrdersAdapter(this, recentOrders);
         rvRecentOrders.setAdapter(adapter);
     }
 

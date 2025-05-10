@@ -15,7 +15,13 @@ public class Pedido implements Serializable {
     private double latitud;
     private double longitud;
     private String observaciones;
-
+    // Campos adicionales
+    private long horaSalida;        // Nueva columna
+    private long horaEstimada;      // Nueva columna
+    private long horaEntrega;       // Nueva columna
+    private boolean alertaDemora;   // Nueva columna
+    private String motivoDemora;    // Nueva columna
+    private boolean confirmado;     // Nueva columna
     public Pedido() {
     }
 
@@ -111,6 +117,23 @@ public class Pedido implements Serializable {
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
     }
+    public long getHoraSalida() { return horaSalida; }
+    public void setHoraSalida(long horaSalida) { this.horaSalida = horaSalida; }
+
+    public long getHoraEstimada() { return horaEstimada; }
+    public void setHoraEstimada(long horaEstimada) { this.horaEstimada = horaEstimada; }
+
+    public long getHoraEntrega() { return horaEntrega; }
+    public void setHoraEntrega(long horaEntrega) { this.horaEntrega = horaEntrega; }
+
+    public boolean isAlertaDemora() { return alertaDemora; }
+    public void setAlertaDemora(boolean alertaDemora) { this.alertaDemora = alertaDemora; }
+
+    public String getMotivoDemora() { return motivoDemora; }
+    public void setMotivoDemora(String motivoDemora) { this.motivoDemora = motivoDemora; }
+
+    public boolean isConfirmado() { return confirmado; }
+    public void setConfirmado(boolean confirmado) { this.confirmado = confirmado; }
 
     @Override
     public String toString() {
