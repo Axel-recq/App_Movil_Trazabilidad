@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "com.trazabilidad.app"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -90,6 +90,7 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.gridlayout)
     implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.androidx.scenecore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso.core)
