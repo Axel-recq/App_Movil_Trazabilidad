@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvPendingIncidents = findViewById(R.id.tvPendingIncidents);
         tvResolvedIncidents = findViewById(R.id.tvResolvedIncidents);
         rvRecentOrders = findViewById(R.id.rvRecentOrders);
-        cardNewOrder = findViewById(R.id.cardNewOrder);
         cardReportIncident = findViewById(R.id.cardReportIncident);
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -109,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvBienvenida.setText(getString(R.string.welcome_format, usuarioActual.getNombre()));
 
         // Set click listeners
-        cardNewOrder.setOnClickListener(this);
+
         cardReportIncident.setOnClickListener(this);
         findViewById(R.id.btnViewAllOrders).setOnClickListener(this);
         findViewById(R.id.btnViewAllIncidents).setOnClickListener(this);
@@ -162,10 +161,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.cardNewOrder || id == R.id.fabNewOrder) {
+        if ( id == R.id.fabNewOrder) {
             goToNewOrder();
         } else if (id == R.id.cardReportIncident) {
-            startActivity(new Intent(this, NuevaIncidenciaActivity.class));
+            startActivity(new Intent(this, IncidenciaActivity.class));
         } else if (id == R.id.btnViewAllOrders) {
             startActivity(new Intent(this, ListaPedidosActivity.class));
         } else if (id == R.id.btnViewAllIncidents) {

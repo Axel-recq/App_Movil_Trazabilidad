@@ -9,7 +9,7 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "trazabilidad.db";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
     private static DatabaseHelper sInstance;
 
     // Table and column names
@@ -261,11 +261,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             // Crear tablas principales
             db.execSQL(SQL_CREATE_USUARIOS);
+            db.execSQL(SQL_CREATE_TIPOS_INCIDENCIAS);
             db.execSQL(SQL_CREATE_PEDIDOS);
             db.execSQL(SQL_CREATE_PRODUCTOS);
             db.execSQL(SQL_CREATE_INCIDENCIAS);
             db.execSQL(SQL_CREATE_UBICACIONES);
-            db.execSQL(SQL_CREATE_TIPOS_INCIDENCIAS);
             db.execSQL(SQL_CREATE_DEVOLUCIONES);
             db.execSQL(SQL_CREATE_CALIFICACIONES);
             // Crear índices
@@ -295,52 +295,50 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.beginTransaction();
         try {
             if (oldVersion < 2) {
-                // Mejoras versión 2
                 db.execSQL(SQL_CREATE_TIPOS_INCIDENCIAS);
                 insertarTiposIncidenciasPrueba(db);
             }
-            if (oldVersion < 3) {
-                // Mejoras versión 3
-                db.execSQL(SQL_CREATE_INDEX_PEDIDOS_USUARIO);
-                db.execSQL(SQL_CREATE_INDEX_PRODUCTOS_PEDIDO);
-                db.execSQL(SQL_CREATE_INDEX_INCIDENCIAS_PEDIDO);
-                db.execSQL(SQL_CREATE_INDEX_INCIDENCIAS_USUARIO);
-            }
-            if (oldVersion < 4) {
-                // Mejoras versión 4 - Actualizar tabla de pedidos con nuevos campos
-                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
-                        " ADD COLUMN " + COLUMN_PEDIDO_HORA_SALIDA + " INTEGER");
-                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
-                        " ADD COLUMN " + COLUMN_PEDIDO_HORA_ESTIMADA + " INTEGER");
-                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
-                        " ADD COLUMN " + COLUMN_PEDIDO_HORA_ENTREGA + " INTEGER");
-                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
-                        " ADD COLUMN " + COLUMN_PEDIDO_ALERTA_DEMORA + " INTEGER DEFAULT 0");
-                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
-                        " ADD COLUMN " + COLUMN_PEDIDO_MOTIVO_DEMORA + " TEXT");
-                db.execSQL("ALTER TABLE " + TABLE_PEDIDOS +
-                        " ADD COLUMN " + COLUMN_PEDIDO_CONFIRMADO + " INTEGER DEFAULT 0");
 
-                // Crear nuevas tablas
-                db.execSQL(SQL_CREATE_DEVOLUCIONES);
-                db.execSQL(SQL_CREATE_CALIFICACIONES);
+            if (oldVersion < 3) {
+                crearIndicesV3(db);
+            }
+
+            if (oldVersion < 4) {
+                // Agregar columnas de forma segura
+                agregarColumnaSiNoExiste(db, TABLE_PEDIDOS, COLUMN_PEDIDO_HORA_SALIDA, "INTEGER");
+                agregarColumnaSiNoExiste(db, TABLE_PEDIDOS, COLUMN_PEDIDO_HORA_ESTIMADA, "INTEGER");
+                agregarColumnaSiNoExiste(db, TABLE_PEDIDOS, COLUMN_PEDIDO_HORA_ENTREGA, "INTEGER");
+                agregarColumnaSiNoExiste(db, TABLE_PEDIDOS, COLUMN_PEDIDO_ALERTA_DEMORA, "INTEGER DEFAULT 0");
+                agregarColumnaSiNoExiste(db, TABLE_PEDIDOS, COLUMN_PEDIDO_MOTIVO_DEMORA, "TEXT");
+                agregarColumnaSiNoExiste(db, TABLE_PEDIDOS, COLUMN_PEDIDO_CONFIRMADO, "INTEGER DEFAULT 0");
+
+                // Crear nuevas tablas si no existen
+                try {
+                    db.execSQL(SQL_CREATE_DEVOLUCIONES);
+                    db.execSQL(SQL_CREATE_CALIFICACIONES);
+                } catch (Exception e) {
+                    Log.w(TAG, "Tablas ya existen", e);
+                }
 
                 // Crear nuevos índices
-                db.execSQL(SQL_CREATE_INDEX_UBICACIONES_PEDIDO);
-                db.execSQL(SQL_CREATE_INDEX_UBICACIONES_USUARIO);
-                db.execSQL(SQL_CREATE_INDEX_DEVOLUCIONES_PEDIDO);
-                db.execSQL(SQL_CREATE_INDEX_CALIFICACIONES_PEDIDO);
+                crearIndicesV4(db);
 
-                // Crear vista para reportes
+                // Crear vista
                 db.execSQL(SQL_CREATE_VIEW_REPORTES);
             }
+
             if (oldVersion < 5) {
-                // Mejoras versión 5 - Agregar columna estado a incidencias
-                db.execSQL("ALTER TABLE " + TABLE_INCIDENCIAS +
-                        " ADD COLUMN " + COLUMN_INCIDENCIA_ESTADO +
-                        " TEXT NOT NULL DEFAULT '" + IncidenciaDAO.ESTADO_PENDIENTE + "'");
-            }if (oldVersion < 6) {
-                // Eliminar tablas existentes
+                try {
+                    db.execSQL("ALTER TABLE " + TABLE_INCIDENCIAS +
+                            " ADD COLUMN " + COLUMN_INCIDENCIA_ESTADO +
+                            " TEXT NOT NULL DEFAULT '" + IncidenciaDAO.ESTADO_PENDIENTE + "'");
+                } catch (Exception e) {
+                    Log.w(TAG, "Columna estado ya existe", e);
+                }
+            }
+
+            if (oldVersion < 6) {
+                // Eliminar tablas en orden correcto (hijos antes que padres)
                 db.execSQL(SQL_DELETE_CALIFICACIONES);
                 db.execSQL(SQL_DELETE_DEVOLUCIONES);
                 db.execSQL(SQL_DELETE_UBICACIONES);
@@ -349,27 +347,53 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.execSQL(SQL_DELETE_PEDIDOS);
                 db.execSQL(SQL_DELETE_TIPOS_INCIDENCIAS);
                 db.execSQL(SQL_DELETE_USUARIOS);
-                // Recrear la base de datos
+
+                // Recrear desde cero
                 onCreate(db);
             }
+
             db.setTransactionSuccessful();
         } catch (Exception e) {
             Log.e(TAG, "Error upgrading database", e);
-            // Consider adding user notification here
         } finally {
             db.endTransaction();
         }
     }
 
-    @Override
-    public void onConfigure(SQLiteDatabase db) {
-        super.onConfigure(db);
-        db.setForeignKeyConstraintsEnabled(true);
+    private void agregarColumnaSiNoExiste(SQLiteDatabase db, String tabla, String columna, String tipo) {
+        try {
+            db.execSQL("ALTER TABLE " + tabla + " ADD COLUMN " + columna + " " + tipo);
+        } catch (Exception e) {
+            Log.w(TAG, "Columna " + columna + " ya existe en " + tabla, e);
+        }
     }
+
+    private void crearIndicesV3(SQLiteDatabase db) {
+        try {
+            db.execSQL(SQL_CREATE_INDEX_PEDIDOS_USUARIO);
+            db.execSQL(SQL_CREATE_INDEX_PRODUCTOS_PEDIDO);
+            db.execSQL(SQL_CREATE_INDEX_INCIDENCIAS_PEDIDO);
+            db.execSQL(SQL_CREATE_INDEX_INCIDENCIAS_USUARIO);
+        } catch (Exception e) {
+            Log.w(TAG, "Índices V3 ya existen", e);
+        }
+    }
+
+    private void crearIndicesV4(SQLiteDatabase db) {
+        try {
+            db.execSQL(SQL_CREATE_INDEX_UBICACIONES_PEDIDO);
+            db.execSQL(SQL_CREATE_INDEX_UBICACIONES_USUARIO);
+            db.execSQL(SQL_CREATE_INDEX_DEVOLUCIONES_PEDIDO);
+            db.execSQL(SQL_CREATE_INDEX_CALIFICACIONES_PEDIDO);
+        } catch (Exception e) {
+            Log.w(TAG, "Índices V4 ya existen", e);
+        }
+    }
+
 
     private void insertarDatosPrueba(SQLiteDatabase db) {
         // Insertar usuario de prueba
-        db.execSQL("INSERT INTO " + TABLE_USUARIOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +
                 COLUMN_USUARIO_PASSWORD + ", " +
@@ -378,7 +402,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USUARIO_ACTIVO + ") " +
                 "VALUES ('Juan Pérez', 'juan.perez@example.pe', 'juan123', 'REPARTIDOR', '999-123-456', 1)");
 
-        db.execSQL("INSERT INTO " + TABLE_USUARIOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +
                 COLUMN_USUARIO_PASSWORD + ", " +
@@ -387,7 +411,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USUARIO_ACTIVO + ") " +
                 "VALUES ('Admin Perú', 'admin@example.pe', 'admin123', 'ADMINISTRADOR', '999-987-654', 1)");
 
-        db.execSQL("INSERT INTO " + TABLE_USUARIOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +
                 COLUMN_USUARIO_PASSWORD + ", " +
@@ -396,7 +420,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USUARIO_ACTIVO + ") " +
                 "VALUES ('María López', 'maria.lopez@example.pe', 'maria123', 'REPARTIDOR', '999-222-333', 1)");
 
-        db.execSQL("INSERT INTO " + TABLE_USUARIOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +
                 COLUMN_USUARIO_PASSWORD + ", " +
@@ -413,7 +437,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long horaEstimadaEntrega = fechaActual + (2 * 60 * 60 * 1000); // 2 horas después
 
         // Pedido ASIGNADO
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS + " (" +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDOS + " (" +
                 COLUMN_PEDIDO_NUMERO + ", " +
                 COLUMN_PEDIDO_CLIENTE + ", " +
                 COLUMN_PEDIDO_DIRECCION + ", " +
@@ -440,7 +464,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 1 + ")");  // confirmado
 
         // Pedido EN_RUTA
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDOS +
                 " (" + COLUMN_PEDIDO_NUMERO + ", " +
                 COLUMN_PEDIDO_CLIENTE + ", " +
                 COLUMN_PEDIDO_DIRECCION + ", " +
@@ -461,7 +485,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long horaSalidaAnterior = fechaPedidoAnterior + (30 * 60 * 1000); // 30 minutos después del pedido
         long horaEntregaAnterior = horaSalidaAnterior + (90 * 60 * 1000); // 1.5 horas después de la salida
 
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDOS +
                 " (" + COLUMN_PEDIDO_NUMERO + ", " +
                 COLUMN_PEDIDO_CLIENTE + ", " +
                 COLUMN_PEDIDO_DIRECCION + ", " +
@@ -481,7 +505,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 horaEntregaAnterior + ", 1)");
 
         // Pedido PENDIENTE
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDOS +
                 " (" + COLUMN_PEDIDO_NUMERO + ", " +
                 COLUMN_PEDIDO_CLIENTE + ", " +
                 COLUMN_PEDIDO_DIRECCION + ", " +
@@ -495,7 +519,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 fechaActual + ", 'PENDIENTE', NULL, -12.0856, -77.0306, 'Pendiente de asignación')");
 
         // Pedido EN_PREPARACION
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDOS +
                 " (" + COLUMN_PEDIDO_NUMERO + ", " +
                 COLUMN_PEDIDO_CLIENTE + ", " +
                 COLUMN_PEDIDO_DIRECCION + ", " +
@@ -509,7 +533,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 fechaActual + ", 'EN_PREPARACION', 1, -12.0972, -77.0272, 'Preparando en almacén')");
 
         // Pedido CANCELADO
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDOS +
                 " (" + COLUMN_PEDIDO_NUMERO + ", " +
                 COLUMN_PEDIDO_CLIENTE + ", " +
                 COLUMN_PEDIDO_DIRECCION + ", " +
@@ -523,7 +547,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 fechaActual + ", 'CANCELADO', 3, -12.0756, -77.0833, 'Cancelado por el cliente')");
 
         // Insertar productos para los pedidos (precios en soles peruanos)
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                 " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                 COLUMN_PRODUCTO_NOMBRE + ", " +
                 COLUMN_PRODUCTO_DESCRIPCION + ", " +
@@ -532,7 +556,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PRODUCTO_PEDIDO_ID + ") " +
                 "VALUES ('PROD-001', 'Chompa de Alpaca', 'Chompa tejida a mano', 150.00, 2, 1)");
 
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                 " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                 COLUMN_PRODUCTO_NOMBRE + ", " +
                 COLUMN_PRODUCTO_DESCRIPCION + ", " +
@@ -541,7 +565,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PRODUCTO_PEDIDO_ID + ") " +
                 "VALUES ('PROD-002', 'Poncho Tradicional', 'Poncho de lana', 120.50, 1, 1)");
 
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                 " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                 COLUMN_PRODUCTO_NOMBRE + ", " +
                 COLUMN_PRODUCTO_DESCRIPCION + ", " +
@@ -550,7 +574,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PRODUCTO_PEDIDO_ID + ") " +
                 "VALUES ('PROD-003', 'Sombrero de Paja', 'Sombrero típico', 50.00, 3, 2)");
 
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                 " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                 COLUMN_PRODUCTO_NOMBRE + ", " +
                 COLUMN_PRODUCTO_DESCRIPCION + ", " +
@@ -559,7 +583,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PRODUCTO_PEDIDO_ID + ") " +
                 "VALUES ('PROD-004', 'Chalina de Alpaca', 'Chalina tejida', 80.00, 1, 4)");
 
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                 " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                 COLUMN_PRODUCTO_NOMBRE + ", " +
                 COLUMN_PRODUCTO_DESCRIPCION + ", " +
@@ -568,7 +592,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PRODUCTO_PEDIDO_ID + ") " +
                 "VALUES ('PROD-005', 'Bufanda de Lana', 'Bufanda abrigadora', 60.00, 2, 5)");
 
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                 " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                 COLUMN_PRODUCTO_NOMBRE + ", " +
                 COLUMN_PRODUCTO_DESCRIPCION + ", " +
@@ -579,7 +603,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
         // Insertar incidencias
-        db.execSQL("INSERT INTO " + TABLE_INCIDENCIAS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_INCIDENCIAS +
                 " (" + COLUMN_INCIDENCIA_TIPO + ", " +
                 COLUMN_INCIDENCIA_DESCRIPCION + ", " +
                 COLUMN_INCIDENCIA_FECHA + ", " +
@@ -588,7 +612,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "VALUES ('Retraso', 'Tráfico en Jr. de la Unión', " +
                 fechaActual + ", 1, 2)");
 
-        db.execSQL("INSERT INTO " + TABLE_INCIDENCIAS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_INCIDENCIAS +
                 " (" + COLUMN_INCIDENCIA_TIPO + ", " +
                 COLUMN_INCIDENCIA_DESCRIPCION + ", " +
                 COLUMN_INCIDENCIA_FECHA + ", " +
@@ -598,7 +622,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 (fechaActual - (2 * 24 * 60 * 60 * 1000)) + ", 1, 3)");
 
         // Insertar ubicaciones para PED-002 (en ruta)
-        db.execSQL("INSERT INTO " + TABLE_UBICACIONES +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_UBICACIONES +
                 " (" + COLUMN_UBICACION_LATITUD + ", " +
                 COLUMN_UBICACION_LONGITUD + ", " +
                 COLUMN_UBICACION_FECHA + ", " +
@@ -606,7 +630,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_UBICACION_PEDIDO_ID + ") " +
                 "VALUES (-12.0460, -77.0420, " + (fechaActual - (20 * 60 * 1000)) + ", 1, 2)");
 
-        db.execSQL("INSERT INTO " + TABLE_UBICACIONES +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_UBICACIONES +
                 " (" + COLUMN_UBICACION_LATITUD + ", " +
                 COLUMN_UBICACION_LONGITUD + ", " +
                 COLUMN_UBICACION_FECHA + ", " +
@@ -614,7 +638,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_UBICACION_PEDIDO_ID + ") " +
                 "VALUES (-12.0462, -77.0425, " + (fechaActual - (10 * 60 * 1000)) + ", 1, 2)");
 
-        db.execSQL("INSERT INTO " + TABLE_UBICACIONES +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_UBICACIONES +
                 " (" + COLUMN_UBICACION_LATITUD + ", " +
                 COLUMN_UBICACION_LONGITUD + ", " +
                 COLUMN_UBICACION_FECHA + ", " +
@@ -623,7 +647,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "VALUES (-12.0464, -77.0428, " + fechaActual + ", 1, 2)");
 
         // Insertar devolución para PED-003
-        db.execSQL("INSERT INTO " + TABLE_DEVOLUCIONES +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_DEVOLUCIONES +
                 " (" + COLUMN_DEVOLUCION_PEDIDO_ID + ", " +
                 COLUMN_DEVOLUCION_PRODUCTO_ID + ", " +
                 COLUMN_DEVOLUCION_CANTIDAD + ", " +
@@ -634,7 +658,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 (fechaActual - (1 * 24 * 60 * 60 * 1000)) + ", 1)");
 
         // Insertar calificación para PED-003
-        db.execSQL("INSERT INTO " + TABLE_CALIFICACIONES +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_CALIFICACIONES +
                 " (" + COLUMN_CALIFICACION_PEDIDO_ID + ", " +
                 COLUMN_CALIFICACION_VALOR + ", " +
                 COLUMN_CALIFICACION_COMENTARIO + ", " +
@@ -644,7 +668,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // Insertar otro pedido ENTREGADO para calificación
         long fechaAnterior = fechaActual - (3 * 24 * 60 * 60 * 1000);
-        db.execSQL("INSERT INTO " + TABLE_PEDIDOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDOS +
                 " (" + COLUMN_PEDIDO_NUMERO + ", " +
                 COLUMN_PEDIDO_CLIENTE + ", " +
                 COLUMN_PEDIDO_DIRECCION + ", " +
@@ -665,7 +689,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 (fechaAnterior + (120 * 60 * 1000)) + ", 1)");
 
         // Producto para PED-007
-        db.execSQL("INSERT INTO " + TABLE_PRODUCTOS +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                 " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                 COLUMN_PRODUCTO_NOMBRE + ", " +
                 COLUMN_PRODUCTO_DESCRIPCION + ", " +
@@ -675,7 +699,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "VALUES ('PROD-007', 'Chullo Peruano', 'Gorro tradicional', 30.00, 1, 7)");
 
         // Calificación para PED-007
-        db.execSQL("INSERT INTO " + TABLE_CALIFICACIONES +
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_CALIFICACIONES +
                 " (" + COLUMN_CALIFICACION_PEDIDO_ID + ", " +
                 COLUMN_CALIFICACION_VALOR + ", " +
                 COLUMN_CALIFICACION_COMENTARIO + ", " +
@@ -685,8 +709,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void insertarTiposIncidenciasPrueba(SQLiteDatabase db) {
-        db.execSQL("INSERT INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Retraso')");
-        db.execSQL("INSERT INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Producto dañado')");
-        db.execSQL("INSERT INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Dirección incorrecta')");
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Retraso')");
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Producto dañado')");
+        db.execSQL("INSERT OR IGNORE INTO " + TABLE_TIPOS_INCIDENCIAS + " (" + COLUMN_TIPO_NOMBRE + ") VALUES ('Dirección incorrecta')");
+    }
+
+    @Override
+    public void onConfigure(SQLiteDatabase db) {
+        super.onConfigure(db);
+        db.setForeignKeyConstraintsEnabled(true);
     }
 }
