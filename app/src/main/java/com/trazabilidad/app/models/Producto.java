@@ -25,60 +25,27 @@ public class Producto implements Serializable {
         this.pedidoId = pedidoId;
     }
 
-    public int getId() {
-        return id;
-    }
+    // Getters y Setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public double getPrecio() { return precio; }
+    public void setPrecio(double precio) { this.precio = precio; }
+    public int getCantidad() { return cantidad; }
+    public void setCantidad(int cantidad) { this.cantidad = cantidad; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public int getPedidoId() { return pedidoId; }
 
-    public String getCodigo() {
-        return codigo;
-    }
+    public void setPedidoId(int pedidoId) { this.pedidoId = pedidoId; }
 
-    public void setCodigo(String codigo) {
-        this.codigo = codigo;
-    }
 
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public double getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(double precio) {
-        this.precio = precio;
-    }
-
-    public int getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
-    }
-
-    public int getPedidoId() {
-        return pedidoId;
-    }
-
-    public void setPedidoId(int pedidoId) {
-        this.pedidoId = pedidoId;
+    public double calcularSubtotal() {
+        return precio * cantidad;
     }
 
     @Override

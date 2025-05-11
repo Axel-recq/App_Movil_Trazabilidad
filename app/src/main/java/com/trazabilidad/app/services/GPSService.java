@@ -22,6 +22,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.activities.MainActivity;
+import com.trazabilidad.app.database.UbicacionDAO;
 import com.trazabilidad.app.models.Ubicacion;
 import com.trazabilidad.app.utils.SessionManager;
 
@@ -79,6 +80,7 @@ public class GPSService extends Service implements LocationListener {
     private void startLocationUpdates() {
         // Verificar permisos
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            stopSelf();
             return;
         }
 
@@ -113,6 +115,9 @@ public class GPSService extends Service implements LocationListener {
         // Aquí se guardaría la ubicación en la base de datos local
         // Y opcionalmente se enviaría al servidor
 
+        UbicacionDAO ubicacionDAO = new UbicacionDAO(this);
+        ubicacionDAO.insertarUbicacion(ubicacion);
+
         // Actualizar notificación
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(NOTIFICATION_ID, createNotification());
@@ -128,6 +133,8 @@ public class GPSService extends Service implements LocationListener {
 
     @Override
     public void onProviderDisabled(String provider) {
+        stopSelf();
+        // Opcional: Mostrar notificación
     }
 
     private void createNotificationChannel() {
