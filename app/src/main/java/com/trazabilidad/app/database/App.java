@@ -1,17 +1,18 @@
 package com.trazabilidad.app.database;
 import android.app.Application;
 import android.database.sqlite.SQLiteDatabase;
-
+import android.util.Log;
 
 public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        // Abre trazabilidad.db para que el Database Inspector la detecte como "open"
-        SQLiteDatabase trazDb = DatabaseHelper
-                .getInstance(this)
-                .getWritableDatabase();
+        try {
+            SQLiteDatabase trazDb = DatabaseHelper.getInstance(this).getWritableDatabase();
+            Log.d("App", "Base de datos abierta correctamente");
+        } catch (Exception e) {
+            Log.e("App", "Error al abrir la base de datos", e);
+        }
 
     }
 }
