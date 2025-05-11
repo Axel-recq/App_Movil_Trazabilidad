@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.trazabilidad.app.database.IncidenciaDAO;
 import com.trazabilidad.app.database.PedidoDAO;
+import com.trazabilidad.app.database.ReporteDAO;
 import com.trazabilidad.app.models.Incidencia;
 import com.trazabilidad.app.models.Pedido;
 
@@ -13,34 +14,46 @@ import java.util.Map;
 
 public class ReporteController {
 
-    private PedidoDAO pedidoDAO;
-    private IncidenciaDAO incidenciaDAO;
+    private final PedidoDAO pedidoDAO;
+    private final IncidenciaDAO incidenciaDAO;
+    private final ReporteDAO reporteDAO;
 
     public ReporteController(Context context) {
         pedidoDAO = new PedidoDAO(context);
         incidenciaDAO = new IncidenciaDAO(context);
+        reporteDAO = new ReporteDAO(context);
     }
 
     public void generarReporte(String tipoReporte, int usuarioId, ReporteCallback callback) {
         try {
-            Map<String, Integer> resultados = new HashMap<>();
-
             switch (tipoReporte) {
                 case "Pedidos por Estado":
-                    resultados = generarReportePedidosPorEstado(usuarioId);
+                    Map<String, Integer> resultadosEstado = generarReportePedidosPorEstado(usuarioId);
+                    callback.onSuccess(resultadosEstado);
                     break;
                 case "Incidencias por Tipo":
-                    resultados = generarReporteIncidenciasPorTipo(usuarioId);
+                    Map<String, Integer> resultadosIncidencias = generarReporteIncidenciasPorTipo(usuarioId);
+                    callback.onSuccess(resultadosIncidencias);
                     break;
                 case "Resumen de Entregas":
-                    resultados = generarReporteResumenEntregas(usuarioId);
+                    Map<String, Integer> resultadosResumen = generarReporteResumenEntregas(usuarioId);
+                    callback.onSuccess(resultadosResumen);
+                    break;
+                case "Tiempo Promedio de Entrega":
+                    Map<String, Double> resultadosTiempo = generarReporteTiempoPromedioEntrega();
+                    callback.onSuccessDouble(resultadosTiempo);
+                    break;
+                case "Ratio de Entregas por Hora":
+                    Map<String, Double> resultadosRatio = generarReporteRatioEntregasPorHora();
+                    callback.onSuccessDouble(resultadosRatio);
+                    break;
+                case "Porcentaje de Entregas Exitosas":
+                    Map<String, Double> resultadosPorcentaje = generarReportePorcentajeEntregasExitosas();
+                    callback.onSuccessDouble(resultadosPorcentaje);
                     break;
                 default:
                     callback.onError("Tipo de reporte no soportado");
-                    return;
             }
-
-            callback.onSuccess(resultados);
         } catch (Exception e) {
             callback.onError("Error al generar reporte: " + e.getMessage());
         }
@@ -122,8 +135,30 @@ public class ReporteController {
         return resultados;
     }
 
+    private Map<String, Double> generarReporteTiempoPromedioEntrega() {
+        Map<String, Double> resultados = new HashMap<>();
+        double tiempoPromedio = reporteDAO.obtenerTiempoPromedioEntrega();
+        resultados.put("Tiempo Promedio de Entrega (minutos)", tiempoPromedio);
+        return resultados;
+    }
+
+    private Map<String, Double> generarReporteRatioEntregasPorHora() {
+        Map<String, Double> resultados = new HashMap<>();
+        double ratio = reporteDAO.obtenerRatioEntregasPorHora();
+        resultados.put("Ratio de Entregas por Hora", ratio);
+        return resultados;
+    }
+
+    private Map<String, Double> generarReportePorcentajeEntregasExitosas() {
+        Map<String, Double> resultados = new HashMap<>();
+        double porcentaje = reporteDAO.obtenerPorcentajeEntregasExitosas();
+        resultados.put("Porcentaje de Entregas Exitosas (%)", porcentaje);
+        return resultados;
+    }
+
     public interface ReporteCallback {
         void onSuccess(Map<String, Integer> resultados);
+        void onSuccessDouble(Map<String, Double> resultados);
         void onError(String message);
     }
 }
