@@ -1,105 +1,149 @@
 package com.trazabilidad.app.adapter;
 
 import android.content.Context;
-import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.models.Pedido;
 
 import java.util.List;
 
-public class PedidoAdapter extends ArrayAdapter<Pedido> {
+public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoViewHolder> {
 
-    private Context context;
-    private List<Pedido> pedidos;
-
-    public PedidoAdapter(Context context, List<Pedido> pedidos) {
-        super(context, R.layout.item_pedido, pedidos);
-        this.context = context;
-        this.pedidos = pedidos;
+    public interface OnPedidoClickListener {
+        void onPedidoClick(int pedidoId);
     }
 
-    static class ViewHolder {
-        TextView tvNumeroPedido;
-        TextView tvCliente;
-        TextView tvEstado;
-        View viewStatusIndicator;
+    private final Context context;
+    private final List<Pedido> pedidosList;
+    private final OnPedidoClickListener clickListener;
+
+    public PedidoAdapter(Context context, List<Pedido> pedidosList, OnPedidoClickListener clickListener) {
+        this.context = context;
+        this.pedidosList = pedidosList;
+        this.clickListener = clickListener;
+    }
+
+    @NonNull
+    @Override
+    public PedidoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_pedido, parent, false);
+        return new PedidoViewHolder(itemView);
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
-        if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.item_pedido, parent, false);
-            holder = new ViewHolder();
-            holder.tvNumeroPedido = convertView.findViewById(R.id.tvNumeroPedido);
-            holder.tvCliente = convertView.findViewById(R.id.tvCliente);
-            holder.tvEstado = convertView.findViewById(R.id.tvEstado);
-            holder.viewStatusIndicator = convertView.findViewById(R.id.viewStatusIndicator);
-            convertView.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
-        }
-
-        Pedido pedido = pedidos.get(position);
-        holder.tvNumeroPedido.setText(context.getString(R.string.pedido_numero, pedido.getNumero()));
-        holder.tvCliente.setText(context.getString(R.string.cliente, pedido.getCliente()));
-        holder.tvEstado.setText(context.getString(R.string.estado, pedido.getEstado()));
-
-        // Ajustar colores según el estado del pedido
-        setColorSegunEstado(pedido.getEstado(), holder);
-
-        return convertView;
+    public void onBindViewHolder(@NonNull PedidoViewHolder holder, int position) {
+        Pedido pedido = pedidosList.get(position);
+        holder.bind(pedido);
     }
 
-    private void setColorSegunEstado(String estado, ViewHolder holder) {
-        int colorIndicador;  // Color del indicador de estado
-        int colorFondo;      // Color del fondo del TextView
-        int colorTexto;      // Color del texto del estado
+    @Override
+    public int getItemCount() {
+        return pedidosList.size();
+    }
 
-        switch (estado.toLowerCase()) {
-            case "entregado":
-                colorIndicador = R.color.success;      // #4CAF50 (verde)
-                colorFondo = R.color.custom_50;        // #FEFEFF (blanco claro)
-                colorTexto = R.color.success;          // #4CAF50 (verde)
-                break;
-            case "en camino":
-                colorIndicador = R.color.info;         // #2196F3 (azul)
-                colorFondo = R.color.custom_100;       // #D8D0E7 (acento claro)
-                colorTexto = R.color.info;             // #2196F3 (azul)
-                break;
-            case "pendiente":
-                colorIndicador = R.color.warning;      // #FFC107 (amarillo)
-                colorFondo = R.color.custom_50;        // #FEFEFF (blanco claro)
-                colorTexto = R.color.warning;          // #FFC107 (amarillo)
-                break;
-            case "incidencia":
-                colorIndicador = R.color.error;        // #F44336 (rojo)
-                colorFondo = R.color.custom_50;        // #FEFEFF (blanco claro)
-                colorTexto = R.color.error;            // #F44336 (rojo)
-                break;
-            default:
-                colorIndicador = R.color.colorPrimary; // #312A94 (principal oscuro)
-                colorFondo = R.color.custom_50;        // #FEFEFF (blanco claro)
-                colorTexto = R.color.colorPrimary;     // #312A94 (principal oscuro)
-                break;
+    public class PedidoViewHolder extends RecyclerView.ViewHolder {
+        private final TextView tvPedidoNumero;
+        private final TextView tvCliente;
+        private final TextView tvDireccion;
+        private final TextView tvFecha;
+        private final Chip chipEstado;
+        private final View viewStatusIndicator;
+        private final MaterialButton btnVerMapa;
+        private final MaterialButton btnEntregado;
+
+        public PedidoViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvPedidoNumero = itemView.findViewById(R.id.tvPedidoNumero);
+            tvCliente = itemView.findViewById(R.id.tvCliente);
+            tvDireccion = itemView.findViewById(R.id.tvDireccion);
+            tvFecha = itemView.findViewById(R.id.tvFecha);
+            chipEstado = itemView.findViewById(R.id.chipEstado);
+            viewStatusIndicator = itemView.findViewById(R.id.viewStatusIndicator);
+            btnVerMapa = itemView.findViewById(R.id.btnVerMapa);
+            btnEntregado = itemView.findViewById(R.id.btnEntregado);
+
+            // Configuramos el click listener para todo el item
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && clickListener != null) {
+                    clickListener.onPedidoClick(pedidosList.get(position).getId());
+                }
+            });
+
+            // Click listeners para los botones de acción
+            configurarBotones();
         }
-        // Aplicar colores al indicador de estado
-        holder.viewStatusIndicator.setBackgroundColor(ContextCompat.getColor(context, colorIndicador));
 
-        // Aplicar colores al fondo del TextView de estado
-        GradientDrawable estadoBackground = (GradientDrawable) holder.tvEstado.getBackground();
-        estadoBackground.setColor(ContextCompat.getColor(context, colorFondo));
-        estadoBackground.setStroke(1, ContextCompat.getColor(context, colorIndicador));
+        private void configurarBotones() {
+            btnVerMapa.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    // Implementar navegación al mapa
+                    // Por ejemplo: abrirMapa(pedidosList.get(position));
+                }
+            });
 
-        // Aplicar color al texto de estado
-        holder.tvEstado.setTextColor(ContextCompat.getColor(context, colorTexto));
+            btnEntregado.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    // Implementar marcado como entregado
+                    // Por ejemplo: marcarComoEntregado(pedidosList.get(position).getId());
+                }
+            });
+        }
+
+        public void bind(Pedido pedido) {
+            tvPedidoNumero.setText(context.getString(R.string.pedido_numero, String.valueOf(pedido.getId())));
+            tvCliente.setText(context.getString(R.string.cliente, pedido.getCliente()));
+            tvDireccion.setText(context.getString(R.string.direccion, pedido.getDireccion()));
+            tvFecha.setText(context.getString(R.string.fecha, pedido.getFecha()));
+
+            // Configuramos el chip de estado y el indicador visual
+            configurarEstado(pedido.getEstado());
+        }
+
+        private void configurarEstado(String estado) {
+            int colorEstado;
+
+            // Ajustamos color y visibilidad según el estado
+            switch (estado.toLowerCase()) {
+                case "pendiente":
+                    colorEstado = R.color.status_pending;
+                    break;
+                case "entregando":
+                case "en camino":
+                    colorEstado = R.color.status_delivering;
+                    break;
+                case "entregado":
+                    colorEstado = R.color.status_delivered;
+                    btnEntregado.setVisibility(View.GONE);
+                    break;
+                case "cancelado":
+                    colorEstado = R.color.status_canceled;
+                    btnEntregado.setVisibility(View.GONE);
+                    break;
+                case "incidencia":
+                    colorEstado = R.color.status_incident;
+                    break;
+                default:
+                    colorEstado = R.color.gray_500;
+                    break;
+            }
+
+            chipEstado.setText(estado);
+            chipEstado.setChipBackgroundColorResource(colorEstado);
+            viewStatusIndicator.setBackgroundColor(ContextCompat.getColor(context, colorEstado));
+        }
     }
 }

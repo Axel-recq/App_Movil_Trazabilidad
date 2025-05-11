@@ -31,11 +31,10 @@ public class DetallePedidoActivity extends AppCompatActivity {
 
     private static final String TAG = "DetallePedidoActivity";
     private TextView tvNumeroPedido, tvCliente, tvDireccion, tvFecha;
-    private Chip chipEstado;
+    private Chip chipEstado,chipProductCount;
     private RecyclerView recyclerProductos;
     private Button btnVerMapa, btnEntregado, btnIncidencia;
     private ProgressBar progressBar;
-
     private PedidoController pedidoController;
     private int pedidoId = -1;
     private Pedido pedidoActual;
@@ -84,6 +83,7 @@ public class DetallePedidoActivity extends AppCompatActivity {
         tvDireccion = findViewById(R.id.tvDireccion);
         tvFecha = findViewById(R.id.tvFecha);
         chipEstado = findViewById(R.id.chipEstado);
+        chipProductCount = findViewById(R.id.chipProductCount);
         recyclerProductos = findViewById(R.id.recyclerProductos);
         recyclerProductos.setLayoutManager(new LinearLayoutManager(this));
         btnVerMapa = findViewById(R.id.btnVerMapa);
@@ -156,7 +156,8 @@ public class DetallePedidoActivity extends AppCompatActivity {
 
             // Actualizar el chip de estado
             chipEstado.setText(pedido.getEstado());
-
+            int cantidadProductos = productos.size();
+            chipProductCount.setText(String.valueOf(cantidadProductos));
             // Configurar color del chip según el estado
             configurarChipEstado(pedido.getEstado());
 

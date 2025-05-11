@@ -2,71 +2,178 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="4dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    app:cardUseCompatPadding="true"
-    app:contentPadding="0dp"
-    android:clickable="false"
-    android:focusable="false"
-    app:rippleColor="@color/colorPrimary"
-    app:cardBackgroundColor="@color/colorSurface">
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Barra lateral indicadora de estado -->
+        <!-- Status indicator -->
         <View
             android:id="@+id/viewStatusIndicator"
             android:layout_width="8dp"
             android:layout_height="0dp"
-            android:background="@color/colorPrimary"
-            app:layout_constraintTop_toTopOf="parent"
+            android:background="@color/status_delivering"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/viewStatusIndicator"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toTopOf="parent">
 
-            <TextView
-                android:id="@+id/tvNumeroPedido"
-                android:layout_width="wrap_content"
+            <!-- Top Row: Pedido ID + Status -->
+            <LinearLayout
+                android:id="@+id/layoutTopRow"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/pedido_numero"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                android:textColor="@color/colorPrimary"
-                android:layout_marginBottom="4dp" />
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
+                <TextView
+                    android:id="@+id/tvPedidoNumero"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="@style/TextAppearance.App.Subtitle1"
+                    android:textColor="@color/colorOnBackground"
+                    android:textStyle="bold"
+                    tools:text="Pedido: #12345" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipEstado"
+                    style="@style/Widget.MaterialComponents.Chip.Action"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.App.Caption"
+                    android:textColor="@color/colorOnPrimary"
+                    app:chipBackgroundColor="@color/status_delivering"
+                    app:chipIconEnabled="false"
+                    app:chipMinHeight="24dp"
+                    app:ensureMinTouchTargetSize="false"
+                    tools:text="En entrega" />
+            </LinearLayout>
+
+            <!-- Cliente -->
             <TextView
                 android:id="@+id/tvCliente"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/cliente"
-                android:textAppearance="?attr/textAppearanceBody1"
-                android:layout_marginBottom="4dp" />
+                android:layout_marginTop="8dp"
+                android:drawablePadding="8dp"
+                android:textAppearance="@style/TextAppearance.App.Body2"
+                android:textColor="@color/colorOnBackground"
+                app:drawableStartCompat="@drawable/ic_person"
+                app:drawableTint="@color/gray_600"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/layoutTopRow"
+                tools:text="Cliente: Juan Pérez" />
 
+            <!-- Dirección -->
             <TextView
-                android:id="@+id/tvEstado"
-                android:layout_width="wrap_content"
+                android:id="@+id/tvDireccion"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/estado"
-                android:textAppearance="?attr/textAppearanceBody2"
-                android:textStyle="bold"
-                android:background="@drawable/estado_background"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp" />
-        </LinearLayout>
+                android:layout_marginTop="4dp"
+                android:drawablePadding="8dp"
+                android:textAppearance="@style/TextAppearance.App.Body2"
+                android:textColor="@color/gray_700"
+                app:drawableStartCompat="@drawable/ic_map"
+                app:drawableTint="@color/gray_600"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvCliente"
+                tools:text="Dirección: Calle Principal #123, Ciudad" />
 
+            <!-- Fecha -->
+            <TextView
+                android:id="@+id/tvFecha"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:drawablePadding="8dp"
+                android:textAppearance="@style/TextAppearance.App.Caption"
+                android:textColor="@color/gray_600"
+                app:drawableStartCompat="@drawable/ic_calendar"
+                app:drawableTint="@color/gray_600"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvDireccion"
+                tools:text="Fecha: 12/05/2025" />
+
+            <!-- Divider -->
+            <View
+                android:id="@+id/divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:background="@color/gray_200"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvFecha" />
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="end"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/divider">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnVerMapa"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="8dp"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="12dp"
+                    android:text="@string/ver_mapa"
+                    android:textAllCaps="false"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="12sp"
+                    app:icon="@drawable/ic_map"
+                    app:iconGravity="textStart"
+                    app:iconPadding="4dp"
+                    app:iconSize="16dp"
+                    app:iconTint="@color/colorPrimary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEntregado"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:minWidth="0dp"
+                    android:paddingHorizontal="12dp"
+                    android:text="@string/entregado"
+                    android:textAllCaps="false"
+                    android:textColor="@color/success"
+                    android:textSize="12sp"
+                    app:icon="@drawable/ic_check"
+                    app:iconGravity="textStart"
+                    app:iconPadding="4dp"
+                    app:iconSize="16dp"
+                    app:iconTint="@color/success"
+                    app:strokeColor="@color/success" />
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

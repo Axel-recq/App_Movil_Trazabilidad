@@ -317,23 +317,12 @@
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
+
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
 
-        <!-- Botón flotante para nuevo pedido -->
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/fabNewOrder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:contentDescription="@string/new_order_desc"
-            android:text="@string/new_order"
-            android:textColor="@color/colorOnPrimary"
-            app:backgroundTint="@color/colorPrimary"
-            app:icon="@drawable/ic_add"
-            app:iconTint="@color/colorOnPrimary" />
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <!-- Navigation Drawer -->
