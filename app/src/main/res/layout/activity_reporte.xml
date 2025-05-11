@@ -8,26 +8,56 @@
     android:background="@color/colorBackground"
     tools:context=".activities.ReporteActivity">
 
+    <!-- AppBar con Toolbar personalizada -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            app:title="@string/menu_reports"
+            app:titleTextColor="@color/colorOnPrimary" />
+    </com.google.android.material.appbar.AppBarLayout>
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="24dp">
 
+            <!-- Cabecera con imagen ilustrativa -->
+            <ImageView
+                android:id="@+id/ivReportes"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@android:drawable/ic_menu_report_image"
+                android:contentDescription="@string/reports_desc"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/colorPrimary" />
+
             <!-- Título del reporte -->
             <TextView
                 android:id="@+id/tvReporteTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="@string/menu_reports"
+                android:textAlignment="center"
                 android:textAppearance="?attr/textAppearanceHeadline5"
                 android:textColor="@color/colorOnBackground"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/ivReportes" />
 
             <!-- Subtítulo con descripción -->
             <TextView
@@ -36,6 +66,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="@string/reports_subtitle"
+                android:textAlignment="center"
                 android:textAppearance="?attr/textAppearanceSubtitle1"
                 android:textColor="@color/gray_600"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -47,10 +78,12 @@
                 android:id="@+id/cardReporte"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
                 app:cardBackgroundColor="@color/colorSurface"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
+                app:strokeColor="@color/colorSecondary"
+                app:strokeWidth="1dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvReporteSubtitle">
@@ -58,43 +91,67 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
-                    <!-- Fecha del Reporte -->
+                    <!-- Fecha del Reporte con icono -->
+                    <ImageView
+                        android:id="@+id/ivCalendar"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_today"
+                        android:contentDescription="Fecha"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="@color/colorPrimary" />
+
                     <TextView
                         android:id="@+id/tvFechaReporte"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
                         android:text="@string/fecha_reporte"
                         android:textAppearance="?attr/textAppearanceSubtitle2"
                         android:textColor="@color/colorPrimary"
+                        app:layout_constraintBottom_toBottomOf="@id/ivCalendar"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintStart_toEndOf="@id/ivCalendar"
+                        app:layout_constraintTop_toTopOf="@id/ivCalendar" />
 
-                    <!-- Línea divisoria -->
+                    <!-- Línea divisoria más elegante -->
                     <View
                         android:id="@+id/divider"
                         android:layout_width="0dp"
                         android:layout_height="1dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@color/gray_200"
+                        android:layout_marginTop="16dp"
+                        android:background="@color/colorAccent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tvFechaReporte" />
 
-                    <!-- Etiqueta para el spinner -->
+                    <!-- Etiqueta para el spinner con icono -->
+                    <ImageView
+                        android:id="@+id/ivReportType"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginTop="16dp"
+                        android:src="@android:drawable/ic_menu_sort_by_size"
+                        android:contentDescription="Tipo de reporte"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/divider"
+                        app:tint="@color/colorPrimary" />
+
                     <TextView
                         android:id="@+id/tvTipoReporteLabel"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginStart="12dp"
                         android:text="Tipo de reporte"
                         android:textAppearance="?attr/textAppearanceBody1"
                         android:textColor="@color/colorOnSurface"
+                        app:layout_constraintBottom_toBottomOf="@id/ivReportType"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/divider" />
+                        app:layout_constraintStart_toEndOf="@id/ivReportType"
+                        app:layout_constraintTop_toTopOf="@id/ivReportType" />
 
                     <!-- Spinner en un TextInputLayout para mejor apariencia -->
                     <com.google.android.material.textfield.TextInputLayout
@@ -102,8 +159,10 @@
                         style="@style/App.TextInputLayout"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="16dp"
                         android:hint="Seleccione tipo"
+                        app:startIconDrawable="@android:drawable/ic_menu_agenda"
+                        app:startIconTint="@color/colorPrimary"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tvTipoReporteLabel">
@@ -111,13 +170,13 @@
                         <Spinner
                             android:id="@+id/spinnerTipoReporte"
                             android:layout_width="match_parent"
-                            android:layout_height="48dp"
+                            android:layout_height="56dp"
                             android:contentDescription="@string/default_spinner_item"
-                            android:minHeight="48dp" />
+                            android:minHeight="56dp" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Botón para generar reporte -->
+                    <!-- Botón para generar reporte con icono más visible -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnGenerar"
                         style="@style/App.Button"
@@ -125,8 +184,11 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="24dp"
                         android:text="Generar"
-                        app:cornerRadius="8dp"
+                        android:padding="12dp"
+                        app:cornerRadius="12dp"
                         app:icon="@android:drawable/ic_menu_send"
+                        app:iconSize="24dp"
+                        app:iconPadding="8dp"
                         app:iconGravity="textStart"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -135,76 +197,143 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ProgressBar para mostrar carga -->
-            <ProgressBar
-                android:id="@+id/progressBar"
+            <!-- ProgressBar con animación y texto -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/loadingContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:indeterminateTint="@color/colorPrimary"
                 android:visibility="gone"
-                android:contentDescription="@string/loading_content_description"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/cardReporte" />
+                app:layout_constraintTop_toBottomOf="@id/cardReporte">
 
-            <!-- Card para mostrar resultados -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:indeterminateTint="@color/colorPrimary"
+                    android:contentDescription="@string/loading_content_description"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvLoading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Generando reporte..."
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:textColor="@color/colorPrimary"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/progressBar" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Card para mostrar resultados con mejor diseño -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardResultados"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
                 android:visibility="gone"
                 tools:visibility="visible"
                 app:cardBackgroundColor="@color/colorSurface"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
+                app:strokeColor="@color/success"
+                app:strokeWidth="1dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/progressBar">
+                app:layout_constraintTop_toBottomOf="@id/loadingContainer">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
-                    <!-- Título de los resultados -->
+                    <!-- Título de los resultados con icono -->
+                    <ImageView
+                        android:id="@+id/ivResults"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_dialog_info"
+                        android:tint="@color/success"
+                        android:contentDescription="Resultados"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
                     <TextView
                         android:id="@+id/tvResultadosTitle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
                         android:text="Resultados"
                         android:textAppearance="?attr/textAppearanceHeadline6"
-                        android:textColor="@color/colorPrimary"
+                        android:textColor="@color/success"
+                        app:layout_constraintBottom_toBottomOf="@id/ivResults"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintStart_toEndOf="@id/ivResults"
+                        app:layout_constraintTop_toTopOf="@id/ivResults" />
 
-                    <!-- Línea divisoria -->
+                    <!-- Línea divisoria con color de éxito -->
                     <View
                         android:id="@+id/dividerResultados"
                         android:layout_width="0dp"
                         android:layout_height="1dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@color/gray_200"
+                        android:layout_marginTop="16dp"
+                        android:background="@color/success"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tvResultadosTitle" />
 
-                    <!-- Contenido de los resultados -->
+                    <!-- Contenido de los resultados con mejor espaciado -->
                     <TextView
                         android:id="@+id/tvResultados"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
+                        android:lineSpacingMultiplier="1.2"
                         android:textAppearance="?attr/textAppearanceBody1"
                         android:textColor="@color/colorOnSurface"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/dividerResultados" />
+                        app:layout_constraintTop_toBottomOf="@id/dividerResultados"
+                        tools:text="Pedidos pendientes: 5\n\nPedidos entregados: 25\n\nPedidos con incidencias: 2" />
+
+                    <!-- Botón para compartir resultados -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCompartir"
+                        style="@style/App.Button.Outlined"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Compartir"
+                        app:cornerRadius="12dp"
+                        app:icon="@android:drawable/ic_menu_share"
+                        app:iconSize="24dp"
+                        app:iconPadding="8dp"
+                        app:iconGravity="textStart"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvResultados" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <!-- FAB para acciones adicionales -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabHelp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:contentDescription="Ayuda"
+        app:backgroundTint="@color/colorSecondary"
+        app:tint="@color/colorOnSecondary"
+        app:srcCompat="@android:drawable/ic_menu_help" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

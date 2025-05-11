@@ -98,26 +98,49 @@ public class MapaActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
             fusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(this, location -> {
-                        if (location != null) {
-                            LatLng miPosicion = new LatLng(location.getLatitude(), location.getLongitude());
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(miPosicion, 15));
+                    .addOnSuccessListener(this, ubicacion -> {
+                        if (ubicacion != null) {
+                            LatLng miPosicion = new LatLng(ubicacion.getLatitude(), ubicacion.getLongitude());
                             mMap.addMarker(new MarkerOptions().position(miPosicion).title("Mi ubicación"));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(miPosicion, 15));
 
                             if (mostrarRuta) {
                                 LatLng destino = new LatLng(latitudDestino, longitudDestino);
-                                String markerTitle = (direccionDestino != null && !direccionDestino.isEmpty())
+                                String marcadorTitle = (direccionDestino != null && !direccionDestino.isEmpty())
                                         ? direccionDestino : "Destino";
-                                mMap.addMarker(new MarkerOptions().position(destino).title(markerTitle));
                                 gpsController.trazarRuta(mMap, miPosicion, destino);
                                 gpsController.ajustarCamaraParaMostrarRuta(mMap, miPosicion, destino);
                             }
                         } else {
-                            Toast.makeText(MapaActivity.this, "No se pudo obtener la ubicación actual", Toast.LENGTH_SHORT).show();
+                            // Ubicación predeterminada en Lima, Perú
+                            LatLng posicionPredeterminada = new LatLng(-12.0464, -77.0428);
+                            mMap.addMarker(new MarkerOptions().position(posicionPredeterminada).title("Ubicación predeterminada: Lima, Perú"));
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posicionPredeterminada, 15));
+                            Toast.makeText(MapaActivity.this, "No se pudo obtener la ubicación actual, mostrando Lima, Perú", Toast.LENGTH_SHORT).show();
+
+                            if (mostrarRuta) {
+                                LatLng destino = new LatLng(latitudDestino, longitudDestino);
+                                String marcadorTitle = (direccionDestino != null && !direccionDestino.isEmpty())
+                                        ? direccionDestino : "Destino";
+                                gpsController.trazarRuta(mMap, posicionPredeterminada, destino);
+                                gpsController.ajustarCamaraParaMostrarRuta(mMap, posicionPredeterminada, destino);
+                            }
                         }
                     })
                     .addOnFailureListener(e -> {
-                        Toast.makeText(MapaActivity.this, "Error al obtener ubicación: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        // Ubicación predeterminada en Lima, Perú en caso de error
+                        LatLng posicionPredeterminada = new LatLng(-12.0464, -77.0428);
+                        mMap.addMarker(new MarkerOptions().position(posicionPredeterminada).title("Ubicación predeterminada: Lima, Perú"));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posicionPredeterminada, 15));
+                        Toast.makeText(MapaActivity.this, "Error al obtener ubicación: " + e.getMessage() + ", mostrando Lima, Perú", Toast.LENGTH_SHORT).show();
+
+                        if (mostrarRuta) {
+                            LatLng destino = new LatLng(latitudDestino, longitudDestino);
+                            String marcadorTitle = (direccionDestino != null && !direccionDestino.isEmpty())
+                                    ? direccionDestino : "Destino";
+                            gpsController.trazarRuta(mMap, posicionPredeterminada, destino);
+                            gpsController.ajustarCamaraParaMostrarRuta(mMap, posicionPredeterminada, destino);
+                        }
                     });
         } catch (SecurityException e) {
             Toast.makeText(this, "Permiso denegado: " + e.getMessage(), Toast.LENGTH_SHORT).show();
