@@ -83,9 +83,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         loadRecentOrders();
         loadIncidentsData();
 
-        // Botón flotante
-        ExtendedFloatingActionButton fabNewOrder = findViewById(R.id.fabNewOrder);
-        fabNewOrder.setOnClickListener(v -> goToNewOrder());
     }
 
     @Override
@@ -153,16 +150,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvResolvedIncidents.setText(String.valueOf(resolvedCount));
     }
 
-    private void goToNewOrder() {
-        startActivity(new Intent(this, NuevoPedidoActivity.class));
-    }
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if ( id == R.id.fabNewOrder) {
-            goToNewOrder();
-        } else if (id == R.id.cardReportIncident) {
+        if (id == R.id.cardReportIncident) {
             startActivity(new Intent(this, IncidenciaActivity.class));
         } else if (id == R.id.btnViewAllOrders) {
             startActivity(new Intent(this, ListaPedidosActivity.class));

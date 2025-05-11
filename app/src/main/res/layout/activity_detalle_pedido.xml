@@ -7,50 +7,59 @@
     android:background="@color/colorBackground"
     tools:context=".activities.DetallePedidoActivity">
 
+    <!-- AppBar con CollapsingToolbarLayout para efectos de desplazamiento -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary">
+        android:background="@color/colorPrimary"
+        app:liftOnScroll="true">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="@string/detalle_pedido"
+            app:navigationIcon="@drawable/ic_arrow_back"
             app:titleTextColor="@color/colorOnPrimary"
             style="@style/App.Toolbar" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Contenido principal con NestedScrollView -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="88dp"
+        android:scrollbars="none"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:paddingHorizontal="16dp"
             android:paddingTop="16dp"
-            android:paddingBottom="80dp">
+            android:paddingBottom="16dp">
 
-            <!-- Tarjeta de información del pedido -->
+            <!-- Tarjeta de información del pedido con elevación y bordes redondeados -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardInfoPedido"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardUseCompatPadding="true"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                style="@style/App.CardView">
+                app:layout_constraintEnd_toEndOf="parent">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:padding="16dp">
 
-                    <!-- Número de pedido -->
+                    <!-- Encabezado del pedido -->
                     <TextView
                         android:id="@+id/tvNumeroPedido"
                         android:layout_width="0dp"
@@ -58,40 +67,46 @@
                         android:text="@string/pedido_numero"
                         android:textAppearance="?attr/textAppearanceHeadline6"
                         android:textColor="@color/colorPrimary"
+                        android:textStyle="bold"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/chipEstado" />
+                        app:layout_constraintEnd_toStartOf="@+id/chipEstado"
+                        app:layout_constraintHorizontal_bias="0.0" />
 
-                    <!-- Chip para el estado -->
+                    <!-- Chip de estado con animación de transición de color -->
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipEstado"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="ASIGNADO"
-                        android:textColor="@color/white"
+                        android:textColor="@color/colorOnPrimary"
+                        android:textStyle="bold"
                         app:chipBackgroundColor="@color/colorPrimary"
+                        app:chipMinHeight="32dp"
+                        app:ensureMinTouchTargetSize="true"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />
 
-                    <!-- Línea separadora -->
+                    <!-- Divisor con gradiente -->
                     <View
                         android:id="@+id/divider"
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/gray_300"
-                        android:layout_marginTop="12dp"
+                        android:background="@drawable/divider_gradient"
+                        android:layout_marginTop="16dp"
                         app:layout_constraintTop_toBottomOf="@id/tvNumeroPedido" />
 
-                    <!-- Cliente -->
+                    <!-- Información del cliente con iconos -->
                     <ImageView
                         android:id="@+id/icCliente"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@android:drawable/ic_menu_myplaces"
-                        android:layout_marginTop="12dp"
+                        android:src="@drawable/ic_person"
+                        android:layout_marginTop="16dp"
                         app:layout_constraintTop_toBottomOf="@id/divider"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:tint="@color/colorPrimary" />
+                        app:tint="@color/colorPrimary"
+                        android:contentDescription="@string/cliente_hint" />
 
                     <TextView
                         android:id="@+id/tvCliente"
@@ -99,22 +114,23 @@
                         android:layout_height="wrap_content"
                         android:text="@string/cliente"
                         android:textAppearance="?attr/textAppearanceBody1"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="12dp"
                         app:layout_constraintTop_toTopOf="@id/icCliente"
                         app:layout_constraintBottom_toBottomOf="@id/icCliente"
                         app:layout_constraintStart_toEndOf="@id/icCliente"
                         app:layout_constraintEnd_toEndOf="parent" />
 
-                    <!-- Dirección -->
+                    <!-- Dirección con iconos -->
                     <ImageView
                         android:id="@+id/icDireccion"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@android:drawable/ic_dialog_map"
-                        android:layout_marginTop="12dp"
+                        android:src="@drawable/ic_map"
+                        android:layout_marginTop="16dp"
                         app:layout_constraintTop_toBottomOf="@id/tvCliente"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:tint="@color/colorPrimary" />
+                        app:tint="@color/colorPrimary"
+                        android:contentDescription="@string/direccion_hint" />
 
                     <TextView
                         android:id="@+id/tvDireccion"
@@ -122,22 +138,23 @@
                         android:layout_height="wrap_content"
                         android:text="@string/direccion"
                         android:textAppearance="?attr/textAppearanceBody1"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="12dp"
                         app:layout_constraintTop_toTopOf="@id/icDireccion"
                         app:layout_constraintBottom_toBottomOf="@id/icDireccion"
                         app:layout_constraintStart_toEndOf="@id/icDireccion"
                         app:layout_constraintEnd_toEndOf="parent" />
 
-                    <!-- Fecha -->
+                    <!-- Fecha con iconos -->
                     <ImageView
                         android:id="@+id/icFecha"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@android:drawable/ic_menu_my_calendar"
-                        android:layout_marginTop="12dp"
+                        android:src="@drawable/ic_calendar"
+                        android:layout_marginTop="16dp"
                         app:layout_constraintTop_toBottomOf="@id/tvDireccion"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:tint="@color/colorPrimary" />
+                        app:tint="@color/colorPrimary"
+                        android:contentDescription="@string/fecha_reporte" />
 
                     <TextView
                         android:id="@+id/tvFecha"
@@ -145,7 +162,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/fecha"
                         android:textAppearance="?attr/textAppearanceBody1"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="12dp"
                         app:layout_constraintTop_toTopOf="@id/icFecha"
                         app:layout_constraintBottom_toBottomOf="@id/icFecha"
                         app:layout_constraintStart_toEndOf="@id/icFecha"
@@ -163,101 +180,174 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Título de la sección de productos -->
+            <!-- Título de sección de productos con estilo moderno -->
             <TextView
                 android:id="@+id/tvProductosTitulo"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Productos"
-                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:textAppearance="?attr/textAppearanceHeadline6"
+                android:textColor="@color/colorPrimary"
                 android:textStyle="bold"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginStart="8dp"
                 app:layout_constraintTop_toBottomOf="@id/cardInfoPedido"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintStart_toStartOf="parent" />
 
-            <!-- Tarjeta de productos -->
+            <!-- Contador de productos -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipProductCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="12sp"
+                android:textColor="@color/colorOnPrimary"
+                app:chipBackgroundColor="@color/colorPrimaryVariant"
+                app:chipMinHeight="24dp"
+                app:ensureMinTouchTargetSize="false"
+                android:layout_marginStart="8dp"
+                app:layout_constraintTop_toTopOf="@id/tvProductosTitulo"
+                app:layout_constraintBottom_toBottomOf="@id/tvProductosTitulo"
+                app:layout_constraintStart_toEndOf="@id/tvProductosTitulo" />
+
+            <!-- Lista de productos con efecto de elevación -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardProductos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardUseCompatPadding="true"
                 app:layout_constraintTop_toBottomOf="@id/tvProductosTitulo"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                style="@style/App.CardView">
+                app:layout_constraintEnd_toEndOf="parent">
 
+                <!-- RecyclerView con decoración y animación -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerProductos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:clipToPadding="false"
                     android:paddingVertical="8dp"
-                    tools:listitem="@android:layout/simple_list_item_2"
+                    android:overScrollMode="never"
+                    android:nestedScrollingEnabled="false"
+                    android:scrollbars="none"
+                    tools:listitem="@layout/item_producto"
                     tools:itemCount="3" />
 
+                <!-- Placeholder vacío -->
+                <LinearLayout
+                    android:id="@+id/emptyProductsView"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:src="@drawable/ic_empty_box"
+                        app:tint="@color/gray_400"
+                        android:contentDescription="No hay productos" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="No hay productos en este pedido"
+                        android:textAppearance="?attr/textAppearanceBody1"
+                        android:textColor="@color/gray_600"
+                        android:layout_marginTop="16dp" />
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Progress Bar -->
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <!-- Progress Bar moderno con fondo -->
+            <FrameLayout
+                android:id="@+id/loadingContainer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:background="#80FFFFFF"
                 android:visibility="gone"
-                android:indeterminateTint="@color/colorPrimary"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent">
 
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    app:indicatorColor="@color/colorPrimary"
+                    app:trackColor="@color/colorAccent"
+                    app:indicatorSize="48dp"
+                    app:trackThickness="4dp" />
+            </FrameLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Tarjeta flotante para los botones de acción -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardBotones"
+    <!-- Barra de acción flotante con elevación dinámica -->
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottomAppBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        app:cardElevation="8dp"
-        app:cardCornerRadius="0dp">
+        app:backgroundTint="@color/colorSurface"
+        app:elevation="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="12dp"
-            android:gravity="center">
+            android:padding="8dp"
+            android:gravity="center_vertical"
+            android:baselineAligned="false">
 
+            <!-- Botón Ver Mapa con icono moderno -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnVerMapa"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
                 android:layout_weight="1"
                 android:text="@string/ver_mapa"
+                android:textAllCaps="false"
                 android:layout_marginEnd="8dp"
-                app:icon="@android:drawable/ic_dialog_map"
+                app:icon="@drawable/ic_map"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:cornerRadius="8dp"
                 style="@style/App.Button.Outlined" />
 
+            <!-- Botón Entregado con icono animado -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEntregado"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_height="56dp"
+                android:layout_weight="1.2"
                 android:text="@string/entregado"
+                android:textAllCaps="false"
                 android:layout_marginEnd="8dp"
-                app:icon="@android:drawable/ic_menu_send"
+                app:icon="@drawable/ic_check"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:cornerRadius="8dp"
                 style="@style/App.Button" />
 
+            <!-- Botón Incidencia con icono de alerta -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnIncidencia"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
                 android:layout_weight="1"
                 android:text="@string/incidencia"
-                app:icon="@android:drawable/ic_dialog_alert"
+                android:textAllCaps="false"
+                app:icon="@drawable/ic_warning"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:cornerRadius="8dp"
                 style="@style/App.Button.Text" />
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
+    </com.google.android.material.bottomappbar.BottomAppBar>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
