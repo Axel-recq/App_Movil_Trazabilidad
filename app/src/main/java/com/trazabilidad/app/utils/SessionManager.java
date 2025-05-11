@@ -32,6 +32,7 @@ public class SessionManager {
         editor.putString(KEY_USER_EMAIL, usuario.getEmail());
         editor.putString(KEY_USER_ROL, usuario.getRol());
         editor.putString(KEY_USER_TELEFONO, usuario.getTelefono());
+        editor.putLong("loginTimestamp", System.currentTimeMillis());
         editor.commit();
     }
 
@@ -47,7 +48,10 @@ public class SessionManager {
     }
 
     public boolean isLoggedIn() {
-        return pref.getBoolean(KEY_IS_LOGGED_IN, false);
+        long loginTime = pref.getLong("loginTimestamp", 0);
+        long currentTime = System.currentTimeMillis();
+        long sessionDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+        return pref.getBoolean(KEY_IS_LOGGED_IN, false) && (currentTime - loginTime < sessionDuration);
     }
 
     public void logout() {

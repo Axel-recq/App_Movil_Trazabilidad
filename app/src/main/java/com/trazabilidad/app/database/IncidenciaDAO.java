@@ -27,27 +27,14 @@ public class IncidenciaDAO {
         this.dbHelper = dbHelper;
     }
 
-    /**
-     * Obtiene el número de incidencias pendientes
-     * @return El número de incidencias con estado pendiente
-     */
     public int getPendingIncidenciasCount() {
         return getIncidenciaCountByEstado(ESTADO_PENDIENTE);
     }
 
-    /**
-     * Obtiene el número de incidencias resueltas
-     * @return El número de incidencias con estado resuelto
-     */
     public int getResolvedIncidenciasCount() {
         return getIncidenciaCountByEstado(ESTADO_RESUELTO);
     }
 
-    /**
-     * Método auxiliar para contar incidencias por estado
-     * @param estado El estado a filtrar
-     * @return El número de incidencias en el estado especificado
-     */
     private int getIncidenciaCountByEstado(String estado) {
         int count = 0;
         try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
@@ -63,8 +50,6 @@ public class IncidenciaDAO {
         }
         return count;
     }
-
-    // Método para insertar una nueva incidencia
     public boolean insertarIncidencia(Incidencia incidencia) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = getIncidenciaContentValues(incidencia);
@@ -75,7 +60,6 @@ public class IncidenciaDAO {
         }
     }
 
-    // Método para obtener incidencias por usuario
     public List<Incidencia> obtenerIncidenciasPorUsuario(int usuarioId) {
         List<Incidencia> incidencias = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -96,7 +80,6 @@ public class IncidenciaDAO {
         return incidencias;
     }
 
-    // Método para actualizar una incidencia existente
     public boolean actualizarIncidencia(Incidencia incidencia) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = getIncidenciaContentValues(incidencia);
@@ -112,7 +95,6 @@ public class IncidenciaDAO {
         }
     }
 
-    // Método para eliminar una incidencia
     public boolean eliminarIncidencia(int id) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             int rowsAffected = db.delete(
@@ -126,7 +108,6 @@ public class IncidenciaDAO {
         }
     }
 
-    // Método para obtener una incidencia por su ID
     public Incidencia obtenerIncidenciaPorId(int id) {
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
              Cursor cursor = db.query(
@@ -145,8 +126,6 @@ public class IncidenciaDAO {
             return null;
         }
     }
-
-    // Método para generar los valores para ContentValues
     private ContentValues getIncidenciaContentValues(Incidencia incidencia) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COLUMN_INCIDENCIA_TIPO, incidencia.getTipo());
@@ -163,7 +142,6 @@ public class IncidenciaDAO {
         return values;
     }
 
-    // Método para obtener los nombres de columnas
     private String[] getIncidenciaColumns() {
         return new String[]{
                 DatabaseHelper.COLUMN_INCIDENCIA_ID,
@@ -177,7 +155,6 @@ public class IncidenciaDAO {
         };
     }
 
-    // Método para convertir cursor a objeto Incidencia
     private Incidencia cursorToIncidencia(Cursor cursor) {
         Incidencia incidencia = new Incidencia();
         incidencia.setId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCIDENCIA_ID)));

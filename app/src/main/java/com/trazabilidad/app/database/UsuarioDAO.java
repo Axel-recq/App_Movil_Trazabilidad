@@ -29,6 +29,13 @@ public class UsuarioDAO {
         }
     }
 
+    public Usuario autenticarUsuario(String email, String password) {
+        Usuario usuario = obtenerUsuarioPorEmail(email);
+        if (usuario != null && usuario.getPassword().equals(password)) {
+            return usuario;
+        }
+        return null;
+    }
 
     public boolean actualizarUsuario(Usuario usuario) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {

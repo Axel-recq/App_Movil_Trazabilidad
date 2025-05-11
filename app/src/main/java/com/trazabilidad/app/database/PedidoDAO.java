@@ -132,6 +132,23 @@ public class PedidoDAO {
         }
         return pedidos;
     }
+    public boolean confirmarEntrega(int pedidoId) {
+        Pedido pedido = obtenerPedidoPorId(pedidoId);
+        if (pedido != null) {
+            pedido.setConfirmado(true);
+            return actualizarPedido(pedido);
+        }
+        return false;
+    }
+    public void verificarDemora(Pedido pedido) {
+        long horaActual = System.currentTimeMillis();
+        if (pedido.getHoraEstimada() < horaActual && pedido.getHoraEntrega() == 0) {
+            pedido.setAlertaDemora(true);
+            pedido.setMotivoDemora("Retraso detectado");
+            actualizarPedido(pedido);
+            // Enviar notificación aquí
+        }
+    }
 
     private ContentValues getPedidoContentValues(Pedido pedido) {
         ContentValues values = new ContentValues();
