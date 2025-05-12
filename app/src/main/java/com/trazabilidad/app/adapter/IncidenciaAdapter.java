@@ -1,5 +1,7 @@
 package com.trazabilidad.app.adapter;
 
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,10 +11,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
 import com.trazabilidad.app.R;
+import com.trazabilidad.app.activities.IncidenciaDetailActivity;
 import com.trazabilidad.app.models.Incidencia;
 
 import java.text.SimpleDateFormat;
@@ -47,6 +52,13 @@ public class IncidenciaAdapter extends RecyclerView.Adapter<IncidenciaAdapter.In
     public void onBindViewHolder(@NonNull IncidenciaViewHolder holder, int position) {
         Incidencia incidencia = incidencias.get(position);
         holder.bind(incidencia);
+
+        // Abrir detalles al hacer clic en el item
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), IncidenciaDetailActivity.class);
+            intent.putExtra("INCIDENCIA", incidencia);
+            v.getContext().startActivity(intent);
+        });
     }
 
     @Override
@@ -60,10 +72,10 @@ public class IncidenciaAdapter extends RecyclerView.Adapter<IncidenciaAdapter.In
         private final LinearLayout placeholderFoto;
         private final TextView tvDescripcion;
         private final TextView tvTipo;
-        private final TextView tvEstado;
         private final TextView tvFecha;
         private final TextView tvPedidoId;
         private final MaterialButton btnCambiarEstado;
+        private final Chip chipEstado;
 
         IncidenciaViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -71,21 +83,30 @@ public class IncidenciaAdapter extends RecyclerView.Adapter<IncidenciaAdapter.In
             placeholderFoto = itemView.findViewById(R.id.placeholderFoto);
             tvDescripcion = itemView.findViewById(R.id.tvDescripcion);
             tvTipo = itemView.findViewById(R.id.tvTipo);
-            tvEstado = itemView.findViewById(R.id.tvEstado);
             tvFecha = itemView.findViewById(R.id.tvFecha);
             tvPedidoId = itemView.findViewById(R.id.tvPedidoId);
             btnCambiarEstado = itemView.findViewById(R.id.btnCambiarEstado);
+            chipEstado = itemView.findViewById(R.id.chipEstado);
         }
 
         void bind(Incidencia incidencia) {
+            // Configurar datos principales
             tvDescripcion.setText(incidencia.getDescripcion());
-            tvTipo.setText("Tipo: " + incidencia.getTipo());
-            tvEstado.setText("Estado: " + incidencia.getEstado());
-            tvFecha.setText("Fecha: " + dateFormat.format(incidencia.getFecha()));
-            int pedidoId = incidencia.getPedidoId();
-            tvPedidoId.setText(pedidoId > 0 ? "Pedido: " + pedidoId : "Sin pedido asociado");
 
-            // Mostrar foto
+            // Configurar detalles con iconos
+            configureTextWithDrawable(tvTipo, "Tipo: " + incidencia.getTipo(),
+                    R.drawable.ic_reports);
+            configureTextWithDrawable(tvPedidoId,
+                    incidencia.getPedidoId() > 0 ? "Pedido: " + incidencia.getPedidoId() : "Sin pedido asociado",
+                    R.drawable.ic_empty_orders);
+
+            // Configurar fecha
+            tvFecha.setText("Fecha: " + dateFormat.format(incidencia.getFecha()));
+
+            // Configurar estado y su chip
+            configureEstadoChip(incidencia.getEstado());
+
+            // Mostrar foto o placeholder
             String fotoUri = incidencia.getFotoUri();
             if (fotoUri != null && !fotoUri.isEmpty()) {
                 ivFoto.setImageURI(Uri.parse(fotoUri));
@@ -97,11 +118,54 @@ public class IncidenciaAdapter extends RecyclerView.Adapter<IncidenciaAdapter.In
             }
 
             // Configurar botón para cambiar estado
-            btnCambiarEstado.setOnClickListener(v -> {
-                String nuevoEstado = incidencia.getEstado().equals(Incidencia.ESTADO_PENDIENTE) ?
-                        Incidencia.ESTADO_RESUELTO : Incidencia.ESTADO_PENDIENTE;
-                estadoClickListener.onEstadoClick(incidencia, nuevoEstado);
-            });
+            String currentStatus = incidencia.getEstado();
+            String nextStatus = currentStatus.equals(Incidencia.ESTADO_PENDIENTE) ?
+                    Incidencia.ESTADO_RESUELTO : Incidencia.ESTADO_PENDIENTE;
+
+            // Texto del botón según el estado actual
+            String buttonText = currentStatus.equals(Incidencia.ESTADO_PENDIENTE) ?
+                    "Marcar como resuelto" : "Reabrir incidencia";
+            btnCambiarEstado.setText(buttonText);
+
+            // Icono del botón según el estado actual
+            int iconResId = currentStatus.equals(Incidencia.ESTADO_PENDIENTE) ?
+                    android.R.drawable.ic_menu_edit : android.R.drawable.ic_menu_revert;
+            btnCambiarEstado.setIconResource(iconResId);
+
+            // Listener del botón
+            btnCambiarEstado.setOnClickListener(v ->
+                    estadoClickListener.onEstadoClick(incidencia, nextStatus));
+        }
+
+        private void configureTextWithDrawable(TextView textView, String text, int drawableResId) {
+            textView.setText(text);
+
+            // Configurar drawable al inicio del texto
+            Drawable drawable = ContextCompat.getDrawable(textView.getContext(), drawableResId);
+            if (drawable != null) {
+                drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+                textView.setCompoundDrawablesRelative(drawable, null, null, null);
+                textView.setCompoundDrawablePadding(8);
+            }
+        }
+
+        private void configureEstadoChip(String estado) {
+            chipEstado.setText(estado);
+
+            int bgColorResId;
+
+            // Asignar color según estado
+            switch (estado) {
+                case Incidencia.ESTADO_RESUELTO:
+                    bgColorResId = R.color.success;
+                    break;
+                case Incidencia.ESTADO_PENDIENTE:
+                default:
+                    bgColorResId = R.color.warning;
+                    break;
+            }
+
+            chipEstado.setChipBackgroundColorResource(bgColorResId);
         }
     }
 }

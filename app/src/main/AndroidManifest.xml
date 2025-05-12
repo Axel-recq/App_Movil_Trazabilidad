@@ -51,7 +51,7 @@
         <activity android:name=".activities.IncidenciaActivity" />
         <activity android:name=".activities.PerfilActivity" />
         <activity android:name=".activities.IncidenciasListActivity" />
-
+        <activity android:name=".activities.IncidenciaDetailActivity" />
         <activity
             android:name=".activities.DetallePedidoActivity"
             android:label="@string/detalle_pedido"
