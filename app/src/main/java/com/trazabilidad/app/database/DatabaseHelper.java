@@ -5,11 +5,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "trazabilidad.db";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     private static DatabaseHelper sInstance;
 
     // Table and column names
@@ -57,6 +56,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_INCIDENCIA_FOTO_URI = "foto_uri";
     public static final String COLUMN_INCIDENCIA_USUARIO_ID = "usuario_id";
     public static final String COLUMN_INCIDENCIA_PEDIDO_ID = "pedido_id";
+    public static final String COLUMN_INCIDENCIA_ESTADO = "estado";
 
     public static final String TABLE_UBICACIONES = "ubicaciones";
     public static final String COLUMN_UBICACION_ID = "id";
@@ -82,10 +82,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String TABLE_CALIFICACIONES = "calificaciones";
     public static final String COLUMN_CALIFICACION_ID = "id";
     public static final String COLUMN_CALIFICACION_PEDIDO_ID = "pedido_id";
+    public static final String COLUMN_CALIFICACION_USUARIO_ID = "usuario_id";
     public static final String COLUMN_CALIFICACION_VALOR = "valor";
     public static final String COLUMN_CALIFICACION_COMENTARIO = "comentario";
     public static final String COLUMN_CALIFICACION_FECHA = "fecha";
-    public static final String COLUMN_INCIDENCIA_ESTADO = "estado";
+
     // SQL creation statements
     private static final String SQL_CREATE_USUARIOS =
             "CREATE TABLE " + TABLE_USUARIOS + " (" +
@@ -190,11 +191,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + TABLE_CALIFICACIONES + " (" +
                     COLUMN_CALIFICACION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_CALIFICACION_PEDIDO_ID + " INTEGER NOT NULL, " +
-                    COLUMN_CALIFICACION_VALOR + " INTEGER NOT NULL CHECK(valor BETWEEN 1 AND 5), " +
+                    COLUMN_CALIFICACION_USUARIO_ID + " INTEGER NOT NULL, " +
+                    COLUMN_CALIFICACION_VALOR + " INTEGER NOT NULL CHECK(" + COLUMN_CALIFICACION_VALOR + " BETWEEN 1 AND 5), " +
                     COLUMN_CALIFICACION_COMENTARIO + " TEXT, " +
                     COLUMN_CALIFICACION_FECHA + " INTEGER NOT NULL, " +
                     "FOREIGN KEY(" + COLUMN_CALIFICACION_PEDIDO_ID + ") REFERENCES " +
-                    TABLE_PEDIDOS + "(" + COLUMN_PEDIDO_ID + ") ON DELETE CASCADE" +
+                    TABLE_PEDIDOS + "(" + COLUMN_PEDIDO_ID + ") ON DELETE CASCADE, " +
+                    "FOREIGN KEY(" + COLUMN_CALIFICACION_USUARIO_ID + ") REFERENCES " +
+                    TABLE_USUARIOS + "(" + COLUMN_USUARIO_ID + ")" +
                     ")";
 
     // Indices
@@ -255,6 +259,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private DatabaseHelper(Context context) {
         super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
     }
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.beginTransaction();
@@ -352,6 +357,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 onCreate(db);
             }
 
+            if (oldVersion < 8) {
+                // Migración para añadir usuario_id a calificaciones
+                try {
+                    // Crear una tabla temporal con la nueva estructura
+                    db.execSQL("CREATE TABLE calificaciones_temp (" +
+                            COLUMN_CALIFICACION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                            COLUMN_CALIFICACION_PEDIDO_ID + " INTEGER NOT NULL, " +
+                            COLUMN_CALIFICACION_USUARIO_ID + " INTEGER NOT NULL, " +
+                            COLUMN_CALIFICACION_VALOR + " INTEGER NOT NULL CHECK(" + COLUMN_CALIFICACION_VALOR + " BETWEEN 1 AND 5), " +
+                            COLUMN_CALIFICACION_COMENTARIO + " TEXT, " +
+                            COLUMN_CALIFICACION_FECHA + " INTEGER NOT NULL, " +
+                            "FOREIGN KEY(" + COLUMN_CALIFICACION_PEDIDO_ID + ") REFERENCES " +
+                            TABLE_PEDIDOS + "(" + COLUMN_PEDIDO_ID + ") ON DELETE CASCADE, " +
+                            "FOREIGN KEY(" + COLUMN_CALIFICACION_USUARIO_ID + ") REFERENCES " +
+                            TABLE_USUARIOS + "(" + COLUMN_USUARIO_ID + "))");
+
+                    // Migrar datos existentes, asignando usuario_id = 1 por defecto
+                    db.execSQL("INSERT INTO calificaciones_temp (" +
+                            COLUMN_CALIFICACION_ID + ", " +
+                            COLUMN_CALIFICACION_PEDIDO_ID + ", " +
+                            COLUMN_CALIFICACION_USUARIO_ID + ", " +
+                            COLUMN_CALIFICACION_VALOR + ", " +
+                            COLUMN_CALIFICACION_COMENTARIO + ", " +
+                            COLUMN_CALIFICACION_FECHA + ") " +
+                            "SELECT " +
+                            COLUMN_CALIFICACION_ID + ", " +
+                            COLUMN_CALIFICACION_PEDIDO_ID + ", " +
+                            "1, " + // usuario_id por defecto
+                            COLUMN_CALIFICACION_VALOR + ", " +
+                            COLUMN_CALIFICACION_COMENTARIO + ", " +
+                            COLUMN_CALIFICACION_FECHA + " " +
+                            "FROM " + TABLE_CALIFICACIONES);
+
+                    // Eliminar la tabla original
+                    db.execSQL("DROP TABLE " + TABLE_CALIFICACIONES);
+
+                    // Renombrar la tabla temporal a la original
+                    db.execSQL("ALTER TABLE calificaciones_temp RENAME TO " + TABLE_CALIFICACIONES);
+
+                    // Recrear el índice
+                    db.execSQL(SQL_CREATE_INDEX_CALIFICACIONES_PEDIDO);
+                } catch (Exception e) {
+                    Log.w(TAG, "Error al migrar calificaciones", e);
+                }
+            }
+
             db.setTransactionSuccessful();
         } catch (Exception e) {
             Log.e(TAG, "Error upgrading database", e);
@@ -389,7 +440,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             Log.w(TAG, "Índices V4 ya existen", e);
         }
     }
-
 
     private void insertarDatosPrueba(SQLiteDatabase db) {
         // Insertar usuarios existentes
@@ -508,7 +558,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " (" + COLUMN_PEDIDO_NUMERO + ", " +
                 COLUMN_PEDIDO_CLIENTE + ", " +
                 COLUMN_PEDIDO_DIRECCION + ", " +
-                COLUMN_PEDIDO_FECHA + ", " +
+                COLUMN_UBICACION_FECHA + ", " +
                 COLUMN_PEDIDO_ESTADO + ", " +
                 COLUMN_PEDIDO_USUARIO_ID + ", " +
                 COLUMN_PEDIDO_LATITUD + ", " +
@@ -862,31 +912,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Insertar calificaciones
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_CALIFICACIONES +
                 " (" + COLUMN_CALIFICACION_PEDIDO_ID + ", " +
+                COLUMN_CALIFICACION_USUARIO_ID + ", " +
                 COLUMN_CALIFICACION_VALOR + ", " +
                 COLUMN_CALIFICACION_COMENTARIO + ", " +
                 COLUMN_CALIFICACION_FECHA + ") " +
-                "VALUES (3, 4, 'Buen servicio, pero el producto llegó dañado', " +
+                "VALUES (3, 1, 4, 'Buen servicio, pero el producto llegó dañado', " +
                 (fechaActual - (1 * 24 * 60 * 60 * 1000)) + ")");
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_CALIFICACIONES +
                 " (" + COLUMN_CALIFICACION_PEDIDO_ID + ", " +
+                COLUMN_CALIFICACION_USUARIO_ID + ", " +
                 COLUMN_CALIFICACION_VALOR + ", " +
                 COLUMN_CALIFICACION_COMENTARIO + ", " +
                 COLUMN_CALIFICACION_FECHA + ") " +
-                "VALUES (7, 5, 'Excelente servicio', " +
+                "VALUES (7, 1, 5, 'Excelente servicio', " +
                 (fechaAnterior + (24 * 60 * 60 * 1000)) + ")");
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_CALIFICACIONES +
                 " (" + COLUMN_CALIFICACION_PEDIDO_ID + ", " +
+                COLUMN_CALIFICACION_USUARIO_ID + ", " +
                 COLUMN_CALIFICACION_VALOR + ", " +
                 COLUMN_CALIFICACION_COMENTARIO + ", " +
                 COLUMN_CALIFICACION_FECHA + ") " +
-                "VALUES (8, 5, 'Excelente servicio', " +
+                "VALUES (8, 5, 5, 'Excelente servicio', " +
                 (fechaActual - 3 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000) + ")");
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_CALIFICACIONES +
                 " (" + COLUMN_CALIFICACION_PEDIDO_ID + ", " +
+                COLUMN_CALIFICACION_USUARIO_ID + ", " +
                 COLUMN_CALIFICACION_VALOR + ", " +
                 COLUMN_CALIFICACION_COMENTARIO + ", " +
                 COLUMN_CALIFICACION_FECHA + ") " +
-                "VALUES (9, 3, 'Llegó tarde', " +
+                "VALUES (9, 5, 3, 'Llegó tarde', " +
                 (fechaActual - 1 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000) + ")");
     }
 

@@ -1,9 +1,7 @@
 package com.trazabilidad.app.activities;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,7 +14,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
@@ -84,7 +81,6 @@ public class IncidenciaActivity extends AppCompatActivity {
         configurarListeners();
         cargarTiposIncidencias();
 
-        // Verificar si el dispositivo tiene cámara
         PackageManager pm = getPackageManager();
         if (!pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
             btnTomarFoto.setEnabled(false);
@@ -169,7 +165,6 @@ public class IncidenciaActivity extends AppCompatActivity {
                         fotoUri = uri;
                         Log.d(TAG, "Imagen seleccionada con Photo Picker: " + fotoUri.toString());
                         mostrarFoto(fotoUri);
-                        // Persistir acceso al URI
                         getContentResolver().takePersistableUriPermission(
                                 fotoUri,
                                 Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -228,11 +223,8 @@ public class IncidenciaActivity extends AppCompatActivity {
     }
 
     private void tomarFoto() {
-        // Aquí se mantiene toda la lógica de cámara original, usando la estrategia de respaldo múltiple
         PackageManager packageManager = getPackageManager();
-
         try {
-            // Intento directo con FileProvider, que es la mejor práctica
             File photoFile = createImageFile();
             fotoUri = FileProvider.getUriForFile(
                     this,
@@ -245,18 +237,15 @@ public class IncidenciaActivity extends AppCompatActivity {
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, fotoUri);
             takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-            // Verificar que hay una app que puede manejar este intent
             if (takePictureIntent.resolveActivity(packageManager) != null) {
                 cameraLauncher.launch(takePictureIntent);
             } else {
-                // Si falla, intentar con un intent simplificado
                 Log.d(TAG, "Usando intent simplificado");
                 Intent simpleCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 cameraLauncher.launch(simpleCameraIntent);
             }
         } catch (Exception ex) {
             Log.e(TAG, "Error al iniciar la cámara", ex);
-            // Intent simplificado como último recurso
             Intent simpleCameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             fotoUri = null;
             cameraLauncher.launch(simpleCameraIntent);
@@ -304,8 +293,8 @@ public class IncidenciaActivity extends AppCompatActivity {
     }
 
     private void validarYRegistrarIncidencia() {
-        String descripcion = etDescripcion.getText().toString().trim();
-        String tipo = autoCompleteTipoIncidencia.getText().toString().trim();
+        String descripcion = etDescripcion.getText() != null ? etDescripcion.getText().toString().trim() : "";
+        String tipo = autoCompleteTipoIncidencia.getText() != null ? autoCompleteTipoIncidencia.getText().toString().trim() : "";
 
         if (descripcion.isEmpty()) {
             etDescripcion.setError("Este campo es obligatorio");
@@ -313,13 +302,18 @@ public class IncidenciaActivity extends AppCompatActivity {
             return;
         }
 
+        List<String> tiposValidos = tipoIncidenciaDAO.obtenerTiposIncidencias();
         if (tipo.isEmpty()) {
             autoCompleteTipoIncidencia.setError("Seleccione un tipo");
             autoCompleteTipoIncidencia.requestFocus();
             return;
         }
+        if (!tiposValidos.contains(tipo)) {
+            autoCompleteTipoIncidencia.setError("Tipo no válido");
+            autoCompleteTipoIncidencia.requestFocus();
+            return;
+        }
 
-        // Mostrar diálogo de confirmación
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Confirmar registro")
                 .setMessage("¿Está seguro de registrar esta incidencia?")
@@ -336,23 +330,29 @@ public class IncidenciaActivity extends AppCompatActivity {
         incidencia.setTipo(tipo);
         incidencia.setFecha(new Date());
         incidencia.setUsuarioId(sessionManager.getUsuarioDetails().getId());
+        incidencia.setEstado(Incidencia.ESTADO_PENDIENTE);
 
-        if (pedidoId != -1) incidencia.setPedidoId(pedidoId);
-        if (fotoUri != null) incidencia.setFotoUri(fotoUri.toString());
+        if (pedidoId != -1) {
+            incidencia.setPedidoId(pedidoId);
+        } else {
+            incidencia.setPedidoId(0); // Cambiar a null si usas Integer
+        }
+        if (fotoUri != null) {
+            incidencia.setFotoUri(fotoUri.toString());
+        }
 
         pedidoController.registrarIncidencia(incidencia, new PedidoController.OperacionCallback() {
             @Override
             public void onSuccess() {
                 mostrarProgreso(false);
-                mostrarSnackbar("Incidencia registrada correctamente");
-
-                // Dar feedback visual y tiempo para que el usuario vea el mensaje
+                mostrarSnackbar("Incidencia registrada como pendiente");
                 new android.os.Handler().postDelayed(() -> finish(), 1500);
             }
 
             @Override
             public void onError(String message) {
                 mostrarProgreso(false);
+                Log.e(TAG, "Error al registrar incidencia: " + message);
                 mostrarSnackbar("Error: " + message);
             }
         });
@@ -379,7 +379,6 @@ public class IncidenciaActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Pedido pedido, List<Producto> productos) {
                 Log.d(TAG, "Pedido verificado correctamente: " + pedidoId);
-                // Podríamos mostrar información del pedido en la UI
                 mostrarSnackbar("Registrando incidencia para pedido: " + pedido.getNumero());
             }
 

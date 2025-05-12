@@ -1,5 +1,6 @@
 package com.trazabilidad.app.controllers;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -11,8 +12,8 @@ import com.trazabilidad.app.models.Incidencia;
 import com.trazabilidad.app.models.Pedido;
 import com.trazabilidad.app.models.Producto;
 import com.trazabilidad.app.models.Ubicacion;
-import com.trazabilidad.app.services.APIService;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -22,22 +23,14 @@ public class PedidoController {
     private ProductoDAO productoDAO;
     private IncidenciaDAO incidenciaDAO;
     private GPSController gpsController;
-    private APIService apiService;
-    private Context context;
     private DatabaseHelper dbHelper;
 
     public PedidoController(Context context) {
-        this.context = context;
-        dbHelper = DatabaseHelper.getInstance(context); // Instancia única
+        this.dbHelper = DatabaseHelper.getInstance(context);
         pedidoDAO = new PedidoDAO(context);
         productoDAO = new ProductoDAO(context);
         incidenciaDAO = new IncidenciaDAO(context);
         gpsController = new GPSController(context, 0); // Usar 0 como usuarioId predeterminado
-        apiService = new APIService(context);
-    }
-
-    private boolean isNetworkAvailable() {
-        return apiService.isNetworkAvailable();
     }
 
     public void registrarPedido(Pedido pedido, OperacionCallback callback) {
@@ -54,27 +47,6 @@ public class PedidoController {
     }
 
     public void obtenerPedidosAsignados(int usuarioId, PedidosCallback callback) {
-        if (isNetworkAvailable()) {
-            apiService.obtenerPedidosAsignados(usuarioId, new APIService.APICallback<List<Pedido>>() {
-                @Override
-                public void onSuccess(List<Pedido> pedidos) {
-                    for (Pedido pedido : pedidos) {
-                        pedidoDAO.insertarPedido(pedido);
-                    }
-                    callback.onSuccess(pedidos);
-                }
-
-                @Override
-                public void onError(String message) {
-                    obtenerPedidosLocal(usuarioId, callback);
-                }
-            });
-        } else {
-            obtenerPedidosLocal(usuarioId, callback);
-        }
-    }
-
-    private void obtenerPedidosLocal(int usuarioId, PedidosCallback callback) {
         try {
             List<Pedido> pedidos = pedidoDAO.obtenerPedidosPorUsuario(usuarioId);
             callback.onSuccess(pedidos);
@@ -116,7 +88,16 @@ public class PedidoController {
                         ubicacion.setFecha(new Date());
                         ubicacion.setUsuarioId(pedido.getUsuarioId());
                         ubicacion.setPedidoId(pedidoId);
-                        // Guardar ubicación en la base de datos local o en el servicio
+                        // Guardar ubicación en la base de datos local
+                        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+                            ContentValues values = new ContentValues();
+                            values.put(DatabaseHelper.COLUMN_UBICACION_LATITUD, ubicacion.getLatitud());
+                            values.put(DatabaseHelper.COLUMN_UBICACION_LONGITUD, ubicacion.getLongitud());
+                            values.put(DatabaseHelper.COLUMN_UBICACION_FECHA, ubicacion.getFecha().getTime());
+                            values.put(DatabaseHelper.COLUMN_UBICACION_USUARIO_ID, ubicacion.getUsuarioId());
+                            values.put(DatabaseHelper.COLUMN_UBICACION_PEDIDO_ID, ubicacion.getPedidoId());
+                            db.insert(DatabaseHelper.TABLE_UBICACIONES, null, values);
+                        }
                         callback.onSuccess();
                     }
 
@@ -135,33 +116,32 @@ public class PedidoController {
 
     public void registrarIncidencia(Incidencia incidencia, OperacionCallback callback) {
         try {
+            // Validar estado
+            if (!Arrays.asList(Incidencia.ESTADO_PENDIENTE, Incidencia.ESTADO_RESUELTO).contains(incidencia.getEstado())) {
+                callback.onError("Estado no válido: " + incidencia.getEstado());
+                return;
+            }
+
+            // Insertar incidencia localmente
             boolean resultado = incidenciaDAO.insertarIncidencia(incidencia);
             if (resultado) {
-                if (isNetworkAvailable()) {
-                    apiService.registrarIncidencia(incidencia, new APIService.APICallback<Void>() {
-                        @Override
-                        public void onSuccess(Void result) {
-                            callback.onSuccess();
-                        }
-
-                        @Override
-                        public void onError(String message) {
-                            callback.onSuccess(); // Éxito local, pero pendiente de sincronización
-                        }
-                    });
-                } else {
-                    callback.onSuccess(); // Solo local, sincronizar después
-                }
-
-                if (incidencia.getPedidoId() > 0) {
-                    Pedido pedido = pedidoDAO.obtenerPedidoPorId(incidencia.getPedidoId());
+                // Actualizar estado del pedido si aplica
+                int pedidoId = incidencia.getPedidoId();
+                if (pedidoId > 0) {
+                    Pedido pedido = pedidoDAO.obtenerPedidoPorId(pedidoId);
                     if (pedido != null) {
-                        pedido.setEstado("INCIDENCIA");
-                        pedidoDAO.actualizarPedido(pedido);
+                        if (Arrays.asList("PENDIENTE", "EN_PROCESO").contains(pedido.getEstado())) {
+                            pedido.setEstado("INCIDENCIA");
+                            pedidoDAO.actualizarPedido(pedido);
+                        } else {
+                            callback.onError("No se puede registrar incidencia para pedido en estado: " + pedido.getEstado());
+                            return;
+                        }
                     }
                 }
+                callback.onSuccess();
             } else {
-                callback.onError("Error al registrar la incidencia");
+                callback.onError("Error al registrar la incidencia en la base de datos");
             }
         } catch (Exception e) {
             callback.onError("Error al registrar incidencia: " + e.getMessage());
