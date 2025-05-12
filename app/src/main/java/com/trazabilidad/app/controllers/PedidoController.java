@@ -13,7 +13,6 @@ import com.trazabilidad.app.models.Producto;
 import com.trazabilidad.app.models.Ubicacion;
 import com.trazabilidad.app.services.APIService;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,7 +32,7 @@ public class PedidoController {
         pedidoDAO = new PedidoDAO(context);
         productoDAO = new ProductoDAO(context);
         incidenciaDAO = new IncidenciaDAO(context);
-        gpsController = new GPSController(context);
+        gpsController = new GPSController(context, 0); // Usar 0 como usuarioId predeterminado
         apiService = new APIService(context);
     }
 
@@ -168,7 +167,6 @@ public class PedidoController {
             callback.onError("Error al registrar incidencia: " + e.getMessage());
         }
     }
-
 
     public List<Incidencia> obtenerIncidenciasPorUsuario(int usuarioId) {
         return incidenciaDAO.obtenerIncidenciasPorUsuario(usuarioId);

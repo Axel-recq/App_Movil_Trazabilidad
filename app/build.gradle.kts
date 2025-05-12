@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "com.trazabilidad.app"
-        minSdk = 24
+        minSdk = 28
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -80,7 +80,6 @@ dependencies {
     implementation(libs.androidx.gridlayout)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.activity.ktx)
-    implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
@@ -94,4 +93,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation("com.google.android.material:material:1.12.0")
 }
