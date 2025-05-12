@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (id == R.id.btnViewAllOrders) {
             startActivity(new Intent(this, ListaPedidosActivity.class));
         } else if (id == R.id.btnViewAllIncidents) {
-            startActivity(new Intent(this, IncidenciaActivity.class));
+            startActivity(new Intent(this, IncidenciasListActivity.class));
         }
     }
 

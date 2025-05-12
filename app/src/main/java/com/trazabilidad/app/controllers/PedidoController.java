@@ -3,6 +3,7 @@ package com.trazabilidad.app.controllers;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.trazabilidad.app.database.DatabaseHelper;
 import com.trazabilidad.app.database.IncidenciaDAO;
@@ -12,27 +13,32 @@ import com.trazabilidad.app.models.Incidencia;
 import com.trazabilidad.app.models.Pedido;
 import com.trazabilidad.app.models.Producto;
 import com.trazabilidad.app.models.Ubicacion;
+import com.trazabilidad.app.services.APIService;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 public class PedidoController {
-
+    private static final String TAG = "PedidoController";
     private PedidoDAO pedidoDAO;
     private ProductoDAO productoDAO;
     private IncidenciaDAO incidenciaDAO;
     private GPSController gpsController;
     private DatabaseHelper dbHelper;
+    private APIService apiService;
 
     public PedidoController(Context context) {
         this.dbHelper = DatabaseHelper.getInstance(context);
         pedidoDAO = new PedidoDAO(context);
         productoDAO = new ProductoDAO(context);
         incidenciaDAO = new IncidenciaDAO(context);
-        gpsController = new GPSController(context, 0); // Usar 0 como usuarioId predeterminado
+        gpsController = new GPSController(context, 0);
+        apiService = new APIService(context);
     }
-
+    private boolean isNetworkAvailable() {
+        return apiService.isNetworkAvailable();
+    }
     public void registrarPedido(Pedido pedido, OperacionCallback callback) {
         try {
             boolean resultado = pedidoDAO.insertarPedido(pedido);
@@ -116,32 +122,33 @@ public class PedidoController {
 
     public void registrarIncidencia(Incidencia incidencia, OperacionCallback callback) {
         try {
-            // Validar estado
-            if (!Arrays.asList(Incidencia.ESTADO_PENDIENTE, Incidencia.ESTADO_RESUELTO).contains(incidencia.getEstado())) {
-                callback.onError("Estado no válido: " + incidencia.getEstado());
-                return;
-            }
-
-            // Insertar incidencia localmente
             boolean resultado = incidenciaDAO.insertarIncidencia(incidencia);
             if (resultado) {
-                // Actualizar estado del pedido si aplica
-                int pedidoId = incidencia.getPedidoId();
-                if (pedidoId > 0) {
-                    Pedido pedido = pedidoDAO.obtenerPedidoPorId(pedidoId);
-                    if (pedido != null) {
-                        if (Arrays.asList("PENDIENTE", "EN_PROCESO").contains(pedido.getEstado())) {
-                            pedido.setEstado("INCIDENCIA");
-                            pedidoDAO.actualizarPedido(pedido);
-                        } else {
-                            callback.onError("No se puede registrar incidencia para pedido en estado: " + pedido.getEstado());
-                            return;
+                if (isNetworkAvailable()) {
+                    apiService.registrarIncidencia(incidencia, new APIService.APICallback<Void>() {
+                        @Override
+                        public void onSuccess(Void result) {
+                            callback.onSuccess();
                         }
+
+                        @Override
+                        public void onError(String message) {
+                            callback.onSuccess(); // Éxito local, pero pendiente de sincronización
+                        }
+                    });
+                } else {
+                    callback.onSuccess(); // Solo local, sincronizar después
+                }
+
+                if (incidencia.getPedidoId() > 0) {
+                    Pedido pedido = pedidoDAO.obtenerPedidoPorId(incidencia.getPedidoId());
+                    if (pedido != null) {
+                        pedido.setEstado("INCIDENCIA");
+                        pedidoDAO.actualizarPedido(pedido);
                     }
                 }
-                callback.onSuccess();
             } else {
-                callback.onError("Error al registrar la incidencia en la base de datos");
+                callback.onError("Error al registrar la incidencia");
             }
         } catch (Exception e) {
             callback.onError("Error al registrar incidencia: " + e.getMessage());
