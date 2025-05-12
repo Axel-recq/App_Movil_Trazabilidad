@@ -40,6 +40,17 @@ public class ReporteActivity extends AppCompatActivity {
     private ReporteController reporteController;
     private SessionManager sessionManager;
 
+    // Definir los tipos de reportes exactamente como en ReporteController
+    private final String[] TIPOS_REPORTES = {
+            "Seleccione un tipo de reporte",
+            "Pedidos por Estado",
+            "Incidencias por Tipo",
+            "Resumen de Entregas",
+            "Tiempo Promedio de Entrega",
+            "Ratio de Entregas por Hora",
+            "Porcentaje de Entregas Exitosas"
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,8 +92,9 @@ public class ReporteActivity extends AppCompatActivity {
     }
 
     private void configurarSpinner() {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this, R.array.tipos_reportes, android.R.layout.simple_spinner_item);
+        // Usar el array definido en la clase en lugar de un recurso
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_item, TIPOS_REPORTES);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerTipoReporte.setAdapter(adapter);
         spinnerTipoReporte.setSelection(0, false);
@@ -96,27 +108,33 @@ public class ReporteActivity extends AppCompatActivity {
         }
 
         int usuarioId = sessionManager.getUsuarioDetails().getId();
-
+        findViewById(R.id.loadingContainer).setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.VISIBLE);
         cardResultados.setVisibility(View.GONE);
 
         reporteController.generarReporte(tipoReporte, usuarioId, new ReporteController.ReporteCallback() {
             @Override
             public void onSuccess(Map<String, Integer> resultados) {
-                progressBar.setVisibility(View.GONE);
-                mostrarResultadosInteger(resultados);
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    mostrarResultadosInteger(resultados);
+                });
             }
 
             @Override
             public void onSuccessDouble(Map<String, Double> resultados) {
-                progressBar.setVisibility(View.GONE);
-                mostrarResultadosDouble(resultados);
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    mostrarResultadosDouble(resultados);
+                });
             }
 
             @Override
             public void onError(String message) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(ReporteActivity.this, message, Toast.LENGTH_SHORT).show();
+                runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(ReporteActivity.this, message, Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }
@@ -132,10 +150,14 @@ public class ReporteActivity extends AppCompatActivity {
 
     private void mostrarResultadosDouble(Map<String, Double> resultados) {
         StringBuilder sb = new StringBuilder();
+        boolean hasData = false;
         for (Map.Entry<String, Double> entry : resultados.entrySet()) {
-            sb.append(entry.getKey()).append(": ").append(String.format("%.2f", entry.getValue())).append("\n\n");
+            if (entry.getValue() != 0.0) {
+                sb.append(entry.getKey()).append(": ").append(String.format("%.2f", entry.getValue())).append("\n\n");
+                hasData = true;
+            }
         }
-        tvResultados.setText(sb.toString());
+        tvResultados.setText(hasData ? sb.toString() : "No hay datos disponibles para este reporte");
         cardResultados.setVisibility(View.VISIBLE);
     }
 
@@ -146,10 +168,13 @@ public class ReporteActivity extends AppCompatActivity {
             return;
         }
 
+        String tipoReporte = spinnerTipoReporte.getSelectedItem().toString();
+
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Reporte generado");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, "Reporte del " + DateUtils.formatDate(new Date()) + "\n\n" + resultados);
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Reporte: " + tipoReporte);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "Reporte de " + tipoReporte + " del " +
+                DateUtils.formatDate(new Date()) + "\n\n" + resultados);
         startActivity(Intent.createChooser(shareIntent, "Compartir reporte"));
     }
 
@@ -159,10 +184,14 @@ public class ReporteActivity extends AppCompatActivity {
                 .setMessage("La sección de reportes permite generar diferentes tipos de informes:\n\n" +
                         "• Pedidos por Estado: Muestra la cantidad de pedidos en cada estado.\n\n" +
                         "• Incidencias por Tipo: Visualiza las incidencias agrupadas por categoría.\n\n" +
-                        "• Resumen de Entregas: Resume la actividad de entregas reciente.")
+                        "• Resumen de Entregas: Resume la actividad de entregas reciente.\n\n" +
+                        "• Tiempo Promedio de Entrega: Muestra el tiempo promedio que toma completar una entrega.\n\n" +
+                        "• Ratio de Entregas por Hora: Calcula cuántas entregas se realizan por hora.\n\n" +
+                        "• Porcentaje de Entregas Exitosas: Muestra el porcentaje de entregas completadas sin incidencias.")
                 .setPositiveButton(R.string.ok, null)
                 .show();
     }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {

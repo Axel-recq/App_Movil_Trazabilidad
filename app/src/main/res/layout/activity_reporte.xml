@@ -260,10 +260,10 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_dialog_info"
-                        android:tint="@color/success"
                         android:contentDescription="Resultados"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="@color/success" />
 
                     <TextView
                         android:id="@+id/tvResultadosTitle"

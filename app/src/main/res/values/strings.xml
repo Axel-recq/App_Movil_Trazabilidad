@@ -62,13 +62,6 @@
     <string name="menu_home">Inicio</string>
     <string name="account_settings">Configuración de cuenta</string>
 
-    <string-array name="tipos_reportes">
-        <item>Seleccione un tipo de reporte</item>
-        <item>Pedidos por Estado</item>
-        <item>Incidencias por Tipo</item>
-        <item>Resumen de Entregas</item>
-    </string-array>
-
     <string name="welcome_format">¡Bienvenido, %1$s!</string>
     <string name="welcome_subtitle">¿Qué deseas hacer hoy?</string>
     <string name="main_menu_title">Menú Principal</string>
@@ -141,4 +134,15 @@
     <string name="estado_pedido_hint">Estado del pedido</string>
     <string name="registrar_pedido">Registrar Pedido</string>
     <string name="obtener_ubicacion">Obtener Ubicación</string>
+
+    <string-array name="tipos_reportes">
+        <item>Seleccione un tipo de reporte</item>
+        <item>Pedidos por Estado</item>
+        <item>Incidencias por Tipo</item>
+        <item>Resumen de Entregas</item>
+        <item>Tiempo Promedio de Entrega</item>
+        <item>Ratio de Entregas por Hora</item>
+        <item>Porcentaje de Entregas Exitosas</item>
+    </string-array>
+
 </resources>
