@@ -13,23 +13,32 @@ public class ReporteDAO {
         dbHelper = DatabaseHelper.getInstance(context);
     }
 
-    // Método para obtener el tiempo promedio de entrega en minutos
     public double obtenerTiempoPromedioEntrega() {
-        double promedio = 0.0;
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
              Cursor cursor = db.rawQuery(
-                     "SELECT AVG(tiempo_entrega_minutos) FROM view_reportes WHERE entrega_exitosa = 1",
-                     null
-             )) {
+                     "SELECT AVG(" + DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA + " - " +
+                             DatabaseHelper.COLUMN_PEDIDO_HORA_SALIDA + ") FROM " +
+                             DatabaseHelper.TABLE_PEDIDOS + " WHERE " +
+                             DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA + " > 0", null)) {
             if (cursor.moveToFirst()) {
-                promedio = cursor.getDouble(0);
+                return cursor.getDouble(0) / 1000 / 60; // Minutos
             }
-        } catch (Exception e) {
-            // Manejar error
+            return 0;
         }
-        return promedio;
     }
-
+    public double obtenerPorcentajeEntregasExitosas() {
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery(
+                     "SELECT COUNT(*) * 100.0 / (SELECT COUNT(*) FROM " +
+                             DatabaseHelper.TABLE_PEDIDOS + ") FROM " +
+                             DatabaseHelper.TABLE_PEDIDOS + " WHERE " +
+                             DatabaseHelper.COLUMN_PEDIDO_ESTADO + " = 'ENTREGADO'", null)) {
+            if (cursor.moveToFirst()) {
+                return cursor.getDouble(0);
+            }
+            return 0;
+        }
+    }
     // Método para obtener el ratio de entregas por hora
     public double obtenerRatioEntregasPorHora() {
         double ratio = 0.0;
@@ -47,20 +56,5 @@ public class ReporteDAO {
         return ratio;
     }
 
-    // Método para obtener el porcentaje de entregas exitosas
-    public double obtenerPorcentajeEntregasExitosas() {
-        double porcentaje = 0.0;
-        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
-             Cursor cursor = db.rawQuery(
-                     "SELECT (SUM(CASE WHEN entrega_exitosa = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) FROM view_reportes",
-                     null
-             )) {
-            if (cursor.moveToFirst()) {
-                porcentaje = cursor.getDouble(0);
-            }
-        } catch (Exception e) {
-            // Manejar error
-        }
-        return porcentaje;
-    }
+
 }
