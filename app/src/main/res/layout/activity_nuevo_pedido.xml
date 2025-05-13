@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
     tools:context=".activities.NuevoPedidoActivity">
 
-    <!-- AppBar con elevación mejorada -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
-        app:elevation="4dp">
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorPrimary"
+            app:titleTextAppearance="@style/TextAppearance.App.Headline6"
             app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Contenido con cards -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -34,43 +33,47 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="16dp"
-            android:paddingBottom="24dp"
-            android:clipToPadding="false">
+            android:padding="16dp">
 
-            <!-- Título con estilo más moderno -->
+            <!-- Cabecera -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:gravity="center_vertical"
                 android:layout_marginBottom="16dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    app:cardBackgroundColor="@color/colorPrimary"
+                    app:cardCornerRadius="21dp"
+                    app:cardElevation="4dp"
+                    android:layout_marginEnd="16dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_empty_orders"
+                        app:tint="@color/colorOnPrimary"
+                        android:contentDescription="@string/new_order" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/new_order"
-                    android:textAppearance="?attr/textAppearanceHeadline5"
-                    android:textColor="@color/colorOnBackground" />
+                    android:textAppearance="@style/TextAppearance.App.HeadlineSmall" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipNuevoPedido"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nuevo"
-                    app:chipBackgroundColor="@color/colorPrimary"
-                    app:chipIconVisible="false"
-                    android:textColor="@android:color/white" />
+
             </LinearLayout>
 
-            <!-- Card de información básica -->
+            <!-- Tarjeta de información básica -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp">
@@ -84,99 +87,105 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Información Básica"
-                        android:textAppearance="?attr/textAppearanceSubtitle1"
-                        android:textColor="@color/colorPrimary"
-                        android:layout_marginBottom="12dp" />
+                        android:text="Información del Pedido"
+                        android:textAppearance="@style/TextAppearance.App.TitleMedium"
+                        android:layout_marginBottom="16dp" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilNumero"
-                        style="@style/App.TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:hint="@string/numero_pedido_hint"
-
-                        app:startIconTint="@color/colorPrimary">
+                        style="@style/App.TextInputLayout">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etNumero"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="text" />
+                            android:inputType="text"
+                            android:maxLines="1" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilCliente"
-                        style="@style/App.TextInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:hint="@string/cliente_hint"
-
-                        app:startIconTint="@color/colorPrimary">
+                        style="@style/App.TextInputLayout">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etCliente"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="textPersonName" />
+                            android:inputType="textPersonName"
+                            android:maxLines="1" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilDireccion"
-                        style="@style/App.TextInputLayout"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="@string/direccion_hint"
+                        android:orientation="horizontal">
 
-                        app:startIconTint="@color/colorPrimary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etDireccion"
-                            android:layout_width="match_parent"
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilDireccion"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:inputType="textPostalAddress" />
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginBottom="16dp"
+                            android:hint="@string/direccion_hint"
+                            style="@style/App.TextInputLayout">
 
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etDireccion"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPostalAddress"
+                                android:maxLines="2" />
 
-            <!-- Card de estado y observaciones -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                        </com.google.android.material.textfield.TextInputLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Detalles Adicionales"
-                        android:textAppearance="?attr/textAppearanceSubtitle1"
-                        android:textColor="@color/colorPrimary"
-                        android:layout_marginBottom="12dp" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnUbicacion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="bottom"
+                            android:layout_marginBottom="8dp"
+                            android:text="@string/obtener_ubicacion"
+                            app:icon="@drawable/ic_map"
+                            style="@style/App.Button.Outlined" />
+                    </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilEstado"
-                        style="@style/App.TextInputLayout"
+                        android:id="@+id/tilObservaciones"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
+                        android:hint="@string/observaciones_hint"
+                        style="@style/App.TextInputLayout">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etObservaciones"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textMultiLine"
+                            android:gravity="top"
+                            android:minLines="2"
+                            android:maxLines="4" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilEstado"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:hint="@string/estado_pedido_hint"
-                        app:endIconMode="dropdown_menu"
-                        app:startIconTint="@color/colorPrimary">
+                        style="@style/App.TextInputLayout"
+                        app:endIconMode="dropdown_menu">
 
                         <AutoCompleteTextView
                             android:id="@+id/actvEstado"
@@ -185,34 +194,14 @@
                             android:inputType="none" />
 
                     </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilObservaciones"
-                        style="@style/App.TextInputLayout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="@string/observaciones_hint"
-                        app:startIconTint="@color/colorPrimary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etObservaciones"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="top"
-                            android:inputType="textMultiLine"
-                            android:minLines="3" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card de ubicación -->
+            <!-- Tarjeta de productos -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="16dp"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="4dp">
 
@@ -222,64 +211,85 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Ubicación"
-                        android:textAppearance="?attr/textAppearanceSubtitle1"
-                        android:textColor="@color/colorPrimary"
-                        android:layout_marginBottom="12dp" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
 
-                    <FrameLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:layout_marginBottom="16dp"
-                        android:background="#EFEFEF">
-
-                        <!-- Aquí podrías añadir un mapa placeholder -->
                         <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Productos"
+                            android:textAppearance="@style/TextAppearance.App.TitleMedium" />
+
+                        <TextView
+                            android:id="@+id/textViewTotalPedido"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:text="Mapa de Ubicación"
-                            android:textColor="@color/colorPrimary" />
-                    </FrameLayout>
+                            android:text="Total: €0.00"
+                            android:textAppearance="@style/TextAppearance.App.Subtitle1"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </LinearLayout>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnUbicacion"
-                        style="@style/App.Button.Outlined"
+                    <TextView
+                        android:id="@+id/textViewNoProductos"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/obtener_ubicacion"
-                        app:icon="@drawable/ic_map" />
+                        android:text="No hay productos agregados"
+                        android:textAppearance="@style/TextAppearance.App.Body1"
+                        android:gravity="center"
+                        android:padding="24dp" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewProductos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:clipToPadding="false"
+                        android:nestedScrollingEnabled="false" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Botón flotante de registro -->
+            <!-- Botón de registro -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRegistrar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/registrar_pedido"
+                android:padding="12dp"
+                app:icon="@drawable/ic_check"
+                style="@style/App.Button" />
+
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnRegistrar"
-                    style="@style/App.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="@string/registrar_pedido"
-                    app:cornerRadius="28dp"
-                    app:elevation="8dp"
-                    app:iconGravity="textStart" />
+                android:layout_marginTop="16dp">
 
                 <ProgressBar
                     android:id="@+id/progressBar"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_gravity="center"
-                    android:indeterminate="true"
                     android:visibility="gone" />
             </FrameLayout>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAgregarProductos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:contentDescription="Agregar productos"
+        app:srcCompat="@drawable/ic_add"
+        app:backgroundTint="@color/colorPrimary"
+        app:tint="@color/colorOnPrimary" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

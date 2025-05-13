@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.trazabilidad.app.models.Pedido;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,6 +44,7 @@ public class PedidoDAO {
         }
         return pedidos;
     }
+
     private int getPedidosCount(DatabaseHelper dbHelper) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS, null);
@@ -132,6 +132,7 @@ public class PedidoDAO {
         }
         return pedidos;
     }
+
     public boolean confirmarEntrega(int pedidoId) {
         Pedido pedido = obtenerPedidoPorId(pedidoId);
         if (pedido != null) {
@@ -140,6 +141,7 @@ public class PedidoDAO {
         }
         return false;
     }
+
     public void verificarDemora(Pedido pedido) {
         long horaActual = System.currentTimeMillis();
         if (pedido.getHoraEstimada() < horaActual && pedido.getHoraEntrega() == 0) {
@@ -161,7 +163,13 @@ public class PedidoDAO {
         values.put(DatabaseHelper.COLUMN_PEDIDO_LATITUD, pedido.getLatitud());
         values.put(DatabaseHelper.COLUMN_PEDIDO_LONGITUD, pedido.getLongitud());
         values.put(DatabaseHelper.COLUMN_PEDIDO_OBSERVACIONES, pedido.getObservaciones());
-
+        values.put(DatabaseHelper.COLUMN_PEDIDO_TOTAL, pedido.getTotal()); //
+        values.put(DatabaseHelper.COLUMN_PEDIDO_HORA_SALIDA, pedido.getHoraSalida());
+        values.put(DatabaseHelper.COLUMN_PEDIDO_HORA_ESTIMADA, pedido.getHoraEstimada());
+        values.put(DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA, pedido.getHoraEntrega());
+        values.put(DatabaseHelper.COLUMN_PEDIDO_ALERTA_DEMORA, pedido.isAlertaDemora() ? 1 : 0);
+        values.put(DatabaseHelper.COLUMN_PEDIDO_MOTIVO_DEMORA, pedido.getMotivoDemora());
+        values.put(DatabaseHelper.COLUMN_PEDIDO_CONFIRMADO, pedido.isConfirmado() ? 1 : 0);
         return values;
     }
 
@@ -182,7 +190,8 @@ public class PedidoDAO {
                 DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA,
                 DatabaseHelper.COLUMN_PEDIDO_ALERTA_DEMORA,
                 DatabaseHelper.COLUMN_PEDIDO_MOTIVO_DEMORA,
-                DatabaseHelper.COLUMN_PEDIDO_CONFIRMADO
+                DatabaseHelper.COLUMN_PEDIDO_CONFIRMADO,
+                DatabaseHelper.COLUMN_PEDIDO_TOTAL
         };
     }
 
@@ -207,6 +216,7 @@ public class PedidoDAO {
         pedido.setAlertaDemora(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_ALERTA_DEMORA)) == 1);
         pedido.setMotivoDemora(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_MOTIVO_DEMORA)));
         pedido.setConfirmado(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_CONFIRMADO)) == 1);
+        pedido.setTotal(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_TOTAL)));
 
         return pedido;
     }

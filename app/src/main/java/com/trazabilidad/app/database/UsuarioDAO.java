@@ -24,17 +24,8 @@ public class UsuarioDAO {
             long id = db.insert(DatabaseHelper.TABLE_USUARIOS, null, values);
             return id != -1;
         } catch (Exception e) {
-
             return false;
         }
-    }
-
-    public Usuario autenticarUsuario(String email, String password) {
-        Usuario usuario = obtenerUsuarioPorEmail(email);
-        if (usuario != null && usuario.getPassword().equals(password)) {
-            return usuario;
-        }
-        return null;
     }
 
     public boolean actualizarUsuario(Usuario usuario) {
@@ -48,21 +39,22 @@ public class UsuarioDAO {
             );
             return rowsAffected > 0;
         } catch (Exception e) {
-
             return false;
         }
     }
 
     public boolean eliminarUsuario(int id) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
-            int rowsAffected = db.delete(
+            ContentValues values = new ContentValues();
+            values.put(DatabaseHelper.COLUMN_USUARIO_ACTIVO, 0);
+            int rowsAffected = db.update(
                     DatabaseHelper.TABLE_USUARIOS,
+                    values,
                     DatabaseHelper.COLUMN_USUARIO_ID + " = ?",
                     new String[]{String.valueOf(id)}
             );
             return rowsAffected > 0;
         } catch (Exception e) {
-
             return false;
         }
     }
@@ -83,7 +75,6 @@ public class UsuarioDAO {
             }
             return null;
         } catch (Exception e) {
-
             return null;
         }
     }
@@ -104,7 +95,6 @@ public class UsuarioDAO {
             }
             return null;
         } catch (Exception e) {
-
             return null;
         }
     }
@@ -125,7 +115,6 @@ public class UsuarioDAO {
                 usuarios.add(cursorToUsuario(cursor));
             }
         } catch (Exception e) {
-
         }
         return usuarios;
     }

@@ -15,6 +15,7 @@ public class Pedido implements Serializable {
     private double latitud;
     private double longitud;
     private String observaciones;
+    private double total;
     // Campos adicionales
     private long horaSalida;        // Nueva columna
     private long horaEstimada;      // Nueva columna
@@ -116,6 +117,13 @@ public class Pedido implements Serializable {
 
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
+    }
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
     }
     public long getHoraSalida() { return horaSalida; }
     public void setHoraSalida(long horaSalida) { this.horaSalida = horaSalida; }

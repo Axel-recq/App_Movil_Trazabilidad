@@ -2,6 +2,7 @@ package com.trazabilidad.app.controllers;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
@@ -33,22 +34,43 @@ public class PedidoController {
         pedidoDAO = new PedidoDAO(context);
         productoDAO = new ProductoDAO(context);
         incidenciaDAO = new IncidenciaDAO(context);
-        gpsController = new GPSController(context, 0);
+        gpsController = new GPSController(context,0);
         apiService = new APIService(context);
     }
     private boolean isNetworkAvailable() {
         return apiService.isNetworkAvailable();
     }
-    public void registrarPedido(Pedido pedido, OperacionCallback callback) {
+    public void registrarPedido(Pedido pedido, List<Producto> productos, OperacionCallback callback) {
         try {
-            boolean resultado = pedidoDAO.insertarPedido(pedido);
-            if (resultado) {
-                callback.onSuccess();
-            } else {
+            // Insertar el pedido
+            boolean pedidoInsertado = pedidoDAO.insertarPedido(pedido);
+            if (!pedidoInsertado) {
                 callback.onError("Error al insertar el pedido en la base de datos");
+                return;
             }
+
+            // Obtener el ID del pedido recién insertado
+            int pedidoId = obtenerUltimoPedidoId();
+            if (pedidoId == -1) {
+                callback.onError("No se pudo obtener el ID del pedido recién creado");
+                return;
+            }
+
+            // Insertar los productos asociados al pedido (si hay productos en la lista)
+            if (productos != null && !productos.isEmpty()) {
+                for (Producto producto : productos) {
+                    producto.setPedidoId(pedidoId); // Asociar el producto al pedido
+                    boolean productoInsertado = productoDAO.insertarProducto(producto);
+                    if (!productoInsertado) {
+                        callback.onError("Error al insertar el producto: " + producto.getNombre());
+                        return;
+                    }
+                }
+            }
+
+            callback.onSuccess();
         } catch (Exception e) {
-            callback.onError("Error al registrar el pedido: " + e.getMessage());
+            callback.onError("Error al registrar el pedido y productos: " + e.getMessage());
         }
     }
 
@@ -155,6 +177,18 @@ public class PedidoController {
         }
     }
 
+    // Método auxiliar para obtener el ID del último pedido insertado
+    private int obtenerUltimoPedidoId() {
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery("SELECT MAX(" + DatabaseHelper.COLUMN_PEDIDO_ID + ") FROM " + DatabaseHelper.TABLE_PEDIDOS, null)) {
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+            return -1; // Indica un error si no se encuentra
+        } catch (Exception e) {
+            return -1; // Indica un error en caso de excepción
+        }
+    }
     public List<Incidencia> obtenerIncidenciasPorUsuario(int usuarioId) {
         return incidenciaDAO.obtenerIncidenciasPorUsuario(usuarioId);
     }

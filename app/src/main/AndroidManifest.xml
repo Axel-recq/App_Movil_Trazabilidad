@@ -60,6 +60,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.ListaPedidosActivity" />
         </activity>
-
+        <activity
+            android:name=".activities.ListaProductosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.GestionProductoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.SeleccionProductosActivity"
+            android:exported="true" />
     </application>
 </manifest>

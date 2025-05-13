@@ -8,7 +8,7 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "trazabilidad.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
     private static DatabaseHelper sInstance;
 
     // Table and column names
@@ -38,6 +38,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PEDIDO_ALERTA_DEMORA = "alerta_demora";
     public static final String COLUMN_PEDIDO_MOTIVO_DEMORA = "motivo_demora";
     public static final String COLUMN_PEDIDO_CONFIRMADO = "confirmado";
+    public static final String COLUMN_PEDIDO_TOTAL = "total";
 
     public static final String TABLE_PRODUCTOS = "productos";
     public static final String COLUMN_PRODUCTO_ID = "id";
@@ -117,6 +118,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_PEDIDO_ALERTA_DEMORA + " INTEGER DEFAULT 0, " +
                     COLUMN_PEDIDO_MOTIVO_DEMORA + " TEXT, " +
                     COLUMN_PEDIDO_CONFIRMADO + " INTEGER DEFAULT 0, " +
+                    COLUMN_PEDIDO_TOTAL + " REAL DEFAULT 0, " +
                     "FOREIGN KEY(" + COLUMN_PEDIDO_USUARIO_ID + ") REFERENCES " +
                     TABLE_USUARIOS + "(" + COLUMN_USUARIO_ID + ")" +
                     ")";
@@ -402,6 +404,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     Log.w(TAG, "Error al migrar calificaciones", e);
                 }
             }
+            if (oldVersion < 9) {
+                agregarColumnaSiNoExiste(db, TABLE_PEDIDOS, COLUMN_PEDIDO_TOTAL, "REAL DEFAULT 0");
+            }
 
             db.setTransactionSuccessful();
         } catch (Exception e) {
@@ -450,7 +455,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_USUARIO_ROL + ", " +
                 COLUMN_USUARIO_TELEFONO + ", " +
                 COLUMN_USUARIO_ACTIVO + ") " +
-                "VALUES ('Juan Pérez', 'juan.perez@example.pe', 'juan123', 'REPARTIDOR', '999-123-456', 1)");
+                "VALUES ('Juan Pérez', 'bryanmp', 'Inversiones', 'REPARTIDOR', '999-123-456', 1)");
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_USUARIOS +
                 " (" + COLUMN_USUARIO_NOMBRE + ", " +
                 COLUMN_USUARIO_EMAIL + ", " +

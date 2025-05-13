@@ -24,6 +24,10 @@
             android:id="@+id/nav_incidencias"
             android:icon="@drawable/ic_incidents"
             android:title="@string/nav_incidencias" />
+        <item
+            android:id="@+id/nav_lista_productos"
+            android:icon="@drawable/ic_lista_productos"
+            android:title="@string/nav_lista_productos" />
     </group>
 
     <item android:title="@string/account_settings">

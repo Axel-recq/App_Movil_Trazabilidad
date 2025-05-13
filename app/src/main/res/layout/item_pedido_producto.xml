@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    style="@style/App.CardView">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Nombre del producto -->
+        <TextView
+            android:id="@+id/textViewNombre"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Subtitle1"
+            android:textStyle="bold"
+            android:textColor="@color/gray_800"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnEditCantidad"
+            android:layout_marginEnd="8dp"
+            tools:text="Producto Ejemplo Largo Con Nombre Extenso" />
+
+        <!-- Código del producto -->
+        <TextView
+            android:id="@+id/textViewCodigo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Caption"
+            android:textColor="@color/gray_600"
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewNombre"
+            tools:text="Código: PROD001" />
+
+        <!-- Divisor para separar secciones -->
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="@color/gray_200"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewCodigo" />
+
+        <!-- Precio unitario -->
+        <TextView
+            android:id="@+id/textViewPrecioLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Precio unitario:"
+            android:textAppearance="@style/TextAppearance.App.Caption"
+            android:textColor="@color/gray_500"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+        <TextView
+            android:id="@+id/textViewPrecio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Body2"
+            android:textColor="@color/colorPrimary"
+            android:textStyle="bold"
+            android:layout_marginStart="4dp"
+            app:layout_constraintStart_toEndOf="@+id/textViewPrecioLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewPrecioLabel"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewPrecioLabel"
+            tools:text="€10,99" />
+
+        <!-- Cantidad -->
+        <TextView
+            android:id="@+id/textViewCantidadLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cantidad:"
+            android:textAppearance="@style/TextAppearance.App.Caption"
+            android:textColor="@color/gray_500"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewPrecioLabel" />
+
+        <TextView
+            android:id="@+id/textViewCantidad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Body2"
+            android:textColor="@color/gray_700"
+            android:layout_marginStart="4dp"
+            app:layout_constraintStart_toEndOf="@+id/textViewCantidadLabel"
+            app:layout_constraintTop_toTopOf="@+id/textViewCantidadLabel"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewCantidadLabel"
+            tools:text="2" />
+
+        <!-- Subtotal con fondo destacado -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/subtotalCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/custom_100"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewCantidadLabel"
+            app:strokeWidth="0dp">
+
+            <TextView
+                android:id="@+id/textViewSubtotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:textAppearance="@style/TextAppearance.App.Body1"
+                android:textColor="@color/colorPrimary"
+                android:textStyle="bold"
+                tools:text="Subtotal: €21,98" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Botones de acción -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRemoveProducto"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:icon="@android:drawable/ic_menu_delete"
+            app:iconTint="@color/error"
+            app:iconSize="24dp"
+            android:contentDescription="Eliminar producto"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewCodigo"
+            app:layout_constraintTop_toTopOf="@+id/textViewCodigo" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEditCantidad"
+            style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:icon="@android:drawable/ic_menu_edit"
+            app:iconTint="@color/colorSecondary"
+            app:iconSize="24dp"
+            android:contentDescription="Editar cantidad"
+            app:layout_constraintEnd_toStartOf="@+id/btnRemoveProducto"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>
