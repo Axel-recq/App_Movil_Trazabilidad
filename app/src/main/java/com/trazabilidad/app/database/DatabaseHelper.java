@@ -531,7 +531,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_MOTIVO_DEMORA + ", " +
                 COLUMN_PEDIDO_CONFIRMADO + ") " +
                 "VALUES ('PED-001', 'Cliente Uno', 'Av. Larco 123, Miraflores, Lima', " +
-                fechaActual + ", 'ASIGNADO', 1, 37.7749, -122.4194, " +
+                fechaActual + ", 'ASIGNADO', 1, -12.1216, -77.0293, " +
                 "'Entregar en horario de oficina', " +
                 fechaActual + ", " +
                 horaEstimadaEntrega + ", " +
@@ -552,7 +552,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_HORA_SALIDA + ", " +
                 COLUMN_PEDIDO_HORA_ESTIMADA + ") " +
                 "VALUES ('PED-002', 'Cliente Dos', 'Jr. de la Unión 456, Cercado de Lima', " +
-                fechaActual + ", 'EN_RUTA', 1, 37.7749, -122.4194, 'Llamar antes de entregar', " +
+                fechaActual + ", 'EN_RUTA', 1, -12.0464, -77.0428, 'Llamar antes de entregar', " +
                 (fechaActual - (30 * 60 * 1000)) + ", " + (horaEstimadaEntrega - (30 * 60 * 1000)) + ")");
 
         // PED-003: ENTREGADO, Miraflores
@@ -574,7 +574,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_HORA_ENTREGA + ", " +
                 COLUMN_PEDIDO_CONFIRMADO + ") " +
                 "VALUES ('PED-003', 'Cliente Tres', 'Calle Schell 789, Miraflores, Lima', " +
-                fechaPedidoAnterior + ", 'ENTREGADO', 1, 37.7749, -122.4194, 'Entregar en la recepción', " +
+                fechaPedidoAnterior + ", 'ENTREGADO', 1, -12.1216, -77.0293, 'Entregar en la recepción', " +
                 horaSalidaAnterior + ", " + (horaSalidaAnterior + (60 * 60 * 1000)) + ", " +
                 horaEntregaAnterior + ", 1)");
 
@@ -590,7 +590,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_LONGITUD + ", " +
                 COLUMN_PEDIDO_OBSERVACIONES + ") " +
                 "VALUES ('PED-004', 'Ana Martínez', 'Av. Arequipa 456, Lince, Lima', " +
-                fechaActual + ", 'PENDIENTE', NULL, 37.7749, -122.4194, 'Pendiente de asignación')");
+                fechaActual + ", 'PENDIENTE', NULL, -12.0847, -77.0369, 'Pendiente de asignación')");
 
         // PED-005: EN_PREPARACION, San Isidro
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDOS +
@@ -604,7 +604,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_LONGITUD + ", " +
                 COLUMN_PEDIDO_OBSERVACIONES + ") " +
                 "VALUES ('PED-005', 'José López', 'Av. Javier Prado 789, San Isidro, Lima', " +
-                fechaActual + ", 'EN_PREPARACION', 1, 37.7749, -122.4194, 'Preparando en almacén')");
+                fechaActual + ", 'EN_PREPARACION', 1, -12.0991, -77.0349, 'Preparando en almacén')");
 
         // PED-006: CANCELADO, San Miguel
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDOS +
@@ -618,7 +618,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_LONGITUD + ", " +
                 COLUMN_PEDIDO_OBSERVACIONES + ") " +
                 "VALUES ('PED-006', 'Laura Sánchez', 'Calle Los Olivos 101, San Miguel, Lima', " +
-                fechaActual + ", 'CANCELADO', 3, 37.7749, -122.4194, 'Cancelado por el cliente')");
+                fechaActual + ", 'CANCELADO', 3, -12.0763, -77.0931, 'Cancelado por el cliente')");
 
         // PED-007: ENTREGADO, Breña
         long fechaAnterior = fechaActual - (3 * 24 * 60 * 60 * 1000);
@@ -637,7 +637,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_HORA_ENTREGA + ", " +
                 COLUMN_PEDIDO_CONFIRMADO + ") " +
                 "VALUES ('PED-007', 'Pedro Ramírez', 'Av. Brasil 202, Breña, Lima', " +
-                fechaAnterior + ", 'ENTREGADO', 3, 37.7749, -122.4194, 'Entregado sin problemas', " +
+                fechaAnterior + ", 'ENTREGADO', 3, -12.0600, -77.0514, 'Entregado sin problemas', " +
                 (fechaAnterior + (30 * 60 * 1000)) + ", " +
                 (fechaAnterior + (90 * 60 * 1000)) + ", " +
                 (fechaAnterior + (120 * 60 * 1000)) + ", 1)");
@@ -658,7 +658,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_HORA_ENTREGA + ", " +
                 COLUMN_PEDIDO_CONFIRMADO + ") " +
                 "VALUES ('PED-008', 'Cliente Ocho', 'Av. Benavides 123, San Isidro, Lima', " +
-                (fechaActual - 3 * 24 * 60 * 60 * 1000) + ", 'ENTREGADO', 5, 37.7749, -122.4194, 'Entregado con éxito', " +
+                (fechaActual - 3 * 24 * 60 * 60 * 1000) + ", 'ENTREGADO', 5, -12.0991, -77.0349, 'Entregado con éxito', " +
                 (fechaActual - 3 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000) + ", " +
                 (fechaActual - 3 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000 + 60 * 60 * 1000) + ", " +
                 (fechaActual - 3 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000 + 50 * 60 * 1000) + ", 1)");
@@ -681,7 +681,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_MOTIVO_DEMORA + ", " +
                 COLUMN_PEDIDO_CONFIRMADO + ") " +
                 "VALUES ('PED-009', 'Cliente Nueve', 'Av. Caminos del Inca 456, Surco, Lima', " +
-                (fechaActual - 1 * 24 * 60 * 60 * 1000) + ", 'ENTREGADO', 5, 37.7749, -122.4194, 'Entregado con retraso', " +
+                (fechaActual - 1 * 24 * 60 * 60 * 1000) + ", 'ENTREGADO', 5, -12.1453, -77.0059, 'Entregado con retraso', " +
                 (fechaActual - 1 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000) + ", " +
                 (fechaActual - 1 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000 + 60 * 60 * 1000) + ", " +
                 (fechaActual - 1 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000 + 90 * 60 * 1000) + ", 1, 'Tráfico en la vía', 1)");
@@ -701,7 +701,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_HORA_ESTIMADA + ", " +
                 COLUMN_PEDIDO_CONFIRMADO + ") " +
                 "VALUES ('PED-010', 'Cliente Diez', 'Av. La Molina 789, La Molina, Lima', " +
-                (fechaActual - 4 * 24 * 60 * 60 * 1000) + ", 'RECHAZADO', 6, 37.7749, -122.4194, 'Cliente no aceptó el pedido', " +
+                (fechaActual - 4 * 24 * 60 * 60 * 1000) + ", 'RECHAZADO', 6, -12.0778, -76.9178, 'Cliente no aceptó el pedido', " +
                 (fechaActual - 4 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000) + ", " +
                 (fechaActual - 4 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000 + 60 * 60 * 1000) + ", 0)");
 
@@ -719,7 +719,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_PEDIDO_HORA_SALIDA + ", " +
                 COLUMN_PEDIDO_HORA_ESTIMADA + ") " +
                 "VALUES ('PED-011', 'Cliente Once', 'Av. Pedro de Osma 123, Barranco, Lima', " +
-                fechaActual + ", 'EN_RUTA', 1, 37.7749, -122.4194, 'En camino', " +
+                fechaActual + ", 'EN_RUTA', 1, -12.1487, -77.0221, 'En camino', " +
                 (fechaActual - 20 * 60 * 1000) + ", " +
                 (fechaActual - 20 * 60 * 1000 + 60 * 60 * 1000) + ")");
 
@@ -855,21 +855,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_UBICACION_FECHA + ", " +
                 COLUMN_UBICACION_USUARIO_ID + ", " +
                 COLUMN_UBICACION_PEDIDO_ID + ") " +
-                "VALUES (37.7749, -122.4194, " + (fechaActual - (20 * 60 * 1000)) + ", 1, 2)");
+                "VALUES (-12.0464, -77.0428, " + (fechaActual - (20 * 60 * 1000)) + ", 1, 2)");
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_UBICACIONES +
                 " (" + COLUMN_UBICACION_LATITUD + ", " +
                 COLUMN_UBICACION_LONGITUD + ", " +
                 COLUMN_UBICACION_FECHA + ", " +
                 COLUMN_UBICACION_USUARIO_ID + ", " +
                 COLUMN_UBICACION_PEDIDO_ID + ") " +
-                "VALUES (37.7749, -122.4194, " + (fechaActual - (10 * 60 * 1000)) + ", 1, 2)");
+                "VALUES (-12.1216, -77.0293, " + (fechaActual - (10 * 60 * 1000)) + ", 1, 2)");
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_UBICACIONES +
                 " (" + COLUMN_UBICACION_LATITUD + ", " +
                 COLUMN_UBICACION_LONGITUD + ", " +
                 COLUMN_UBICACION_FECHA + ", " +
                 COLUMN_UBICACION_USUARIO_ID + ", " +
                 COLUMN_UBICACION_PEDIDO_ID + ") " +
-                "VALUES (37.7749, -122.4194, " + fechaActual + ", 1, 2)");
+                "VALUES (-12.0763, -77.0931, " + fechaActual + ", 1, 2)");
 
         // Ubicaciones para PED-011 (en ruta)
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_UBICACIONES +
@@ -878,21 +878,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_UBICACION_FECHA + ", " +
                 COLUMN_UBICACION_USUARIO_ID + ", " +
                 COLUMN_UBICACION_PEDIDO_ID + ") " +
-                "VALUES (37.7749, -122.4194, " + (fechaActual - 15 * 60 * 1000) + ", 1, 11)");
+                "VALUES (-12.0778, -12.0778, " + (fechaActual - 15 * 60 * 1000) + ", 1, 11)");
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_UBICACIONES +
                 " (" + COLUMN_UBICACION_LATITUD + ", " +
                 COLUMN_UBICACION_LONGITUD + ", " +
                 COLUMN_UBICACION_FECHA + ", " +
                 COLUMN_UBICACION_USUARIO_ID + ", " +
                 COLUMN_UBICACION_PEDIDO_ID + ") " +
-                "VALUES (37.7749, -122.4194, " + (fechaActual - 10 * 60 * 1000) + ", 1, 11)");
+                "VALUES (-12.0763, -77.0931, " + (fechaActual - 10 * 60 * 1000) + ", 1, 11)");
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_UBICACIONES +
                 " (" + COLUMN_UBICACION_LATITUD + ", " +
                 COLUMN_UBICACION_LONGITUD + ", " +
                 COLUMN_UBICACION_FECHA + ", " +
                 COLUMN_UBICACION_USUARIO_ID + ", " +
                 COLUMN_UBICACION_PEDIDO_ID + ") " +
-                "VALUES (37.7749, -122.4194, " + (fechaActual - 5 * 60 * 1000) + ", 1, 11)");
+                "VALUES (-12.0847, -77.0369, " + (fechaActual - 5 * 60 * 1000) + ", 1, 11)");
 
         // Insertar devoluciones
         db.execSQL("INSERT OR IGNORE INTO " + TABLE_DEVOLUCIONES +

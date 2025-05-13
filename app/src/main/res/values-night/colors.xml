@@ -1,2 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <!-- Color definitions for Night mode -->
+    <color name="colorPrimary">@color/colorPrimaryNight</color>
+    <color name="colorPrimaryVariant">@color/colorPrimaryVariantNight</color>
+    <color name="colorSecondary">@color/colorSecondaryNight</color>
+    <color name="colorPrimaryDark">@color/colorPrimaryDarkNight</color>
+    <color name="colorAccent">@color/colorAccentNight</color>
+    <color name="colorSurface">@color/colorSurfaceNight</color>
+    <color name="colorBackground">@color/colorBackgroundNight</color>
+    <color name="colorOnPrimary">@color/colorOnPrimaryNight</color>
+    <color name="colorOnSecondary">@color/colorOnSecondaryNight</color>
+    <color name="colorOnBackground">@color/colorOnBackgroundNight</color>
+    <color name="colorOnSurface">@color/colorOnSurfaceNight</color>
+</resources>
