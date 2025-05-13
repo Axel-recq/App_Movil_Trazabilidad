@@ -330,29 +330,23 @@ public class IncidenciaActivity extends AppCompatActivity {
         incidencia.setTipo(tipo);
         incidencia.setFecha(new Date());
         incidencia.setUsuarioId(sessionManager.getUsuarioDetails().getId());
-        incidencia.setEstado(Incidencia.ESTADO_PENDIENTE);
 
-        if (pedidoId != -1) {
-            incidencia.setPedidoId(pedidoId);
-        } else {
-            incidencia.setPedidoId(0); // Cambiar a null si usas Integer
-        }
-        if (fotoUri != null) {
-            incidencia.setFotoUri(fotoUri.toString());
-        }
+        if (pedidoId != -1) incidencia.setPedidoId(pedidoId);
+        if (fotoUri != null) incidencia.setFotoUri(fotoUri.toString());
 
         pedidoController.registrarIncidencia(incidencia, new PedidoController.OperacionCallback() {
             @Override
             public void onSuccess() {
                 mostrarProgreso(false);
-                mostrarSnackbar("Incidencia registrada como pendiente");
+                mostrarSnackbar("Incidencia registrada correctamente");
+
+
                 new android.os.Handler().postDelayed(() -> finish(), 1500);
             }
 
             @Override
             public void onError(String message) {
                 mostrarProgreso(false);
-                Log.e(TAG, "Error al registrar incidencia: " + message);
                 mostrarSnackbar("Error: " + message);
             }
         });

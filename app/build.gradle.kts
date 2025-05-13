@@ -1,4 +1,3 @@
-
 import java.util.Properties
 
 plugins {
@@ -10,12 +9,8 @@ android {
     namespace = "com.trazabilidad.app"
     compileSdk = 34
 
-    // Carga de local.properties
     val localProperties = Properties().apply {
-        rootProject
-            .file("local.properties")
-            .inputStream()
-            .use { load(it) }
+        rootProject.file("local.properties").inputStream().use { load(it) }
     }
 
     defaultConfig {
@@ -28,13 +23,12 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        // Inyecta la clave en el Manifest
         manifestPlaceholders["googleMapsKey"] = localProperties.getProperty("MAPS_API_KEY")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled   = true
+            isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -42,7 +36,7 @@ android {
             )
         }
         debug {
-            isDebuggable        = true
+            isDebuggable = true
             applicationIdSuffix = ".debug"
         }
     }
@@ -54,10 +48,7 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-        freeCompilerArgs += listOf(
-            "-Xjvm-default=all",
-            "-opt-in=kotlin.RequiresOptIn"
-        )
+        freeCompilerArgs += listOf("-Xjvm-default=all", "-opt-in=kotlin.RequiresOptIn")
     }
 
     buildFeatures {
@@ -89,7 +80,6 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.gridlayout)
     implementation(libs.androidx.swiperefreshlayout)
-    implementation(libs.androidx.scenecore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso.core)

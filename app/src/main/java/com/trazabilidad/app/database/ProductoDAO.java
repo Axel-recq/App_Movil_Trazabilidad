@@ -4,27 +4,29 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.trazabilidad.app.models.Producto;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class ProductoDAO {
 
     private final DatabaseHelper dbHelper;
+    private static final String TAG = "ProductoDAO";
 
     public ProductoDAO(Context context) {
         dbHelper = DatabaseHelper.getInstance(context);
     }
+
     public boolean insertarProducto(Producto producto) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = getProductoContentValues(producto);
             long id = db.insert(DatabaseHelper.TABLE_PRODUCTOS, null, values);
             return id != -1;
         } catch (Exception e) {
-
+            Log.e(TAG, "Error al insertar producto: " + e.getMessage());
             return false;
         }
     }
@@ -40,7 +42,7 @@ public class ProductoDAO {
             );
             return rowsAffected > 0;
         } catch (Exception e) {
-
+            Log.e(TAG, "Error al actualizar producto: " + e.getMessage());
             return false;
         }
     }
@@ -54,7 +56,7 @@ public class ProductoDAO {
             );
             return rowsAffected > 0;
         } catch (Exception e) {
-
+            Log.e(TAG, "Error al eliminar producto: " + e.getMessage());
             return false;
         }
     }
@@ -75,7 +77,7 @@ public class ProductoDAO {
             }
             return null;
         } catch (Exception e) {
-
+            Log.e(TAG, "Error al obtener producto por ID: " + e.getMessage());
             return null;
         }
     }
@@ -96,7 +98,28 @@ public class ProductoDAO {
                 productos.add(cursorToProducto(cursor));
             }
         } catch (Exception e) {
+            Log.e(TAG, "Error al obtener productos por pedido: " + e.getMessage());
+        }
+        return productos;
+    }
 
+    public List<Producto> obtenerTodosLosProductos() {
+        List<Producto> productos = new ArrayList<>();
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.query(
+                     DatabaseHelper.TABLE_PRODUCTOS,
+                     getProductoColumns(),
+                     null,
+                     null,
+                     null,
+                     null,
+                     DatabaseHelper.COLUMN_PRODUCTO_NOMBRE + " ASC"
+             )) {
+            while (cursor.moveToNext()) {
+                productos.add(cursorToProducto(cursor));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener todos los productos: " + e.getMessage());
         }
         return productos;
     }

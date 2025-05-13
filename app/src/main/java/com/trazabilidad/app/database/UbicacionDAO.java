@@ -19,12 +19,6 @@ public class UbicacionDAO {
         dbHelper = DatabaseHelper.getInstance(context);
     }
 
-    /**
-     * Inserta una nueva ubicación en la base de datos.
-     *
-     * @param ubicacion Objeto Ubicacion a insertar.
-     * @return true si la inserción fue exitosa, false en caso contrario.
-     */
     public boolean insertarUbicacion(Ubicacion ubicacion) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = new ContentValues();
@@ -40,12 +34,6 @@ public class UbicacionDAO {
         }
     }
 
-    /**
-     * Obtiene la lista de ubicaciones asociadas a un pedido específico.
-     *
-     * @param pedidoId ID del pedido.
-     * @return Lista de ubicaciones ordenadas por fecha ascendente.
-     */
     public List<Ubicacion> obtenerUbicacionesPorPedido(int pedidoId) {
         List<Ubicacion> ubicaciones = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -66,12 +54,6 @@ public class UbicacionDAO {
         }
         return ubicaciones;
     }
-    /**
-     * Obtiene la lista de ubicaciones asociadas a un usuario específico.
-     *
-     * @param usuarioId ID del usuario.
-     * @return Lista de ubicaciones ordenadas por fecha ascendente.
-     */
     public List<Ubicacion> obtenerUbicacionesPorUsuario(int usuarioId) {
         List<Ubicacion> ubicaciones = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();

@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tvPendingIncidents;
     private TextView tvResolvedIncidents;
     private RecyclerView rvRecentOrders;
-    private MaterialCardView cardNewOrder, cardReportIncident;
+    private MaterialCardView cardReportIncident;
     private SessionManager sessionManager;
     private Usuario usuarioActual;
     private DrawerLayout drawerLayout;
@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (id == R.id.btnViewAllOrders) {
             startActivity(new Intent(this, ListaPedidosActivity.class));
         } else if (id == R.id.btnViewAllIncidents) {
-            startActivity(new Intent(this, IncidenciaActivity.class));
+            startActivity(new Intent(this, IncidenciasListActivity.class));
         }
     }
 
@@ -181,6 +181,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent = new Intent(this, ReporteActivity.class);
         } else if (id == R.id.nav_incidencias) {
             intent = new Intent(this, IncidenciaActivity.class);
+        } else if (id == R.id.nav_lista_productos) {
+            intent = new Intent(this, ListaProductosActivity.class);
         } else if (id == R.id.nav_perfil) {
             intent = new Intent(this, PerfilActivity.class);
         } else if (id == R.id.nav_logout) {

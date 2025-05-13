@@ -7,7 +7,7 @@ public class Calificacion implements Serializable {
 
     private int id;
     private int pedidoId;
-    private int valor; // Ejemplo: 1 a 5
+    private int valor;
     private String comentario;
     private Date fecha;
 

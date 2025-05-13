@@ -143,18 +143,28 @@ public class IncidenciaDAO {
     public List<Incidencia> obtenerIncidenciasPorUsuario(int usuarioId) {
         List<Incidencia> incidencias = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
-             Cursor cursor = db.query(
-                     DatabaseHelper.TABLE_INCIDENCIAS,
-                     getIncidenciaColumns(),
+             Cursor cursor = db.query(DatabaseHelper.TABLE_INCIDENCIAS,
+                     null,
                      DatabaseHelper.COLUMN_INCIDENCIA_USUARIO_ID + " = ?",
                      new String[]{String.valueOf(usuarioId)},
-                     null, null,
-                     DatabaseHelper.COLUMN_INCIDENCIA_FECHA + " DESC")) {
+                     null, null, DatabaseHelper.COLUMN_INCIDENCIA_FECHA + " DESC")) {
             while (cursor.moveToNext()) {
-                incidencias.add(cursorToIncidencia(cursor));
+                Incidencia incidencia = new Incidencia();
+                incidencia.setId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCIDENCIA_ID)));
+                incidencia.setTipo(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCIDENCIA_TIPO)));
+                incidencia.setDescripcion(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCIDENCIA_DESCRIPCION)));
+                incidencia.setFecha(new Date(cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCIDENCIA_FECHA))));
+                incidencia.setFotoUri(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCIDENCIA_FOTO_URI)));
+                incidencia.setUsuarioId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCIDENCIA_USUARIO_ID)));
+                int pedidoIdIndex = cursor.getColumnIndex(DatabaseHelper.COLUMN_INCIDENCIA_PEDIDO_ID);
+                if (!cursor.isNull(pedidoIdIndex)) {
+                    incidencia.setPedidoId(cursor.getInt(pedidoIdIndex));
+                } else {
+                    incidencia.setPedidoId(0); // Cambiar a null si usas Integer
+                }
+                incidencia.setEstado(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_INCIDENCIA_ESTADO)));
+                incidencias.add(incidencia);
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error al obtener incidencias para usuario " + usuarioId, e);
         }
         return incidencias;
     }

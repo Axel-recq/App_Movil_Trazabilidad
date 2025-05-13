@@ -57,23 +57,6 @@ public class UsuarioController {
         }
     }
 
-    public void autenticarUsuario(String email, String password, AuthCallback callback) {
-        try {
-            Usuario usuario = usuarioDAO.autenticarUsuario(email, password);
-            if (usuario != null) {
-                if (usuario.isActivo()) {
-                    sessionManager.createLoginSession(usuario);
-                    callback.onSuccess(usuario);
-                } else {
-                    callback.onError("Usuario inactivo. Contacte al administrador");
-                }
-            } else {
-                callback.onError("Email o contraseña incorrectos");
-            }
-        } catch (Exception e) {
-            callback.onError("Error durante la autenticación: " + e.getMessage());
-        }
-    }
 
     public void actualizarUsuario(Usuario usuario, OperacionCallback callback) {
         try {

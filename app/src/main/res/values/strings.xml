@@ -4,7 +4,7 @@
     <string name="app_name">Trazabilidad</string>
 
     <!-- Indicaciones para campos de entrada -->
-    <string name="username_hint">Correo electrónico</string>
+    <string name="username_hint">Usuario</string>
     <string name="password_hint">Contraseña</string>
 
     <!-- Botón de acción -->
@@ -26,7 +26,7 @@
 
     <!-- Títulos de los ítems -->
     <string name="menu_logout">Cerrar sesión</string>
-
+    <string name="nav_lista_productos">Lista de Productos</string>
     <!-- Descripciones para accesibilidad -->
     <string name="profile_desc">Accede a tu perfil de usuario</string>
     <string name="logout_desc">Cerrar sesión de la aplicación</string>

@@ -50,7 +50,8 @@
         <activity android:name=".activities.ReporteActivity" />
         <activity android:name=".activities.IncidenciaActivity" />
         <activity android:name=".activities.PerfilActivity" />
-
+        <activity android:name=".activities.IncidenciasListActivity" />
+        <activity android:name=".activities.IncidenciaDetailActivity" />
         <activity
             android:name=".activities.DetallePedidoActivity"
             android:label="@string/detalle_pedido"
@@ -59,6 +60,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.ListaPedidosActivity" />
         </activity>
-
+        <activity
+            android:name=".activities.ListaProductosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.GestionProductoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.SeleccionProductosActivity"
+            android:exported="true" />
     </application>
 </manifest>
