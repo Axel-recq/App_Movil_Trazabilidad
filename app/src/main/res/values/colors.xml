@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Esquema de color personalizado -->
-    <!-- Paleta de modo claro -->
+    <!-- Color definitions for Day mode -->
     <color name="colorPrimary">#312A94</color> <!-- Principal oscuro -->
     <color name="colorPrimaryVariant">#585275</color> <!-- Variante media -->
     <color name="colorSecondary">#9F8DCA</color> <!-- Secundario claro -->
@@ -14,7 +13,7 @@
     <color name="colorOnBackground">#000000</color> <!-- Texto sobre fondo -->
     <color name="colorOnSurface">#000000</color> <!-- Texto sobre superficie -->
 
-    <!-- Paleta de modo oscuro -->
+    <!-- Color definitions for Night mode (used in colors-night.xml) -->
     <color name="colorPrimaryNight">#585275</color> <!-- Principal modo oscuro -->
     <color name="colorPrimaryVariantNight">#312A94</color> <!-- Variante oscura -->
     <color name="colorSecondaryNight">#D8D0E7</color> <!-- Secundario modo oscuro -->
@@ -45,7 +44,7 @@
     <color name="custom_800">#585275</color> <!-- Variante media -->
     <color name="custom_900">#312A94</color> <!-- Principal oscuro -->
 
-    <!-- Colores para estados de pedidos (mantenidos) -->
+    <!-- Colores para estados de pedidos -->
     <color name="status_pending">#FFA000</color>
     <color name="status_delivering">#2196F3</color>
     <color name="status_delivered">#4CAF50</color>
@@ -64,14 +63,14 @@
     <color name="card_reportes">#9F8DCA</color> <!-- Secundario -->
     <color name="card_incidencias">#D8D0E7</color> <!-- Acento claro -->
 
-    <!-- Colores para estados y acciones (mantenidos) -->
+    <!-- Colores para estados y acciones -->
     <color name="success">#4CAF50</color>
     <color name="info">#2196F3</color>
     <color name="warning">#FFC107</color>
     <color name="error">#F44336</color>
     <color name="disabled">#9E9E9E</color>
 
-    <!-- Grises útiles (mantenidos) -->
+    <!-- Grises útiles -->
     <color name="gray_50">#FAFAFA</color>
     <color name="gray_100">#F5F5F5</color>
     <color name="gray_200">#EEEEEE</color>
@@ -83,7 +82,7 @@
     <color name="gray_800">#424242</color>
     <color name="gray_900">#212121</color>
 
-    <!-- Colores heredados (actualizados) -->
+    <!-- Colores heredados -->
     <color name="green_light">@color/custom_100</color>
     <color name="green_primary">@color/colorPrimary</color>
     <color name="green_dark">@color/custom_900</color>
