@@ -218,4 +218,5 @@
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textSize">16sp</item>
     </style>
+
 </resources>

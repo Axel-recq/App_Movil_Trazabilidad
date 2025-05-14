@@ -100,7 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cardReportIncident = findViewById(R.id.cardReportIncident);
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
-
+        MenuItem usuariosItem = navigationView.getMenu().findItem(R.id.nav_usuarios);
+        usuariosItem.setVisible(sessionManager.isUserAdmin());
         tvBienvenida.setText(getString(R.string.welcome_format, usuarioActual.getNombre()));
 
         // Set click listeners
@@ -180,11 +181,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (id == R.id.nav_reportes) {
             intent = new Intent(this, ReporteActivity.class);
         } else if (id == R.id.nav_incidencias) {
-            intent = new Intent(this, IncidenciaActivity.class);
+            intent = new Intent(this, IncidenciasListActivity.class);
         } else if (id == R.id.nav_lista_productos) {
             intent = new Intent(this, ListaProductosActivity.class);
         } else if (id == R.id.nav_perfil) {
             intent = new Intent(this, PerfilActivity.class);
+        }  else if (id == R.id.nav_usuarios) {
+            intent = new Intent(this, ListaUsuariosActivity.class);
         } else if (id == R.id.nav_logout) {
             mostrarDialogoConfirmacionCerrarSesion();
         }

@@ -136,6 +136,9 @@
     <string name="obtener_ubicacion">Obtener Ubicación</string>
     <string name="agregar_productos">Agregar productos</string>
     <string name="no_hay_productos_agregados">No hay productos agregados</string>
+    <string name="buscar_por_nombre_o_email">Buscar por nombre o email</string>
+    <string name="desactivar_usuario">Desactivar Usuario</string>
+    <string name="editar">Editar</string>
 
     <string-array name="tipos_reportes">
         <item>Seleccione un tipo de reporte</item>
@@ -147,4 +150,21 @@
         <item>Porcentaje de Entregas Exitosas</item>
     </string-array>
 
+    <!-- Textos para la funcionalidad de usuarios -->
+    <string name="opciones">Opciones</string>
+    <string name="editar_usuario">Editar usuario</string>
+    <string name="eliminar_usuario">Eliminar usuario</string>
+    <string name="rol">Rol:</string>
+    <string name="estado_activo">Activo</string>
+    <string name="estado_inactivo">Inactivo</string>
+    <string name="usuario_eliminado">Usuario eliminado correctamente</string>
+    <string name="confirmar_eliminar">¿Está seguro que desea eliminar este usuario?</string>
+    <string name="confirmar">Confirmar</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="usuarios">Usuarios</string>
+    <string-array name="roles_array">
+        <item>ADMINISTRADOR</item>
+        <item>REPARTIDOR</item>
+        <item>SUPERVISOR</item>
+    </string-array>
 </resources>

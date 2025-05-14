@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dimensiones generales -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">16dp</dimen>
+    <dimen name="spacing_lg">24dp</dimen>
+    <dimen name="spacing_xl">32dp</dimen>
+    <dimen name="spacing_xxl">48dp</dimen>
+
+    <!-- Dimensiones para tarjetas -->
+    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="card_corner_radius">16dp</dimen>
+    <dimen name="card_margin_horizontal">16dp</dimen>
+    <dimen name="card_margin_vertical">8dp</dimen>
+
+    <!-- Dimensiones para chips -->
+    <dimen name="chip_min_height">24dp</dimen>
+
+    <!-- Dimensiones para avatares -->
+    <dimen name="avatar_size">48dp</dimen>
+    <dimen name="avatar_padding">8dp</dimen>
+
+    <!-- Dimensiones para botones -->
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="button_min_width">88dp</dimen>
+    <dimen name="button_icon_size">24dp</dimen>
+    <dimen name="button_padding">16dp</dimen>
+
+    <!-- Dimensiones para textos -->
+    <dimen name="text_size_title">18sp</dimen>
+    <dimen name="text_size_subtitle">16sp</dimen>
+    <dimen name="text_size_body">14sp</dimen>
+    <dimen name="text_size_caption">12sp</dimen>
+</resources>

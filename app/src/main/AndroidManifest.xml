@@ -69,5 +69,17 @@
         <activity
             android:name=".activities.SeleccionProductosActivity"
             android:exported="true" />
+        <activity
+            android:name=".activities.ListaUsuariosActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.CrearEditarUsuarioActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.DetalleUsuarioActivity"
+            android:exported="false"
+            android:parentActivityName=".activities.ListaUsuariosActivity" />
     </application>
 </manifest>
