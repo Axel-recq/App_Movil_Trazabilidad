@@ -12,7 +12,14 @@ android {
     val localProperties = Properties().apply {
         rootProject.file("local.properties").inputStream().use { load(it) }
     }
-
+    signingConfigs {
+        create("release") {
+            storeFile = file(localProperties.getProperty("KEYSTORE_PATH"))
+            storePassword = localProperties.getProperty("KEYSTORE_PASSWORD")
+            keyAlias = localProperties.getProperty("KEY_ALIAS")
+            keyPassword = localProperties.getProperty("KEY_PASSWORD")
+        }
+    }
     defaultConfig {
         applicationId = "com.trazabilidad.app"
         minSdk = 28
@@ -28,6 +35,7 @@ android {
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
