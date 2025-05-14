@@ -134,6 +134,8 @@
     <string name="estado_pedido_hint">Estado del pedido</string>
     <string name="registrar_pedido">Registrar Pedido</string>
     <string name="obtener_ubicacion">Obtener Ubicación</string>
+    <string name="agregar_productos">Agregar productos</string>
+    <string name="no_hay_productos_agregados">No hay productos agregados</string>
 
     <string-array name="tipos_reportes">
         <item>Seleccione un tipo de reporte</item>
