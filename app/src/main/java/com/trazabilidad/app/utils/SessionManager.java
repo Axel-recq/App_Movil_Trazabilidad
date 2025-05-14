@@ -53,7 +53,10 @@ public class SessionManager {
         long sessionDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
         return pref.getBoolean(KEY_IS_LOGGED_IN, false) && (currentTime - loginTime < sessionDuration);
     }
-
+    public boolean isUserAdmin() {
+        String role = pref.getString(KEY_USER_ROL, "");
+        return "REPARTIDOR".equalsIgnoreCase(role);
+    }
     public void logout() {
         editor.clear();
         editor.commit();

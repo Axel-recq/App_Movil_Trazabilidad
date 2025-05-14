@@ -78,7 +78,7 @@
             app:layout_constraintStart_toEndOf="@+id/textViewPrecioLabel"
             app:layout_constraintTop_toTopOf="@+id/textViewPrecioLabel"
             app:layout_constraintBottom_toBottomOf="@+id/textViewPrecioLabel"
-            tools:text="€10,99" />
+            tools:text="S/10,99" />
 
         <!-- Cantidad -->
         <TextView
@@ -125,7 +125,7 @@
                 android:textAppearance="@style/TextAppearance.App.Body1"
                 android:textColor="@color/colorPrimary"
                 android:textStyle="bold"
-                tools:text="Subtotal: €21,98" />
+                tools:text="Subtotal: S/21,98" />
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Botones de acción -->
