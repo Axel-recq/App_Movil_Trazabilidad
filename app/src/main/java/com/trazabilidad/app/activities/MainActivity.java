@@ -3,49 +3,53 @@ package com.trazabilidad.app.activities;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.cardview.widget.CardView;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.RecyclerView;
-import com.google.android.material.card.MaterialCardView;
+import androidx.viewpager2.widget.ViewPager2;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.trazabilidad.app.R;
-import com.trazabilidad.app.adapter.RecentOrdersAdapter;
+import com.trazabilidad.app.adapter.MainViewPagerAdapter;
 import com.trazabilidad.app.database.DatabaseHelper;
-import com.trazabilidad.app.database.IncidenciaDAO;
-import com.trazabilidad.app.database.PedidoDAO;
-import com.trazabilidad.app.models.Pedido;
 import com.trazabilidad.app.models.Usuario;
 import com.trazabilidad.app.utils.SessionManager;
 
-import java.util.List;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener,
+public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener {
 
     private TextView tvBienvenida;
-    private TextView tvPendingIncidents;
-    private TextView tvResolvedIncidents;
-    private RecyclerView rvRecentOrders;
-    private MaterialCardView cardReportIncident;
+    private TextView tvFecha;
+    private ViewPager2 viewPager;
+    private TabLayout tabLayout;
     private SessionManager sessionManager;
     private Usuario usuarioActual;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private DatabaseHelper dbHelper;
+    private ExtendedFloatingActionButton fabNuevo;
+    private MaterialButton btnNotifications;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,11 +59,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Inicializa DB Helper
         dbHelper = DatabaseHelper.getInstance(this);
         SQLiteDatabase trazDb = dbHelper.getWritableDatabase();
-
-        // Inicializa Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
 
         // Verificación de sesión
         sessionManager = new SessionManager(this);
@@ -73,53 +72,71 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Inicializa los componentes de UI
         initializeUI();
 
+        // Configura la fecha actual
+        setupDate();
+
         // Configura el NavigationDrawer
-        setupNavigationDrawer(toolbar);
+        setupNavigationDrawer();
 
         // Actualiza el header del Navigation Drawer con los datos del usuario
         updateNavigationHeader();
 
-        // Carga datos para los widgets
-        loadRecentOrders();
-        loadIncidentsData();
+        // Configura el ViewPager y TabLayout
+        setupViewPager();
 
-    }
+        // Configura el botón flotante
+        setupFAB();
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        loadRecentOrders();
-        loadIncidentsData();
+        // Configura el botón de notificaciones
+        setupNotifications();
     }
 
     private void initializeUI() {
+        // Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayShowTitleEnabled(false);
+
+        // Componentes principales
         tvBienvenida = findViewById(R.id.tvBienvenida);
-        tvPendingIncidents = findViewById(R.id.tvPendingIncidents);
-        tvResolvedIncidents = findViewById(R.id.tvResolvedIncidents);
-        rvRecentOrders = findViewById(R.id.rvRecentOrders);
-        cardReportIncident = findViewById(R.id.cardReportIncident);
+        tvFecha = findViewById(R.id.tvFecha);
+        viewPager = findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
+        fabNuevo = findViewById(R.id.fabNuevo);
+        btnNotifications = findViewById(R.id.btnNotifications);
+
+        // Configurar acceso a menú de administración
         MenuItem usuariosItem = navigationView.getMenu().findItem(R.id.nav_usuarios);
         usuariosItem.setVisible(sessionManager.isUserAdmin());
+
+        // Configurar texto de bienvenida
         tvBienvenida.setText(getString(R.string.welcome_format, usuarioActual.getNombre()));
-
-        // Set click listeners
-
-        cardReportIncident.setOnClickListener(this);
-        findViewById(R.id.btnViewAllOrders).setOnClickListener(this);
-        findViewById(R.id.btnViewAllIncidents).setOnClickListener(this);
     }
 
-    private void setupNavigationDrawer(Toolbar toolbar) {
+    private void setupDate() {
+        // Configurar fecha actual con formato elegante
+        Date currentDate = Calendar.getInstance().getTime();
+        String dayOfWeek = (String) DateFormat.format("EEEE", currentDate);
+        String dayOfMonth = (String) DateFormat.format("dd", currentDate);
+        String monthName = (String) DateFormat.format("MMMM", currentDate);
 
+        // Capitalizar primera letra
+        dayOfWeek = dayOfWeek.substring(0, 1).toUpperCase(Locale.getDefault()) + dayOfWeek.substring(1);
+        monthName = monthName.substring(0, 1).toUpperCase(Locale.getDefault()) + monthName.substring(1);
+
+        String formattedDate = dayOfWeek + ", " + dayOfMonth + " de " + monthName;
+        tvFecha.setText(formattedDate);
+    }
+
+    private void setupNavigationDrawer() {
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar,
+                this, drawerLayout, findViewById(R.id.toolbar),
                 R.string.navigation_drawer_open,
                 R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
-
 
         navigationView.setNavigationItemSelectedListener(this);
     }
@@ -133,45 +150,125 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tvEmail.setText(usuarioActual.getEmail());
     }
 
-    private void loadRecentOrders() {
-        PedidoDAO pedidoDao = new PedidoDAO(dbHelper);
-        List<Pedido> recentOrders = pedidoDao.getRecentPedidos(3);
-        Log.d("MainActivity", "Pedidos recientes: " + recentOrders.size());
-        RecentOrdersAdapter adapter = new RecentOrdersAdapter(this, recentOrders);
-        rvRecentOrders.setAdapter(adapter);
+    private void setupViewPager() {
+        // Configurar el adaptador para el ViewPager
+        MainViewPagerAdapter pagerAdapter = new MainViewPagerAdapter(this);
+        viewPager.setAdapter(pagerAdapter);
+
+        // Conectar el TabLayout con el ViewPager2
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            switch (position) {
+                case MainViewPagerAdapter.OVERVIEW_PAGE:
+                    tab.setText(R.string.overview);
+                    break;
+                case MainViewPagerAdapter.PEDIDOS_PAGE:
+                    tab.setText(R.string.pedidos);
+                    break;
+                case MainViewPagerAdapter.INCIDENCIAS_PAGE:
+                    tab.setText(R.string.incidencias);
+                    break;
+            }
+        }).attach();
+
+        // Configurar listener para cambiar el FAB según la página actual
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                updateFabForPage(position);
+            }
+        });
     }
 
-    private void loadIncidentsData() {
+    private void setupFAB() {
+        fabNuevo.setOnClickListener(v -> {
+            // Mostrar diferentes acciones según la pestaña actual
+            int currentPosition = viewPager.getCurrentItem();
+            switch (currentPosition) {
+                case MainViewPagerAdapter.OVERVIEW_PAGE:
+                    // En la vista general, mostrar menú de opciones
+                    showNewActionBottomSheet();
+                    break;
+                case MainViewPagerAdapter.PEDIDOS_PAGE:
+                    // Ir directamente a nuevo pedido
+                    startActivity(new Intent(MainActivity.this, NuevoPedidoActivity.class));
+                    break;
+                case MainViewPagerAdapter.INCIDENCIAS_PAGE:
+                    // Ir directamente a nueva incidencia
+                    startActivity(new Intent(MainActivity.this, IncidenciaActivity.class));
+                    break;
+            }
+        });
 
-        IncidenciaDAO incidenciaDao = new IncidenciaDAO(dbHelper);
-        int pendingCount = incidenciaDao.getPendingIncidenciasCount();
-        int resolvedCount = incidenciaDao.getResolvedIncidenciasCount();
-
-        tvPendingIncidents.setText(String.valueOf(pendingCount));
-        tvResolvedIncidents.setText(String.valueOf(resolvedCount));
+        // Configurar el FAB inicial para la primera página
+        updateFabForPage(0);
     }
 
-
-    @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        if (id == R.id.cardReportIncident) {
-            startActivity(new Intent(this, IncidenciaActivity.class));
-        } else if (id == R.id.btnViewAllOrders) {
-            startActivity(new Intent(this, ListaPedidosActivity.class));
-        } else if (id == R.id.btnViewAllIncidents) {
-            startActivity(new Intent(this, IncidenciasListActivity.class));
+    private void updateFabForPage(int position) {
+        switch (position) {
+            case MainViewPagerAdapter.OVERVIEW_PAGE:
+                fabNuevo.setText(R.string.nuevo);
+                fabNuevo.setIconResource(R.drawable.ic_add);
+                break;
+            case MainViewPagerAdapter.PEDIDOS_PAGE:
+                fabNuevo.setText(R.string.nuevo_pedido);
+                fabNuevo.setIconResource(R.drawable.ic_add_package);
+                break;
+            case MainViewPagerAdapter.INCIDENCIAS_PAGE:
+                fabNuevo.setText(R.string.nueva_incidencia);
+                fabNuevo.setIconResource(R.drawable.ic_warning);
+                break;
         }
+
+        // Animar el cambio
+        fabNuevo.extend();
+    }
+
+    private void setupNotifications() {
+        btnNotifications.setOnClickListener(v -> {
+            // Mostrar panel de notificaciones (a implementar)
+            Toast.makeText(MainActivity.this, "Notificaciones próximamente", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void showNewActionBottomSheet() {
+        // Crear el diálogo de hoja inferior
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_new_actions, null);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        // Configurar listeners de los botones
+        bottomSheetView.findViewById(R.id.btnNewPedido).setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, NuevoPedidoActivity.class));
+            bottomSheetDialog.dismiss();
+        });
+
+        bottomSheetView.findViewById(R.id.btnNewIncidencia).setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, IncidenciaActivity.class));
+            bottomSheetDialog.dismiss();
+        });
+
+        bottomSheetView.findViewById(R.id.btnNewProducto).setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, GestionProductoActivity.class));
+            bottomSheetDialog.dismiss();
+        });
+
+        // Solo visible para administradores
+        View btnNewUsuario = bottomSheetView.findViewById(R.id.btnNewUsuario);
+        btnNewUsuario.setVisibility(sessionManager.isUserAdmin() ? View.VISIBLE : View.GONE);
+        btnNewUsuario.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, CrearEditarUsuarioActivity.class));
+            bottomSheetDialog.dismiss();
+        });
+
+        bottomSheetDialog.show();
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks here
         int id = item.getItemId();
         Intent intent = null;
 
         if (id == R.id.nav_home) {
-            // Estamos ya en Home, solo cerramos el drawer
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         } else if (id == R.id.nav_pedidos) {
@@ -184,18 +281,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent = new Intent(this, IncidenciasListActivity.class);
         } else if (id == R.id.nav_lista_productos) {
             intent = new Intent(this, ListaProductosActivity.class);
-        } else if (id == R.id.nav_perfil) {
+        } else if (id == R.id.nav_perfil) { // Única entrada para perfil
             intent = new Intent(this, PerfilActivity.class);
-        }  else if (id == R.id.nav_usuarios) {
+        } else if (id == R.id.nav_usuarios) {
             intent = new Intent(this, ListaUsuariosActivity.class);
         } else if (id == R.id.nav_logout) {
             mostrarDialogoConfirmacionCerrarSesion();
         }
 
-        // Cerramos el drawer
         drawerLayout.closeDrawer(GravityCompat.START);
 
-        // Iniciamos la actividad si hay una intención
         if (intent != null) {
             startActivity(intent);
         }
@@ -205,7 +300,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onBackPressed() {
-
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         } else {
@@ -215,14 +309,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void mostrarDialogoConfirmacionCerrarSesion() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Cerrar sesión");
-        builder.setMessage("¿Está seguro que desea cerrar sesión?");
-        builder.setPositiveButton("Sí, cerrar sesión", (dialog, which) -> {
+        builder.setTitle(R.string.logout);
+        builder.setMessage(R.string.logout_confirmation);
+        builder.setPositiveButton(R.string.yes_logout, (dialog, which) -> {
             sessionManager.logout();
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
-        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
         AlertDialog dialog = builder.create();
         dialog.show();
     }

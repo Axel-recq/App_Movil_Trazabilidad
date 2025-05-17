@@ -218,5 +218,11 @@
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textSize">16sp</item>
     </style>
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="TabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/tab_text_color</item>
+    </style>
 
 </resources>

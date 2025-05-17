@@ -167,4 +167,26 @@
         <item>REPARTIDOR</item>
         <item>SUPERVISOR</item>
     </string-array>
+
+    <string name="notifications">Notificaciones</string>
+    <string name="overview">Resumen</string>
+    <string name="pedidos">Pedidos</string>
+    <string name="incidencias">Incidencias</string>
+    <string name="nuevo">Nuevo</string>
+    <string name="dashboard_summary">Resumen del dashboard</string>
+    <string name="location">Ubicacion</string>
+    <string name="products">Productos</string>
+    <string name="view_map">Mapa</string>
+    <string name="details">detalles</string>
+    <string name="active_orders">Pedidos Activos</string>
+    <string name="activity_chart">Grafico</string>
+    <string name="nuevo_pedido">Nuevo Pedido</string>
+    <string name="nueva_incidencia">Nueva Incidencia</string>
+    <string name="logout">Cerrar Sesión</string>
+    <string name="logout_confirmation">¿Estás seguro de cerrar sesión?</string>
+    <string name="yes_logout">Sí, cerrar</string>
+    <string name="daily_orders">Pedidos Diarios</string>
+
+    <string name="nuevo_producto">Nuevo Producto</string>
+    <string name="nuevo_usuario">Nuevo Usuario</string>
 </resources>
