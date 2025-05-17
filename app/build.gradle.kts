@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
-
 android {
     namespace = "com.trazabilidad.app"
     compileSdk = 34
@@ -86,10 +85,11 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
-    implementation(libs.gridlayout)
+    implementation(libs.material)
     implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.mpandroidchart)
+    implementation(libs.circleimageview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso.core)
-    implementation("com.google.android.material:material:1.12.0")
 }

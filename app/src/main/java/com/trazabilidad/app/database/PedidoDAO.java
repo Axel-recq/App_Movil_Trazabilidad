@@ -151,7 +151,34 @@ public class PedidoDAO {
             // Enviar notificación aquí
         }
     }
+    public int getActivePedidosCount() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS
+                + " WHERE " + DatabaseHelper.COLUMN_PEDIDO_ESTADO
+                + " IN ('ASIGNADO', 'EN_RUTA', 'EN_PREPARACION', 'PENDIENTE')"; // Estados activos
 
+        try (Cursor cursor = db.rawQuery(query, null)) {
+            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        } catch (Exception e) {
+            Log.e("PedidoDAO", "Error en getActivePedidosCount", e);
+            return 0;
+        }
+    }
+
+    public int getPedidosCountByDate(Date date) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        long fechaMillis = date.getTime();
+
+        String query = "SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS
+                + " WHERE " + DatabaseHelper.COLUMN_PEDIDO_FECHA + " = ?";
+
+        try (Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(fechaMillis)})) {
+            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        } catch (Exception e) {
+            Log.e("PedidoDAO", "Error en getPedidosCountByDate", e);
+            return 0;
+        }
+    }
     private ContentValues getPedidoContentValues(Pedido pedido) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COLUMN_PEDIDO_NUMERO, pedido.getNumero());
