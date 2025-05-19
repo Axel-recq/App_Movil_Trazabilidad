@@ -181,6 +181,14 @@ public class ListaPedidosActivity extends AppCompatActivity {
                 startActivity(intent);
                 Log.d(TAG, "Abriendo MapaActivity con ID: " + pedidoId);
             }
+
+            @Override
+            public void onDevolver(int pedidoId) {
+                Intent intent = new Intent(ListaPedidosActivity.this, GestionDevolucionActivity.class);
+                intent.putExtra("pedidoId", pedidoId);
+                startActivity(intent);
+                Log.d(TAG, "Abriendo GestionDevolucionActivity con ID: " + pedidoId);
+            }
         }, sessionManager);
 
         recyclerViewPedidos.setAdapter(pedidoAdapter);

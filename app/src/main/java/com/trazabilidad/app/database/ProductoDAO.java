@@ -72,12 +72,10 @@ public class ProductoDAO {
         }
     }
 
-    // Método para desactivar un producto en lugar de eliminarlo físicamente
     public boolean desactivarProducto(int id) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = new ContentValues();
-            values.put(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO, 0); // 0 = inactivo
-
+            values.put(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO, 0);
             int rowsAffected = db.update(
                     DatabaseHelper.TABLE_PRODUCTOS,
                     values,
@@ -91,12 +89,10 @@ public class ProductoDAO {
         }
     }
 
-    // Método para activar un producto
     public boolean activarProducto(int id) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = new ContentValues();
-            values.put(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO, 1); // 1 = activo
-
+            values.put(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO, 1);
             int rowsAffected = db.update(
                     DatabaseHelper.TABLE_PRODUCTOS,
                     values,
@@ -145,7 +141,6 @@ public class ProductoDAO {
         }
     }
 
-    // Obtener todos los productos ordenados por ID descendente (más recientes primero)
     public List<Producto> obtenerTodosLosProductosOrdenadosPorId() {
         List<Producto> productos = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -167,7 +162,6 @@ public class ProductoDAO {
         return productos;
     }
 
-    // Obtener productos activos
     public List<Producto> obtenerProductosActivos() {
         List<Producto> productos = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -189,7 +183,6 @@ public class ProductoDAO {
         return productos;
     }
 
-    // Obtener productos inactivos
     public List<Producto> obtenerProductosInactivos() {
         List<Producto> productos = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -211,7 +204,6 @@ public class ProductoDAO {
         return productos;
     }
 
-    // Obtener productos con stock bajo
     public List<Producto> obtenerProductosBajoStock(int limiteStockBajo) {
         List<Producto> productos = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -234,7 +226,6 @@ public class ProductoDAO {
         return productos;
     }
 
-    // Obtener productos por texto de búsqueda
     public List<Producto> obtenerProductosPorTexto(String texto) {
         List<Producto> productos = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
@@ -255,6 +246,7 @@ public class ProductoDAO {
         }
         return productos;
     }
+
     public int obtenerIdProductoPorCodigo(String codigo) {
         int id = -1;
         String query = "SELECT " + DatabaseHelper.COLUMN_PRODUCTO_ID + " FROM " + DatabaseHelper.TABLE_PRODUCTOS +
@@ -283,6 +275,7 @@ public class ProductoDAO {
         }
         return id;
     }
+
     public List<Producto> obtenerProductosPorPedido(int pedidoId) {
         List<Producto> productos = new ArrayList<>();
         String query = "SELECT p.*, pp." + DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_CANTIDAD + " AS cantidad_pedido, " +
@@ -296,6 +289,8 @@ public class ProductoDAO {
             while (cursor.moveToNext()) {
                 Producto producto = cursorToProducto(cursor);
                 producto.setCantidad(cursor.getInt(cursor.getColumnIndexOrThrow("cantidad_pedido")));
+                producto.setPrecio(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO)));
+                Log.d(TAG, "Loaded product ID " + producto.getId() + " with price: " + producto.getPrecio());
                 productos.add(producto);
             }
         } catch (Exception e) {
@@ -303,6 +298,7 @@ public class ProductoDAO {
         }
         return productos;
     }
+
     private ContentValues getProductoContentValues(Producto producto) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COLUMN_PRODUCTO_CODIGO, producto.getCodigo());
