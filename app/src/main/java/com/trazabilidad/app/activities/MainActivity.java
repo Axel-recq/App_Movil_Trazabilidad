@@ -1,6 +1,7 @@
 package com.trazabilidad.app.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -11,30 +12,42 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.adapter.MainViewPagerAdapter;
+import com.trazabilidad.app.adapter.NotificationAdapter;
 import com.trazabilidad.app.database.DatabaseHelper;
+import com.trazabilidad.app.models.Notificacion;
 import com.trazabilidad.app.models.Usuario;
+import com.trazabilidad.app.utils.NotificationManager;
 import com.trazabilidad.app.utils.SessionManager;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener {
@@ -50,6 +63,9 @@ public class MainActivity extends AppCompatActivity implements
     private DatabaseHelper dbHelper;
     private ExtendedFloatingActionButton fabNuevo;
     private MaterialButton btnNotifications;
+    private CircleImageView imgProfile;
+    private NotificationManager notificationManager;
+    private BadgeDrawable badgeDrawable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +84,10 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
         usuarioActual = sessionManager.getUsuarioDetails();
+
+        // Inicializa NotificationManager
+        notificationManager = new NotificationManager(this);
+        notificationManager.limpiarNotificacionesAntiguas(); // Limpiar notificaciones antiguas
 
         // Inicializa los componentes de UI
         initializeUI();
@@ -89,8 +109,15 @@ public class MainActivity extends AppCompatActivity implements
 
         // Configura el botón de notificaciones
         setupNotifications();
+
+        // Configura el perfil
+        setupProfile();
+
+        // Actualiza el badge de notificaciones
+        actualizarBadgeNotificaciones();
     }
 
+    @OptIn(markerClass = ExperimentalBadgeUtils.class)
     private void initializeUI() {
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -106,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements
         navigationView = findViewById(R.id.nav_view);
         fabNuevo = findViewById(R.id.fabNuevo);
         btnNotifications = findViewById(R.id.btnNotifications);
+        imgProfile = findViewById(R.id.imgProfile);
 
         // Configurar acceso a menú de administración
         MenuItem usuariosItem = navigationView.getMenu().findItem(R.id.nav_usuarios);
@@ -113,16 +141,25 @@ public class MainActivity extends AppCompatActivity implements
 
         // Configurar texto de bienvenida
         tvBienvenida.setText(getString(R.string.welcome_format, usuarioActual.getNombre()));
+
+        // Inicializar badge para notificaciones
+        badgeDrawable = BadgeDrawable.create(this);
+        badgeDrawable.setBackgroundColor(getResources().getColor(R.color.colorPrimary, getTheme()));
+        badgeDrawable.setBadgeTextColor(getResources().getColor(R.color.colorOnPrimary, getTheme()));
+        badgeDrawable.setVisible(false);
+
+        badgeDrawable.setHorizontalOffset(10);
+        badgeDrawable.setVerticalOffset(10);
+
+        com.google.android.material.badge.BadgeUtils.attachBadgeDrawable(badgeDrawable, btnNotifications, findViewById(R.id.notificationButtonContainer));
     }
 
     private void setupDate() {
-        // Configurar fecha actual con formato elegante
         Date currentDate = Calendar.getInstance().getTime();
         String dayOfWeek = (String) DateFormat.format("EEEE", currentDate);
         String dayOfMonth = (String) DateFormat.format("dd", currentDate);
         String monthName = (String) DateFormat.format("MMMM", currentDate);
 
-        // Capitalizar primera letra
         dayOfWeek = dayOfWeek.substring(0, 1).toUpperCase(Locale.getDefault()) + dayOfWeek.substring(1);
         monthName = monthName.substring(0, 1).toUpperCase(Locale.getDefault()) + monthName.substring(1);
 
@@ -141,6 +178,18 @@ public class MainActivity extends AppCompatActivity implements
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    private void limpiarNotificacionesSiEsNecesario() {
+        SharedPreferences prefs = getSharedPreferences("TrazabilidadPrefs", MODE_PRIVATE);
+        long ultimaLimpieza = prefs.getLong("ultima_limpieza_notificaciones", 0);
+        long ahora = System.currentTimeMillis();
+        long unDiaEnMilis = 24 * 60 * 60 * 1000;
+
+        if (ahora - ultimaLimpieza > unDiaEnMilis) {
+            notificationManager.limpiarNotificacionesAntiguas();
+            prefs.edit().putLong("ultima_limpieza_notificaciones", ahora).apply();
+        }
+    }
+
     private void updateNavigationHeader() {
         View headerView = navigationView.getHeaderView(0);
         TextView tvNombre = headerView.findViewById(R.id.nav_header_nombre);
@@ -151,11 +200,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void setupViewPager() {
-        // Configurar el adaptador para el ViewPager
         MainViewPagerAdapter pagerAdapter = new MainViewPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
 
-        // Conectar el TabLayout con el ViewPager2
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             switch (position) {
                 case MainViewPagerAdapter.OVERVIEW_PAGE:
@@ -170,7 +217,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         }).attach();
 
-        // Configurar listener para cambiar el FAB según la página actual
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
@@ -181,25 +227,20 @@ public class MainActivity extends AppCompatActivity implements
 
     private void setupFAB() {
         fabNuevo.setOnClickListener(v -> {
-            // Mostrar diferentes acciones según la pestaña actual
             int currentPosition = viewPager.getCurrentItem();
             switch (currentPosition) {
                 case MainViewPagerAdapter.OVERVIEW_PAGE:
-                    // En la vista general, mostrar menú de opciones
                     showNewActionBottomSheet();
                     break;
                 case MainViewPagerAdapter.PEDIDOS_PAGE:
-                    // Ir directamente a nuevo pedido
                     startActivity(new Intent(MainActivity.this, NuevoPedidoActivity.class));
                     break;
                 case MainViewPagerAdapter.INCIDENCIAS_PAGE:
-                    // Ir directamente a nueva incidencia
                     startActivity(new Intent(MainActivity.this, IncidenciaActivity.class));
                     break;
             }
         });
 
-        // Configurar el FAB inicial para la primera página
         updateFabForPage(0);
     }
 
@@ -218,25 +259,64 @@ public class MainActivity extends AppCompatActivity implements
                 fabNuevo.setIconResource(R.drawable.ic_warning);
                 break;
         }
-
-        // Animar el cambio
         fabNuevo.extend();
     }
 
     private void setupNotifications() {
         btnNotifications.setOnClickListener(v -> {
-            // Mostrar panel de notificaciones (a implementar)
-            Toast.makeText(MainActivity.this, "Notificaciones próximamente", Toast.LENGTH_SHORT).show();
+            BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+            View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_notifications, null);
+            bottomSheetDialog.setContentView(bottomSheetView);
+
+            RecyclerView rvNotifications = bottomSheetView.findViewById(R.id.rvNotifications);
+            rvNotifications.setLayoutManager(new LinearLayoutManager(this));
+
+            notificationManager.obtenerNotificaciones(new NotificationManager.NotificationCallback() {
+                @Override
+                public void onSuccess(List<Notificacion> notificaciones) {
+                    NotificationAdapter adapter = new NotificationAdapter(MainActivity.this, notificaciones);
+                    rvNotifications.setAdapter(adapter);
+                    notificationManager.marcarComoLeidas();
+                    actualizarBadgeNotificaciones();
+                }
+
+                @Override
+                public void onError(String message) {
+                    Toast.makeText(MainActivity.this, "Error al cargar notificaciones: " + message, Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            bottomSheetDialog.show();
+        });
+    }
+
+    private void setupProfile() {
+        imgProfile.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, PerfilActivity.class));
+        });
+    }
+
+    private void actualizarBadgeNotificaciones() {
+        notificationManager.obtenerNotificaciones(new NotificationManager.NotificationCallback() {
+            @Override
+            public void onSuccess(List<Notificacion> notificaciones) {
+                int count = notificationManager.getNotificacionesNoLeidasCount();
+                badgeDrawable.setNumber(count);
+                badgeDrawable.setVisible(count > 0);
+            }
+
+            @Override
+            public void onError(String message) {
+                badgeDrawable.setVisible(false);
+            }
         });
     }
 
     private void showNewActionBottomSheet() {
-        // Crear el diálogo de hoja inferior
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_new_actions, null);
         bottomSheetDialog.setContentView(bottomSheetView);
 
-        // Configurar listeners de los botones
         bottomSheetView.findViewById(R.id.btnNewPedido).setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, NuevoPedidoActivity.class));
             bottomSheetDialog.dismiss();
@@ -252,8 +332,7 @@ public class MainActivity extends AppCompatActivity implements
             bottomSheetDialog.dismiss();
         });
 
-        // Solo visible para administradores
-        View btnNewUsuario = bottomSheetView.findViewById(R.id.btnNewUsuario);
+         View btnNewUsuario = bottomSheetView.findViewById(R.id.btnNewUsuario);
         btnNewUsuario.setVisibility(sessionManager.isUserAdmin() ? View.VISIBLE : View.GONE);
         btnNewUsuario.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, CrearEditarUsuarioActivity.class));
@@ -281,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements
             intent = new Intent(this, IncidenciasListActivity.class);
         } else if (id == R.id.nav_lista_productos) {
             intent = new Intent(this, ListaProductosActivity.class);
-        } else if (id == R.id.nav_perfil) { // Única entrada para perfil
+        } else if (id == R.id.nav_perfil) {
             intent = new Intent(this, PerfilActivity.class);
         } else if (id == R.id.nav_usuarios) {
             intent = new Intent(this, ListaUsuariosActivity.class);
@@ -319,5 +398,11 @@ public class MainActivity extends AppCompatActivity implements
         builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        actualizarBadgeNotificaciones();
     }
 }

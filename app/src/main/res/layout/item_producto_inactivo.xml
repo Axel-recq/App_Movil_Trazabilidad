@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardViewProducto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/colorSurfaceNight"
+    app:strokeColor="@color/colorInactive"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Encabezado -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:id="@+id/textViewEstado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.App.Caption"
+                android:textColor="@color/colorInactive"
+                android:drawablePadding="4dp"
+                android:text="INACTIVO"
+                app:drawableStartCompat="@drawable/ic_block" />
+        </LinearLayout>
+
+        <!-- Contenido principal -->
+        <TextView
+            android:id="@+id/textViewNombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Headline6"
+            android:textColor="@color/colorOnSurfaceNight"
+            tools:text="Producto Inactivo"/>
+
+        <TextView
+            android:id="@+id/textViewDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Body2"
+            android:textColor="@color/gray_medium"
+            android:paddingVertical="4dp"
+            tools:text="Este producto está actualmente desactivado"/>
+
+        <!-- Botones de Acción -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonActivar"
+                style="@style/App.Button.Outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="@string/activar"
+                app:icon="@drawable/ic_check"
+                app:iconTint="@color/colorActive"
+                app:strokeColor="@color/colorActive"
+                android:textColor="@color/colorActive"/>
+
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="1dp"/>
+
+            <ImageButton
+                android:id="@+id/buttonDelete"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_remove"
+                android:background="?selectableItemBackgroundBorderless"
+                app:tint="@color/error" />
+
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

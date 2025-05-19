@@ -12,15 +12,12 @@ import java.util.Date;
 import java.util.List;
 
 public class DevolucionDAO {
-
     private final DatabaseHelper dbHelper;
 
-    // Constructor que inicializa el DatabaseHelper
     public DevolucionDAO(Context context) {
         dbHelper = DatabaseHelper.getInstance(context);
     }
 
-    // Método para insertar una devolución
     public boolean insertarDevolucion(Devolucion devolucion) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = new ContentValues();
@@ -31,13 +28,12 @@ public class DevolucionDAO {
             values.put(DatabaseHelper.COLUMN_DEVOLUCION_FECHA, devolucion.getFecha().getTime());
             values.put(DatabaseHelper.COLUMN_DEVOLUCION_USUARIO_ID, devolucion.getUsuarioId());
             long id = db.insert(DatabaseHelper.TABLE_DEVOLUCIONES, null, values);
-            return id != -1; // Retorna true si la inserción fue exitosa
+            return id != -1;
         } catch (Exception e) {
-            return false; // Retorna false si ocurre un error
+            return false;
         }
     }
 
-    // Método para obtener devoluciones por pedido
     public List<Devolucion> obtenerDevolucionesPorPedido(int pedidoId) {
         List<Devolucion> devoluciones = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -54,12 +50,98 @@ public class DevolucionDAO {
                 devoluciones.add(cursorToDevolucion(cursor));
             }
         } catch (Exception e) {
-            // Manejo básico de errores, podría mejorarse según necesidades
+            // Log error
         }
         return devoluciones;
     }
 
-    // Método auxiliar para obtener las columnas de la tabla de devoluciones
+    public List<Devolucion> obtenerDevolucionesRecientes(long desdeFecha) {
+        List<Devolucion> devoluciones = new ArrayList<>();
+        String query = "SELECT d.*, p." + DatabaseHelper.COLUMN_PRODUCTO_NOMBRE +
+                " FROM " + DatabaseHelper.TABLE_DEVOLUCIONES + " d" +
+                " INNER JOIN " + DatabaseHelper.TABLE_PRODUCTOS + " p" +
+                " ON d." + DatabaseHelper.COLUMN_DEVOLUCION_PRODUCTO_ID + " = p." + DatabaseHelper.COLUMN_PRODUCTO_ID +
+                " WHERE d." + DatabaseHelper.COLUMN_DEVOLUCION_FECHA + " >= ?" +
+                " ORDER BY d." + DatabaseHelper.COLUMN_DEVOLUCION_FECHA + " DESC";
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(desdeFecha)})) {
+            while (cursor.moveToNext()) {
+                Devolucion devolucion = cursorToDevolucion(cursor);
+                String nombreProducto = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_NOMBRE));
+                devolucion.setMotivo(devolucion.getMotivo() + " (Producto: " + nombreProducto + ")");
+                devoluciones.add(devolucion);
+            }
+        } catch (Exception e) {
+            // Log error
+        }
+        return devoluciones;
+    }
+
+    public List<Devolucion> obtenerTodasDevolucionesConDetalles() {
+        List<Devolucion> devoluciones = new ArrayList<>();
+        String query = "SELECT d.*, p." + DatabaseHelper.COLUMN_PRODUCTO_NOMBRE + ", " +
+                "ped." + DatabaseHelper.COLUMN_PEDIDO_NUMERO + ", " +
+                "u." + DatabaseHelper.COLUMN_USUARIO_NOMBRE +
+                " FROM " + DatabaseHelper.TABLE_DEVOLUCIONES + " d" +
+                " INNER JOIN " + DatabaseHelper.TABLE_PRODUCTOS + " p" +
+                " ON d." + DatabaseHelper.COLUMN_DEVOLUCION_PRODUCTO_ID + " = p." + DatabaseHelper.COLUMN_PRODUCTO_ID +
+                " INNER JOIN " + DatabaseHelper.TABLE_PEDIDOS + " ped" +
+                " ON d." + DatabaseHelper.COLUMN_DEVOLUCION_PEDIDO_ID + " = ped." + DatabaseHelper.COLUMN_PEDIDO_ID +
+                " INNER JOIN " + DatabaseHelper.TABLE_USUARIOS + " u" +
+                " ON d." + DatabaseHelper.COLUMN_DEVOLUCION_USUARIO_ID + " = u." + DatabaseHelper.COLUMN_USUARIO_ID +
+                " ORDER BY d." + DatabaseHelper.COLUMN_DEVOLUCION_FECHA + " DESC";
+
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery(query, null)) {
+            while (cursor.moveToNext()) {
+                Devolucion devolucion = cursorToDevolucion(cursor);
+                String productoNombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_NOMBRE));
+                String pedidoNumero = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_NUMERO));
+                String usuarioNombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USUARIO_NOMBRE));
+                devolucion.setMotivo(String.format("%s\n[Pedido: %s, Producto: %s, Registrado por: %s]",
+                        devolucion.getMotivo(), pedidoNumero, productoNombre, usuarioNombre));
+                devoluciones.add(devolucion);
+            }
+        } catch (Exception e) {
+            // Log error
+            throw e;
+        }
+        return devoluciones;
+    }
+
+    public List<Devolucion> obtenerDevolucionesPorPedidoConDetalles(int pedidoId) {
+        List<Devolucion> devoluciones = new ArrayList<>();
+        String query = "SELECT d.*, p." + DatabaseHelper.COLUMN_PRODUCTO_NOMBRE + ", " +
+                "ped." + DatabaseHelper.COLUMN_PEDIDO_NUMERO + ", " +
+                "u." + DatabaseHelper.COLUMN_USUARIO_NOMBRE +
+                " FROM " + DatabaseHelper.TABLE_DEVOLUCIONES + " d" +
+                " INNER JOIN " + DatabaseHelper.TABLE_PRODUCTOS + " p" +
+                " ON d." + DatabaseHelper.COLUMN_DEVOLUCION_PRODUCTO_ID + " = p." + DatabaseHelper.COLUMN_PRODUCTO_ID +
+                " INNER JOIN " + DatabaseHelper.TABLE_PEDIDOS + " ped" +
+                " ON d." + DatabaseHelper.COLUMN_DEVOLUCION_PEDIDO_ID + " = ped." + DatabaseHelper.COLUMN_PEDIDO_ID +
+                " INNER JOIN " + DatabaseHelper.TABLE_USUARIOS + " u" +
+                " ON d." + DatabaseHelper.COLUMN_DEVOLUCION_USUARIO_ID + " = u." + DatabaseHelper.COLUMN_USUARIO_ID +
+                " WHERE d." + DatabaseHelper.COLUMN_DEVOLUCION_PEDIDO_ID + " = ?" +
+                " ORDER BY d." + DatabaseHelper.COLUMN_DEVOLUCION_FECHA + " DESC";
+
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(pedidoId)})) {
+            while (cursor.moveToNext()) {
+                Devolucion devolucion = cursorToDevolucion(cursor);
+                String productoNombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_NOMBRE));
+                String pedidoNumero = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_NUMERO));
+                String usuarioNombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_USUARIO_NOMBRE));
+                devolucion.setMotivo(String.format("%s\n[Pedido: %s, Producto: %s, Registrado por: %s]",
+                        devolucion.getMotivo(), pedidoNumero, productoNombre, usuarioNombre));
+                devoluciones.add(devolucion);
+            }
+        } catch (Exception e) {
+            // Log error
+            throw e;
+        }
+        return devoluciones;
+    }
+
     private String[] getDevolucionColumns() {
         return new String[]{
                 DatabaseHelper.COLUMN_DEVOLUCION_ID,
@@ -72,7 +154,6 @@ public class DevolucionDAO {
         };
     }
 
-    // Método auxiliar para convertir un Cursor en un objeto Devolucion
     private Devolucion cursorToDevolucion(Cursor cursor) {
         Devolucion devolucion = new Devolucion();
         devolucion.setId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_DEVOLUCION_ID)));

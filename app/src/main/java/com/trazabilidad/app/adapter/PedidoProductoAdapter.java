@@ -47,7 +47,7 @@ public class PedidoProductoAdapter extends RecyclerView.Adapter<PedidoProductoAd
         holder.textViewCodigo.setText("Código: " + producto.getCodigo());
 
         // Formatear precio
-        NumberFormat formatoMoneda = NumberFormat.getCurrencyInstance(new Locale("es", "ES"));
+        NumberFormat formatoMoneda = NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
         holder.textViewPrecio.setText(formatoMoneda.format(producto.getPrecio()));
 
         // Mostrar cantidad

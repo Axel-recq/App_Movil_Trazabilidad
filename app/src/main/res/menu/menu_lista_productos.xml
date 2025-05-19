@@ -1,0 +1,14 @@
+<!-- res/menu/menu_lista_productos.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_refresh"
+        android:title="Actualizar"
+
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_export"
+        android:title="Exportar"
+
+        app:showAsAction="ifRoom" />
+</menu>

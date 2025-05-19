@@ -102,4 +102,34 @@
     <color name="colorBackgroundLight">#F5F5F5</color>
     <color name="colorError">#D32F2F</color>
 
+    <!-- Colores base de la aplicación (asumidos) -->
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#0D47A1</color>
+    <color name="accent">#FF4081</color>
+
+    <!-- Colores para notificaciones -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="icon_background">#E3F2FD</color>
+    <color name="warning_color">#FFA000</color>
+    <color name="notification_default">#1976D2</color>
+    <color name="devolution_color">#DE2111</color>
+
+    <color name="status_preparing">#3F51B5</color> <!-- EN_PREPARACION -->
+    <color name="status_assigned">#2196F3</color> <!-- ASIGNADO -->
+    <color name="status_rejected">#D81B60</color> <!-- RECHAZADO -->
+
+
+    <color name="gold">#FFC107</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="medium_gray">#E0E0E0</color>
+
+    <color name="green">#4CAF50</color>
+    <color name="yellow">#FFC107</color>
+
+    <!-- Colores de utilidad -->
+    <color name="divider">#EEEEEE</color>
+    <color name="background">#F5F5F5</color>
+
+    <color name="calification_color">#FFD700</color>
 </resources>

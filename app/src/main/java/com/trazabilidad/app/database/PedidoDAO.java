@@ -7,12 +7,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.trazabilidad.app.models.Pedido;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class PedidoDAO {
-
+    private static final String TAG = "PedidoDAO";
     private final DatabaseHelper dbHelper;
 
     public PedidoDAO(Context context) {
@@ -35,31 +36,39 @@ public class PedidoDAO {
                      null,
                      DatabaseHelper.COLUMN_PEDIDO_FECHA + " DESC",
                      String.valueOf(limit))) {
-
             while (cursor.moveToNext()) {
                 pedidos.add(cursorToPedido(cursor));
             }
         } catch (Exception e) {
-            Log.e("PedidoDAO", "Error al obtener pedidos recientes", e);
+            Log.e(TAG, "Error al obtener pedidos recientes", e);
         }
         return pedidos;
     }
 
-    private int getPedidosCount(DatabaseHelper dbHelper) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS, null);
-        cursor.moveToFirst();
-        int count = cursor.getInt(0);
-        cursor.close();
-        return count;
+    public int getPedidosCount() {
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS, null)) {
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+            return 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener conteo de pedidos", e);
+            return 0;
+        }
     }
 
     public boolean insertarPedido(Pedido pedido) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = getPedidoContentValues(pedido);
             long id = db.insert(DatabaseHelper.TABLE_PEDIDOS, null, values);
-            return id != -1;
+            if (id != -1) {
+                pedido.setId((int) id);
+                return true;
+            }
+            return false;
         } catch (Exception e) {
+            Log.e(TAG, "Error al insertar pedido", e);
             return false;
         }
     }
@@ -75,6 +84,7 @@ public class PedidoDAO {
             );
             return rowsAffected > 0;
         } catch (Exception e) {
+            Log.e(TAG, "Error al actualizar pedido", e);
             return false;
         }
     }
@@ -88,6 +98,7 @@ public class PedidoDAO {
             );
             return rowsAffected > 0;
         } catch (Exception e) {
+            Log.e(TAG, "Error al eliminar pedido", e);
             return false;
         }
     }
@@ -108,18 +119,19 @@ public class PedidoDAO {
             }
             return null;
         } catch (Exception e) {
+            Log.e(TAG, "Error al obtener pedido por ID", e);
             return null;
         }
     }
 
-    public List<Pedido> obtenerPedidosPorUsuario(int usuarioId) {
+    public List<Pedido> obtenerPedidosPorUsuario(Integer usuarioId) {
         List<Pedido> pedidos = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
              Cursor cursor = db.query(
                      DatabaseHelper.TABLE_PEDIDOS,
                      getPedidoColumns(),
-                     DatabaseHelper.COLUMN_PEDIDO_USUARIO_ID + " = ?",
-                     new String[]{String.valueOf(usuarioId)},
+                     usuarioId != null ? DatabaseHelper.COLUMN_PEDIDO_USUARIO_ID + " = ?" : null,
+                     usuarioId != null ? new String[]{String.valueOf(usuarioId)} : null,
                      null,
                      null,
                      DatabaseHelper.COLUMN_PEDIDO_FECHA + " DESC"
@@ -128,69 +140,119 @@ public class PedidoDAO {
                 pedidos.add(cursorToPedido(cursor));
             }
         } catch (Exception e) {
-            // Loggear el error o manejarlo según sea necesario
+            Log.e(TAG, "Error al obtener pedidos por usuario", e);
+        }
+        return pedidos;
+    }
+
+    public List<Pedido> obtenerPedidosPorCliente(String cliente) {
+        List<Pedido> pedidos = new ArrayList<>();
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.query(
+                     DatabaseHelper.TABLE_PEDIDOS,
+                     getPedidoColumns(),
+                     DatabaseHelper.COLUMN_PEDIDO_CLIENTE + " LIKE ?",
+                     new String[]{"%" + cliente + "%"},
+                     null,
+                     null,
+                     DatabaseHelper.COLUMN_PEDIDO_FECHA + " DESC"
+             )) {
+            while (cursor.moveToNext()) {
+                pedidos.add(cursorToPedido(cursor));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener pedidos por cliente", e);
         }
         return pedidos;
     }
 
     public boolean confirmarEntrega(int pedidoId) {
-        Pedido pedido = obtenerPedidoPorId(pedidoId);
-        if (pedido != null) {
-            pedido.setConfirmado(true);
-            return actualizarPedido(pedido);
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseHelper.COLUMN_PEDIDO_ESTADO, "ENTREGADO");
+            values.put(DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA, System.currentTimeMillis());
+            values.put(DatabaseHelper.COLUMN_PEDIDO_CONFIRMADO, 1);
+            int rowsAffected = db.update(
+                    DatabaseHelper.TABLE_PEDIDOS,
+                    values,
+                    DatabaseHelper.COLUMN_PEDIDO_ID + " = ?",
+                    new String[]{String.valueOf(pedidoId)}
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error al confirmar entrega", e);
+            return false;
         }
-        return false;
     }
 
     public void verificarDemora(Pedido pedido) {
+        if (pedido == null || pedido.getHoraEstimada() == null) {
+            return;
+        }
         long horaActual = System.currentTimeMillis();
-        if (pedido.getHoraEstimada() < horaActual && pedido.getHoraEntrega() == 0) {
+        if (pedido.getHoraEstimada() < horaActual && (pedido.getHoraEntrega() == null || pedido.getHoraEntrega() == 0)) {
             pedido.setAlertaDemora(true);
-            pedido.setMotivoDemora("Retraso detectado");
+            if (pedido.getMotivoDemora() == null) {
+                pedido.setMotivoDemora("Retraso detectado automáticamente");
+            }
             actualizarPedido(pedido);
-            // Enviar notificación aquí
+            // TODO: Implementar envío de notificación
+            // Notificacion notificacion = new Notificacion();
+            // notificacion.setTipo(Notificacion.Tipo.DEMORA.name());
+            // notificacion.setMensaje("Demora en pedido #" + pedido.getNumero());
+            // notificacion.setFecha(new Date());
+            // notificacion.setReferenciaId(pedido.getId());
+            // NotificationManager.getInstance(context).insertarNotificacion(notificacion);
         }
     }
-    public int getActivePedidosCount() {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        String query = "SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS
-                + " WHERE " + DatabaseHelper.COLUMN_PEDIDO_ESTADO
-                + " IN ('ASIGNADO', 'EN_RUTA', 'EN_PREPARACION', 'PENDIENTE')"; // Estados activos
 
-        try (Cursor cursor = db.rawQuery(query, null)) {
-            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+    public int getActivePedidosCount() {
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery(
+                     "SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS +
+                             " WHERE " + DatabaseHelper.COLUMN_PEDIDO_ESTADO +
+                             " IN ('ASIGNADO', 'EN_RUTA', 'EN_PREPARACION', 'PENDIENTE')",
+                     null)) {
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+            return 0;
         } catch (Exception e) {
-            Log.e("PedidoDAO", "Error en getActivePedidosCount", e);
+            Log.e(TAG, "Error en getActivePedidosCount", e);
             return 0;
         }
     }
 
     public int getPedidosCountByDate(Date date) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        long fechaMillis = date.getTime();
-
-        String query = "SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS
-                + " WHERE " + DatabaseHelper.COLUMN_PEDIDO_FECHA + " = ?";
-
-        try (Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(fechaMillis)})) {
-            return cursor.moveToFirst() ? cursor.getInt(0) : 0;
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+            long startOfDay = date.getTime();
+            long endOfDay = startOfDay + 24 * 60 * 60 * 1000 - 1;
+            String query = "SELECT COUNT(*) FROM " + DatabaseHelper.TABLE_PEDIDOS +
+                    " WHERE " + DatabaseHelper.COLUMN_PEDIDO_FECHA + " BETWEEN ? AND ?";
+            try (Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(startOfDay), String.valueOf(endOfDay)})) {
+                if (cursor.moveToFirst()) {
+                    return cursor.getInt(0);
+                }
+                return 0;
+            }
         } catch (Exception e) {
-            Log.e("PedidoDAO", "Error en getPedidosCountByDate", e);
+            Log.e(TAG, "Error en getPedidosCountByDate", e);
             return 0;
         }
     }
+
     private ContentValues getPedidoContentValues(Pedido pedido) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COLUMN_PEDIDO_NUMERO, pedido.getNumero());
         values.put(DatabaseHelper.COLUMN_PEDIDO_CLIENTE, pedido.getCliente());
         values.put(DatabaseHelper.COLUMN_PEDIDO_DIRECCION, pedido.getDireccion());
-        values.put(DatabaseHelper.COLUMN_PEDIDO_FECHA, pedido.getFecha().getTime());
+        values.put(DatabaseHelper.COLUMN_PEDIDO_FECHA, pedido.getFecha() != null ? pedido.getFecha().getTime() : null);
         values.put(DatabaseHelper.COLUMN_PEDIDO_ESTADO, pedido.getEstado());
         values.put(DatabaseHelper.COLUMN_PEDIDO_USUARIO_ID, pedido.getUsuarioId());
         values.put(DatabaseHelper.COLUMN_PEDIDO_LATITUD, pedido.getLatitud());
         values.put(DatabaseHelper.COLUMN_PEDIDO_LONGITUD, pedido.getLongitud());
         values.put(DatabaseHelper.COLUMN_PEDIDO_OBSERVACIONES, pedido.getObservaciones());
-        values.put(DatabaseHelper.COLUMN_PEDIDO_TOTAL, pedido.getTotal()); //
+        values.put(DatabaseHelper.COLUMN_PEDIDO_TOTAL, pedido.getTotal());
         values.put(DatabaseHelper.COLUMN_PEDIDO_HORA_SALIDA, pedido.getHoraSalida());
         values.put(DatabaseHelper.COLUMN_PEDIDO_HORA_ESTIMADA, pedido.getHoraEstimada());
         values.put(DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA, pedido.getHoraEntrega());
@@ -231,19 +293,55 @@ public class PedidoDAO {
         long fechaMillis = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_FECHA));
         pedido.setFecha(new Date(fechaMillis));
         pedido.setEstado(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_ESTADO)));
-        pedido.setUsuarioId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_USUARIO_ID)));
-        pedido.setLatitud(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_LATITUD)));
-        pedido.setLongitud(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_LONGITUD)));
-        pedido.setObservaciones(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_OBSERVACIONES)));
 
-        // Campos adicionales
-        pedido.setHoraSalida(cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_HORA_SALIDA)));
-        pedido.setHoraEstimada(cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_HORA_ESTIMADA)));
-        pedido.setHoraEntrega(cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA)));
+        int usuarioIdIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_USUARIO_ID);
+        if (!cursor.isNull(usuarioIdIndex)) {
+            pedido.setUsuarioId(cursor.getInt(usuarioIdIndex));
+        }
+
+        int latitudIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_LATITUD);
+        if (!cursor.isNull(latitudIndex)) {
+            pedido.setLatitud(cursor.getDouble(latitudIndex));
+        }
+
+        int longitudIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_LONGITUD);
+        if (!cursor.isNull(longitudIndex)) {
+            pedido.setLongitud(cursor.getDouble(longitudIndex));
+        }
+
+        int observacionesIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_OBSERVACIONES);
+        if (!cursor.isNull(observacionesIndex)) {
+            pedido.setObservaciones(cursor.getString(observacionesIndex));
+        }
+
+        int totalIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_TOTAL);
+        if (!cursor.isNull(totalIndex)) {
+            pedido.setTotal(cursor.getDouble(totalIndex));
+        }
+
+        int horaSalidaIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_HORA_SALIDA);
+        if (!cursor.isNull(horaSalidaIndex)) {
+            pedido.setHoraSalida(cursor.getLong(horaSalidaIndex));
+        }
+
+        int horaEstimadaIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_HORA_ESTIMADA);
+        if (!cursor.isNull(horaEstimadaIndex)) {
+            pedido.setHoraEstimada(cursor.getLong(horaEstimadaIndex));
+        }
+
+        int horaEntregaIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA);
+        if (!cursor.isNull(horaEntregaIndex)) {
+            pedido.setHoraEntrega(cursor.getLong(horaEntregaIndex));
+        }
+
         pedido.setAlertaDemora(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_ALERTA_DEMORA)) == 1);
-        pedido.setMotivoDemora(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_MOTIVO_DEMORA)));
+
+        int motivoDemoraIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_MOTIVO_DEMORA);
+        if (!cursor.isNull(motivoDemoraIndex)) {
+            pedido.setMotivoDemora(cursor.getString(motivoDemoraIndex));
+        }
+
         pedido.setConfirmado(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_CONFIRMADO)) == 1);
-        pedido.setTotal(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_TOTAL)));
 
         return pedido;
     }

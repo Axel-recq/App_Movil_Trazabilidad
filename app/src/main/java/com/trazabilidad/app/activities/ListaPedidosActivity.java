@@ -20,7 +20,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.adapter.PedidoAdapter;
-import com.trazabilidad.app.controllers.PedidoController;
+import com.trazabilidad.app.database.PedidoDAO;
 import com.trazabilidad.app.models.Pedido;
 import com.trazabilidad.app.utils.SessionManager;
 
@@ -41,7 +41,7 @@ public class ListaPedidosActivity extends AppCompatActivity {
     private FloatingActionButton fabAction;
 
     // Data controllers
-    private PedidoController pedidoController;
+    private PedidoDAO pedidoDAO;
     private SessionManager sessionManager;
     private List<Pedido> pedidosList;
     private PedidoAdapter pedidoAdapter;
@@ -51,13 +51,23 @@ public class ListaPedidosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_pedidos);
 
+        // Inicializar SessionManager primero
+        sessionManager = new SessionManager(this);
+
+        // Verificar sesión
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(this, "Sesión expirada. Por favor, inicia sesión.", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
+
         inicializarUI();
         configurarToolbar();
         configurarRecyclerView();
         configurarEventos();
 
-        sessionManager = new SessionManager(this);
-        pedidoController = new PedidoController(this);
+        pedidoDAO = new PedidoDAO(this);
         pedidosList = new ArrayList<>();
 
         cargarPedidos();
@@ -84,8 +94,6 @@ public class ListaPedidosActivity extends AppCompatActivity {
     private void configurarRecyclerView() {
         recyclerViewPedidos.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewPedidos.setHasFixedSize(true);
-
-        // Añadimos una animación de entrada a los items
         recyclerViewPedidos.setLayoutAnimation(
                 android.view.animation.AnimationUtils.loadLayoutAnimation(
                         this, R.anim.layout_animation_fall_down));
@@ -98,68 +106,84 @@ public class ListaPedidosActivity extends AppCompatActivity {
                 R.color.colorPrimaryVariant,
                 R.color.colorSecondary);
 
-        // Configuración del FAB para abrir NuevoPedidoActivity
-        fabAction.setOnClickListener(v -> {
-            Intent intent = new Intent(ListaPedidosActivity.this, NuevoPedidoActivity.class);
-            startActivity(intent);
-        });
+        // Configurar FAB solo para administradores
+        if (sessionManager.isRepartidorOrAdmin()) {
+            fabAction.setVisibility(View.VISIBLE);
+            fabAction.setOnClickListener(v -> {
+                Intent intent = new Intent(ListaPedidosActivity.this, NuevoPedidoActivity.class);
+                startActivity(intent);
+            });
+        } else {
+            fabAction.setVisibility(View.GONE);
+        }
     }
 
     private void cargarPedidos() {
         mostrarCargando(true);
 
-        int usuarioId = sessionManager.getUsuarioDetails().getId();
-        Log.d(TAG, "Cargando pedidos para usuario ID: " + usuarioId);
+        if (sessionManager.isCliente()) {
+            String clienteNombre = sessionManager.getUsuarioDetails().getNombre();
+            Log.d(TAG, "Cargando pedidos para cliente: " + clienteNombre);
+            pedidosList = pedidoDAO.obtenerPedidosPorCliente(clienteNombre);
+            procesarPedidos();
+        } else {
+            int usuarioId = sessionManager.getUsuarioDetails().getId();
+            Log.d(TAG, "Cargando pedidos para usuario ID: " + usuarioId);
+            pedidosList = pedidoDAO.obtenerPedidosPorUsuario(usuarioId);
+            procesarPedidos();
+        }
+    }
 
-        pedidoController.obtenerPedidosAsignados(usuarioId, new PedidoController.PedidosCallback() {
-            @Override
-            public void onSuccess(List<Pedido> pedidos) {
-                mostrarCargando(false);
+    private void procesarPedidos() {
+        mostrarCargando(false);
 
-                pedidosList = pedidos;
-
-                if (pedidos.isEmpty()) {
-                    mostrarEstadoVacio(true);
-                } else {
-                    mostrarEstadoVacio(false);
-                    actualizarListaPedidos(pedidos);
-                }
-            }
-
-            @Override
-            public void onError(String message) {
-                mostrarCargando(false);
-                mostrarEstadoVacio(true);
-
-                Log.e(TAG, "Error al cargar pedidos: " + message);
-                Toast.makeText(ListaPedidosActivity.this, message, Toast.LENGTH_SHORT).show();
-                tvEmpty.setText(R.string.error_pedido_no_encontrado);
-            }
-        });
+        if (pedidosList.isEmpty()) {
+            mostrarEstadoVacio(true);
+            tvEmpty.setText(sessionManager.isCliente() ? R.string.no_pedidos_cliente : R.string.no_pedidos_repartidor);
+        } else {
+            mostrarEstadoVacio(false);
+            actualizarListaPedidos(pedidosList);
+        }
     }
 
     private void actualizarListaPedidos(List<Pedido> pedidos) {
-        pedidoAdapter = new PedidoAdapter(this, pedidos, pedidoId -> {
-            // Interfaz para manejar el click en el item
-            if (pedidoId <= 0) {
-                Toast.makeText(this, getString(R.string.error_pedido_numero_invalido), Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            try {
+        pedidoAdapter = new PedidoAdapter(this, pedidos, new PedidoAdapter.OnItemClickListener() {
+            @Override
+            public void onVerDetalles(int pedidoId) {
                 Intent intent = new Intent(ListaPedidosActivity.this, DetallePedidoActivity.class);
                 intent.putExtra("PEDIDO_ID", pedidoId);
                 startActivity(intent);
                 Log.d(TAG, "Abriendo DetallePedidoActivity con ID: " + pedidoId);
-            } catch (Exception e) {
-                Log.e(TAG, "Error al abrir detalle: " + e.getMessage(), e);
-                Toast.makeText(this, "Error al abrir el detalle del pedido: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
-        });
+
+            @Override
+            public void onCalificar(int pedidoId) {
+                Intent intent = new Intent(ListaPedidosActivity.this, CalificarPedidoActivity.class);
+                intent.putExtra("pedidoId", pedidoId);
+                startActivity(intent);
+                Log.d(TAG, "Abriendo CalificarPedidoActivity con ID: " + pedidoId);
+            }
+
+            @Override
+            public void onMarcarEntregado(int pedidoId) {
+                if (pedidoDAO.confirmarEntrega(pedidoId)) {
+                    Toast.makeText(ListaPedidosActivity.this, "Pedido marcado como entregado.", Toast.LENGTH_SHORT).show();
+                    cargarPedidos();
+                } else {
+                    Toast.makeText(ListaPedidosActivity.this, "Error al marcar como entregado.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onVerMapa(int pedidoId) {
+                Intent intent = new Intent(ListaPedidosActivity.this, MapaActivity.class);
+                intent.putExtra("PEDIDO_ID", pedidoId);
+                startActivity(intent);
+                Log.d(TAG, "Abriendo MapaActivity con ID: " + pedidoId);
+            }
+        }, sessionManager);
 
         recyclerViewPedidos.setAdapter(pedidoAdapter);
-
-        // Ejecutar la animación del RecyclerView
         recyclerViewPedidos.scheduleLayoutAnimation();
     }
 
@@ -181,10 +205,10 @@ public class ListaPedidosActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     protected void onResume() {
         super.onResume();
-        // Recargar la lista cuando la actividad vuelve al frente
         cargarPedidos();
     }
 }
