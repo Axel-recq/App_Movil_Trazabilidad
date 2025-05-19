@@ -27,6 +27,7 @@ public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoView
         void onCalificar(int pedidoId);
         void onMarcarEntregado(int pedidoId);
         void onVerMapa(int pedidoId);
+        void onDevolver(int pedidoId);
     }
 
     private final Context context;
@@ -72,6 +73,7 @@ public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoView
         private final MaterialButton btnVerMapa;
         private final MaterialButton btnEntregado;
         private final MaterialButton btnCalificar;
+        private final MaterialButton btnDevolver;
 
         public PedidoViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -84,6 +86,7 @@ public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoView
             btnVerMapa = itemView.findViewById(R.id.btnVerMapa);
             btnEntregado = itemView.findViewById(R.id.btnEntregado);
             btnCalificar = itemView.findViewById(R.id.btnCalificar);
+            btnDevolver = itemView.findViewById(R.id.btnDevolver);
 
             configurarBotones();
         }
@@ -116,6 +119,13 @@ public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoView
                     clickListener.onCalificar(pedidosList.get(position).getId());
                 }
             });
+
+            btnDevolver.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && clickListener != null) {
+                    clickListener.onDevolver(pedidosList.get(position).getId());
+                }
+            });
         }
 
         public void bind(Pedido pedido) {
@@ -124,13 +134,15 @@ public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoView
             tvDireccion.setText(context.getString(R.string.direccion, pedido.getDireccion()));
             tvFecha.setText(context.getString(R.string.fecha, dateFormat.format(pedido.getFecha())));
 
-            //|| sessionManager.isUserAdmin()
-            if (sessionManager.isCliente() )  {
+
+            if (sessionManager.isCliente()) {
                 btnEntregado.setVisibility(View.GONE);
                 btnVerMapa.setVisibility(View.GONE);
                 btnCalificar.setVisibility("ENTREGADO".equals(pedido.getEstado()) ? View.VISIBLE : View.GONE);
+                btnDevolver.setVisibility("ENTREGADO".equals(pedido.getEstado()) ? View.VISIBLE : View.GONE);
             } else if (sessionManager.isRepartidorOrAdmin()) {
                 btnCalificar.setVisibility(View.GONE);
+                btnDevolver.setVisibility("ENTREGADO".equals(pedido.getEstado()) ? View.VISIBLE : View.GONE);
                 btnVerMapa.setVisibility(pedido.getLatitud() != null && pedido.getLongitud() != null ? View.VISIBLE : View.GONE);
                 btnEntregado.setVisibility(
                         !"ENTREGADO".equals(pedido.getEstado()) &&

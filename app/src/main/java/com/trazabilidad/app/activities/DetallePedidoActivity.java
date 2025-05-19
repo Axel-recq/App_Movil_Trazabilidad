@@ -170,11 +170,22 @@ public class DetallePedidoActivity extends AppCompatActivity {
                 recyclerProductos.setAdapter(new ProductoDetalleAdapter(
                         DetallePedidoActivity.this,
                         productos,
-                        producto -> {
-                            // Acción opcional al hacer clic en un producto
-                            Toast.makeText(DetallePedidoActivity.this,
-                                    "Producto seleccionado: " + producto.getNombre(),
-                                    Toast.LENGTH_SHORT).show();
+                        pedidoId,
+                        new ProductoDetalleAdapter.OnProductoClickListener() {
+                            @Override
+                            public void onProductoClick(Producto producto) {
+                                Toast.makeText(DetallePedidoActivity.this,
+                                        "Producto seleccionado: " + producto.getNombre(),
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onDevolverProducto(int pedidoId, int productoId) {
+                                Intent intent = new Intent(DetallePedidoActivity.this, GestionDevolucionActivity.class);
+                                intent.putExtra("pedidoId", pedidoId);
+                                intent.putExtra("productoId", productoId);
+                                startActivity(intent);
+                            }
                         }
                 ));
             } else {

@@ -11,15 +11,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.controllers.DevolucionController;
+import com.trazabilidad.app.database.PedidoDAO;
 import com.trazabilidad.app.models.Devolucion;
+import com.trazabilidad.app.models.Pedido;
 import com.trazabilidad.app.utils.SessionManager;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class GestionDevolucionActivity extends AppCompatActivity {
     private EditText editTextPedidoId, editTextProductoId, editTextCantidad, editTextMotivo;
     private Button buttonRegistrar;
     private DevolucionController devolucionController;
+    private PedidoDAO pedidoDAO;
     private SessionManager sessionManager;
     private int usuarioId;
 
@@ -55,8 +59,9 @@ public class GestionDevolucionActivity extends AppCompatActivity {
         editTextMotivo = findViewById(R.id.editTextMotivo);
         buttonRegistrar = findViewById(R.id.buttonRegistrar);
 
-        // Inicializar controlador
+        // Inicializar controladores
         devolucionController = new DevolucionController(this);
+        pedidoDAO = new PedidoDAO(this);
 
         // Rellenar campos desde Intent (si aplica)
         Intent intent = getIntent();
@@ -83,6 +88,31 @@ public class GestionDevolucionActivity extends AppCompatActivity {
             int productoId = Integer.parseInt(editTextProductoId.getText().toString().trim());
             int cantidad = Integer.parseInt(editTextCantidad.getText().toString().trim());
             String motivo = editTextMotivo.getText().toString().trim();
+
+            // Validar pedido
+            Pedido pedido = pedidoDAO.obtenerPedidoPorId(pedidoId);
+            if (pedido == null) {
+                Toast.makeText(this, "El pedido no existe.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Validar estado del pedido
+            if (!"ENTREGADO".equalsIgnoreCase(pedido.getEstado())) {
+                Toast.makeText(this, "Solo se pueden devolver productos de pedidos entregados.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Validar período de devolución (7 días desde horaEntrega)
+            if (pedido.getHoraEntrega() == null || pedido.getHoraEntrega() == 0) {
+                Toast.makeText(this, "El pedido no tiene una fecha de entrega registrada.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            long diffInMillies = new Date().getTime() - pedido.getHoraEntrega();
+            long diffInDays = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+            if (diffInDays > 7) {
+                Toast.makeText(this, "El período de devolución (7 días) ha expirado.", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             // Crear objeto Devolucion
             Devolucion devolucion = new Devolucion();

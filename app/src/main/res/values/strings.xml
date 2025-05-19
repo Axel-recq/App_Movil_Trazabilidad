@@ -266,4 +266,9 @@
     <string name="cliente_default">Cliente: </string>
     <string name="categoria_default">Categoría: </string>
     <string name="fecha_default">Fecha: </string>
+
+    <string name="precio">S/ %.2f</string>
+    <string name="codigo">Código: %s</string>
+    <string name="cantidad">Cantidad: %d</string>
+    <string name="devolver">Devolver</string>
 </resources>
