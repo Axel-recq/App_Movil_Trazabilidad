@@ -22,6 +22,7 @@ androidxJunit = "1.2.1"
 espresso = "3.6.1"
 swiperefreshlayout = "1.1.0"
 circleimageview = "3.1.0"
+scenecore = "1.0.0-alpha04"
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin-gradle-plugin" }
@@ -59,3 +60,4 @@ androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "s
 mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpandroidchart" }
 
 circleimageview = { group = "de.hdodenhof", name = "circleimageview", version.ref = "circleimageview" }
+androidx-scenecore = { group = "androidx.xr.scenecore", name = "scenecore", version.ref = "scenecore" }

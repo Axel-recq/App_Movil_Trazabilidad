@@ -139,7 +139,6 @@ public class NuevoPedidoActivity extends AppCompatActivity {
     private void aplicarAnimaciones() {
         Animation fadeIn = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
         fadeIn.setDuration(300);
-
     }
 
     private void configurarEstados() {
@@ -542,7 +541,11 @@ public class NuevoPedidoActivity extends AppCompatActivity {
             @Override
             public void onError(String message) {
                 mostrarProgreso(false);
-                mostrarError("Error: " + message);
+                if (message.contains("stock insuficiente")) {
+                    mostrarError("No hay suficiente stock para uno o más productos. Por favor, revisa las cantidades.");
+                } else {
+                    mostrarError("Error al registrar el pedido: " + message);
+                }
             }
         });
     }

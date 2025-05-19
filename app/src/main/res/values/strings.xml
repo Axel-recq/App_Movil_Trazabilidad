@@ -139,7 +139,21 @@
     <string name="buscar_por_nombre_o_email">Buscar por nombre o email</string>
     <string name="desactivar_usuario">Desactivar Usuario</string>
     <string name="editar">Editar</string>
-
+    <string-array name="filtros_productos">
+        <item>Todos</item>
+        <item>Bajo Stock</item>
+        <item>Inactivos</item>
+    </string-array>
+    <string-array name="ordenamiento_productos">
+        <item>Más recientes primero</item>
+        <item>Más antiguos primero</item>
+        <item>Nombre (A-Z)</item>
+        <item>Nombre (Z-A)</item>
+        <item>Precio (menor a mayor)</item>
+        <item>Precio (mayor a menor)</item>
+        <item>Stock (menor a mayor)</item>
+        <item>Stock (mayor a menor)</item>
+    </string-array>
     <string-array name="tipos_reportes">
         <item>Seleccione un tipo de reporte</item>
         <item>Pedidos por Estado</item>
@@ -189,4 +203,67 @@
 
     <string name="nuevo_producto">Nuevo Producto</string>
     <string name="nuevo_usuario">Nuevo Usuario</string>
+    <string name="desactivar_producto">Desactivar producto</string>
+    <string name="editar_stock">Editar stock</string>
+    <string name="activo">Activo</string>
+    <string name="activar">Activar</string>
+    <string name="las_devoluciones_deben_ser_registradas_dentro_de_los_7_d_as_posteriores_a_la_entrega_del_pedido">Las devoluciones deben ser registradas dentro de los 7 días posteriores a la entrega del pedido.</string>
+    <string name="notification_icon">Icono de notificación</string>
+    <string name="action_icon">Ir a detalles</string>
+
+
+    <string name="marcar_entregado">Marcar Entregado</string>
+    <string name="calificar">Calificar</string>
+    <string name="no_pedidos_cliente">No tienes pedidos para mostrar.</string>
+    <string name="no_pedidos_repartidor">No tienes pedidos asignados.</string>
+
+    <string name="calificar_pedido">Calificar Pedido</string>
+
+    <!-- Nuevos strings para la actividad de calificación -->
+    <string name="detalles_del_pedido">Detalles del Pedido</string>
+    <string name="califica_tu_experiencia">Califica tu Experiencia</string>
+    <string name="como_fue_tu_experiencia">¿Cómo fue tu experiencia con este pedido?</string>
+    <string name="dejanos_un_comentario">Déjanos un comentario (opcional)</string>
+    <string name="enviar_calificacion">Enviar Calificación</string>
+    <string name="gracias_por_calificar">¡Gracias por tu calificación!</string>
+
+
+    <string name="todas_calificaciones">Todas las Calificaciones</string>
+    <string name="empty_state">Estado vacío</string>
+    <string name="ver_calificaciones">Ver Calificaciones</string>
+    <string name="categoria">Categoría: %s</string>
+
+    <!-- Descripciones de accesibilidad -->
+    <string name="cliente_icon">Icono de cliente</string>
+    <string name="direccion_icon">Icono de dirección</string>
+    <string name="fecha_icon">Icono de fecha</string>
+
+
+    <string-array name="categorias_calificaciones">
+        <item>Todas</item>
+        <item>Muy buenas</item>
+        <item>Buenas</item>
+        <item>Malas</item>
+    </string-array>
+    <!-- Strings existentes -->
+
+    <string name="cantidad_devuelta">Cantidad devuelta: %d</string>
+    <!-- Existing strings (assumed) -->
+    <string name="lista_devoluciones">Lista de Devoluciones</string>
+    <string name="lista_calificaciones">Lista de Calificaciones</string>
+    <string name="no_devoluciones">No hay devoluciones registradas</string>
+    <string name="no_calificaciones">No hay calificaciones registradas</string>
+
+    <!-- New strings -->
+    <string name="ver_todas_devoluciones">Ver Todas las Devoluciones</string>
+    <string name="ver_todas_calificaciones">Ver Todas las Calificaciones</string>
+
+    <string name="detalle_calificacion">Detalle de Calificación</string>
+    <string name="no_calificacion">No hay calificación para este pedido</string>
+
+    <string name="sin_comentario">Sin comentario</string>
+    <string name="pedido_numero_default">Pedido #</string>
+    <string name="cliente_default">Cliente: </string>
+    <string name="categoria_default">Categoría: </string>
+    <string name="fecha_default">Fecha: </string>
 </resources>

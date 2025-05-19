@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.chip.Chip;
 import com.trazabilidad.app.R;
-import com.trazabilidad.app.adapter.ProductoAdapter;
+import com.trazabilidad.app.adapter.ProductoDetalleAdapter;
 import com.trazabilidad.app.controllers.PedidoController;
 import com.trazabilidad.app.models.Pedido;
 import com.trazabilidad.app.models.Producto;
@@ -31,7 +31,7 @@ public class DetallePedidoActivity extends AppCompatActivity {
 
     private static final String TAG = "DetallePedidoActivity";
     private TextView tvNumeroPedido, tvCliente, tvDireccion, tvFecha;
-    private Chip chipEstado,chipProductCount;
+    private Chip chipEstado, chipProductCount;
     private RecyclerView recyclerProductos;
     private Button btnVerMapa, btnEntregado, btnIncidencia;
     private ProgressBar progressBar;
@@ -165,9 +165,18 @@ public class DetallePedidoActivity extends AppCompatActivity {
             boolean entregable = "ASIGNADO".equals(pedido.getEstado()) || "EN_RUTA".equals(pedido.getEstado());
             btnEntregado.setEnabled(entregable);
 
-            // Configurar el adaptador de productos
+            // Configurar el adaptador de productos usando ProductoDetalleAdapter
             if (!productos.isEmpty()) {
-                recyclerProductos.setAdapter(new ProductoAdapter(DetallePedidoActivity.this, productos));
+                recyclerProductos.setAdapter(new ProductoDetalleAdapter(
+                        DetallePedidoActivity.this,
+                        productos,
+                        producto -> {
+                            // Acción opcional al hacer clic en un producto
+                            Toast.makeText(DetallePedidoActivity.this,
+                                    "Producto seleccionado: " + producto.getNombre(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                ));
             } else {
                 // Mostrar mensaje si no hay productos
                 Toast.makeText(this, "Este pedido no tiene productos asociados", Toast.LENGTH_SHORT).show();
@@ -177,7 +186,6 @@ public class DetallePedidoActivity extends AppCompatActivity {
             Toast.makeText(this, "Error al mostrar los datos: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
-
 
     private void configurarChipEstado(String estado) {
         int colorFondo;

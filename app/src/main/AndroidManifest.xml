@@ -8,7 +8,8 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.CAMERA" />
-
+    <!-- AndroidManifest.xml -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
@@ -81,5 +82,14 @@
             android:name=".activities.DetalleUsuarioActivity"
             android:exported="false"
             android:parentActivityName=".activities.ListaUsuariosActivity" />
+        <activity
+            android:name=".activities.CalificarPedidoActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activities.GestionDevolucionActivity"
+            android:exported="true" />
+        <activity android:name=".activities.ListaDevolucionesActivity" />
+        <activity android:name=".activities.ListaCalificacionesActivity" />
+        <activity android:name=".activities.DetalleCalificacionActivity" />
     </application>
 </manifest>

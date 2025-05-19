@@ -1,179 +1,198 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="4dp"
-    android:layout_marginVertical="4dp"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
+    app:cardElevation="4dp"
     app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Status indicator -->
+        <!-- Indicador de estado vertical -->
         <View
             android:id="@+id/viewStatusIndicator"
             android:layout_width="8dp"
             android:layout_height="0dp"
-            android:background="@color/status_delivering"
+            android:background="@color/status_pending"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
+            android:id="@+id/headerLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp"
+            android:paddingTop="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/viewStatusIndicator"
             app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Top Row: Pedido ID + Status -->
-            <LinearLayout
-                android:id="@+id/layoutTopRow"
+            <TextView
+                android:id="@+id/tvPedidoNumero"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_weight="1"
+                android:fontFamily="@font/roboto_medium"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="Pedido #12345" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipEstado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:chipMinHeight="28dp"
+                tools:chipBackgroundColor="@color/status_pending"
+                tools:text="PENDIENTE" />
+        </LinearLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/contentLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/viewStatusIndicator"
+            app:layout_constraintTop_toBottomOf="@id/headerLayout">
+
+            <ImageView
+                android:id="@+id/ivCliente"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:contentDescription="@string/cliente_icon"
+                android:src="@drawable/ic_person"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/text_secondary" />
 
-                <TextView
-                    android:id="@+id/tvPedidoNumero"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textAppearance="@style/TextAppearance.App.Subtitle1"
-                    android:textColor="@color/colorOnBackground"
-                    android:textStyle="bold"
-                    tools:text="Pedido: #12345" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipEstado"
-                    style="@style/Widget.MaterialComponents.Chip.Action"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="@style/TextAppearance.App.Caption"
-                    android:textColor="@color/colorOnPrimary"
-                    app:chipBackgroundColor="@color/status_delivering"
-                    app:chipIconEnabled="false"
-                    app:chipMinHeight="24dp"
-                    app:ensureMinTouchTargetSize="false"
-                    tools:text="En entrega" />
-            </LinearLayout>
-
-            <!-- Cliente -->
             <TextView
                 android:id="@+id/tvCliente"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:drawablePadding="8dp"
-                android:textAppearance="@style/TextAppearance.App.Body2"
-                android:textColor="@color/colorOnBackground"
-                app:drawableStartCompat="@drawable/ic_person"
-                app:drawableTint="@color/gray_600"
+                android:layout_marginStart="8dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/layoutTopRow"
+                app:layout_constraintStart_toEndOf="@id/ivCliente"
+                app:layout_constraintTop_toTopOf="@id/ivCliente"
+                app:layout_constraintBottom_toBottomOf="@id/ivCliente"
                 tools:text="Cliente: Juan Pérez" />
 
-            <!-- Dirección -->
+            <ImageView
+                android:id="@+id/ivDireccion"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginTop="12dp"
+                android:contentDescription="@string/direccion_icon"
+                android:src="@drawable/ic_location"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvCliente"
+                app:tint="@color/text_secondary" />
+
             <TextView
                 android:id="@+id/tvDireccion"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:drawablePadding="8dp"
-                android:textAppearance="@style/TextAppearance.App.Body2"
-                android:textColor="@color/gray_700"
-                app:drawableStartCompat="@drawable/ic_map"
-                app:drawableTint="@color/gray_600"
+                android:layout_marginStart="8dp"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvCliente"
-                tools:text="Dirección: Calle Principal #123, Ciudad" />
+                app:layout_constraintStart_toEndOf="@id/ivDireccion"
+                app:layout_constraintTop_toTopOf="@id/ivDireccion"
+                tools:text="Dirección: Av. Siempre Viva 123, Springfield" />
 
-            <!-- Fecha -->
+            <ImageView
+                android:id="@+id/ivFecha"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginTop="12dp"
+                android:contentDescription="@string/fecha_icon"
+                android:src="@drawable/ic_calendar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvDireccion"
+                app:tint="@color/text_secondary" />
+
             <TextView
                 android:id="@+id/tvFecha"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:drawablePadding="8dp"
-                android:textAppearance="@style/TextAppearance.App.Caption"
-                android:textColor="@color/gray_600"
-                app:drawableStartCompat="@drawable/ic_calendar"
-                app:drawableTint="@color/gray_600"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvDireccion"
-                tools:text="Fecha: 12/05/2025" />
+                app:layout_constraintStart_toEndOf="@id/ivFecha"
+                app:layout_constraintTop_toTopOf="@id/ivFecha"
+                app:layout_constraintBottom_toBottomOf="@id/ivFecha"
+                tools:text="Fecha: 18/05/2025" />
 
-            <!-- Divider -->
-            <View
-                android:id="@+id/divider"
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_marginTop="12dp"
-                android:background="@color/gray_200"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvFecha" />
-
-            <!-- Action Buttons -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:gravity="end"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/divider">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnVerMapa"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginEnd="8dp"
-                    android:minWidth="0dp"
-                    android:paddingHorizontal="12dp"
-                    android:text="@string/ver_mapa"
-                    android:textAllCaps="false"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="12sp"
-                    app:icon="@drawable/ic_map"
-                    app:iconGravity="textStart"
-                    app:iconPadding="4dp"
-                    app:iconSize="16dp"
-                    app:iconTint="@color/colorPrimary" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnEntregado"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:minWidth="0dp"
-                    android:paddingHorizontal="12dp"
-                    android:text="@string/entregado"
-                    android:textAllCaps="false"
-                    android:textColor="@color/success"
-                    android:textSize="12sp"
-                    app:icon="@drawable/ic_check"
-                    app:iconGravity="textStart"
-                    app:iconPadding="4dp"
-                    app:iconSize="16dp"
-                    app:iconTint="@color/success"
-                    app:strokeColor="@color/success" />
-            </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/divider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/viewStatusIndicator"
+            app:layout_constraintTop_toBottomOf="@id/contentLayout" />
+
+        <LinearLayout
+            android:id="@+id/buttonLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/viewStatusIndicator"
+            app:layout_constraintTop_toBottomOf="@id/divider">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCalificar"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:text="@string/calificar"
+                android:textSize="12sp"
+                app:icon="@drawable/ic_star" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnVerMapa"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:text="@string/ver_mapa"
+                android:textSize="12sp"
+                app:icon="@drawable/ic_location" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEntregado"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/entregado"
+                android:textSize="12sp"
+                app:icon="@drawable/ic_check_circle" />
+        </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

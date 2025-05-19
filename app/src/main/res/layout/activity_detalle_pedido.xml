@@ -329,7 +329,7 @@
                 android:text="@string/entregado"
                 android:textAllCaps="false"
                 android:layout_marginEnd="8dp"
-                app:icon="@drawable/ic_check"
+
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"
                 app:cornerRadius="8dp"
@@ -343,7 +343,6 @@
                 android:layout_weight="1"
                 android:text="@string/incidencia"
                 android:textAllCaps="false"
-                app:icon="@drawable/ic_warning"
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"
                 app:cornerRadius="8dp"

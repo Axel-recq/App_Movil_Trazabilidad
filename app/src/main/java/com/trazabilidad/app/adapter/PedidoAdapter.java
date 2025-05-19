@@ -14,23 +14,33 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.models.Pedido;
+import com.trazabilidad.app.utils.SessionManager;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoViewHolder> {
 
-    public interface OnPedidoClickListener {
-        void onPedidoClick(int pedidoId);
+    public interface OnItemClickListener {
+        void onVerDetalles(int pedidoId);
+        void onCalificar(int pedidoId);
+        void onMarcarEntregado(int pedidoId);
+        void onVerMapa(int pedidoId);
     }
 
     private final Context context;
     private final List<Pedido> pedidosList;
-    private final OnPedidoClickListener clickListener;
+    private final OnItemClickListener clickListener;
+    private final SessionManager sessionManager;
+    private final SimpleDateFormat dateFormat;
 
-    public PedidoAdapter(Context context, List<Pedido> pedidosList, OnPedidoClickListener clickListener) {
+    public PedidoAdapter(Context context, List<Pedido> pedidosList, OnItemClickListener clickListener, SessionManager sessionManager) {
         this.context = context;
         this.pedidosList = pedidosList;
         this.clickListener = clickListener;
+        this.sessionManager = sessionManager;
+        this.dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
     }
 
     @NonNull
@@ -61,6 +71,7 @@ public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoView
         private final View viewStatusIndicator;
         private final MaterialButton btnVerMapa;
         private final MaterialButton btnEntregado;
+        private final MaterialButton btnCalificar;
 
         public PedidoViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -72,76 +83,97 @@ public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoView
             viewStatusIndicator = itemView.findViewById(R.id.viewStatusIndicator);
             btnVerMapa = itemView.findViewById(R.id.btnVerMapa);
             btnEntregado = itemView.findViewById(R.id.btnEntregado);
+            btnCalificar = itemView.findViewById(R.id.btnCalificar);
 
-            // Configuramos el click listener para todo el item
-            itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && clickListener != null) {
-                    clickListener.onPedidoClick(pedidosList.get(position).getId());
-                }
-            });
-
-            // Click listeners para los botones de acción
             configurarBotones();
         }
 
         private void configurarBotones() {
+            itemView.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && clickListener != null) {
+                    clickListener.onVerDetalles(pedidosList.get(position).getId());
+                }
+            });
+
             btnVerMapa.setOnClickListener(v -> {
                 int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    // Implementar navegación al mapa
-                    // Por ejemplo: abrirMapa(pedidosList.get(position));
+                if (position != RecyclerView.NO_POSITION && clickListener != null) {
+                    clickListener.onVerMapa(pedidosList.get(position).getId());
                 }
             });
 
             btnEntregado.setOnClickListener(v -> {
                 int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    // Implementar marcado como entregado
-                    // Por ejemplo: marcarComoEntregado(pedidosList.get(position).getId());
+                if (position != RecyclerView.NO_POSITION && clickListener != null) {
+                    clickListener.onMarcarEntregado(pedidosList.get(position).getId());
+                }
+            });
+
+            btnCalificar.setOnClickListener(v -> {
+                int position = getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION && clickListener != null) {
+                    clickListener.onCalificar(pedidosList.get(position).getId());
                 }
             });
         }
 
         public void bind(Pedido pedido) {
-            tvPedidoNumero.setText(context.getString(R.string.pedido_numero, String.valueOf(pedido.getId())));
+            tvPedidoNumero.setText(context.getString(R.string.pedido_numero, pedido.getNumero()));
             tvCliente.setText(context.getString(R.string.cliente, pedido.getCliente()));
             tvDireccion.setText(context.getString(R.string.direccion, pedido.getDireccion()));
-            tvFecha.setText(context.getString(R.string.fecha, pedido.getFecha()));
+            tvFecha.setText(context.getString(R.string.fecha, dateFormat.format(pedido.getFecha())));
 
-            // Configuramos el chip de estado y el indicador visual
+            //|| sessionManager.isUserAdmin()
+            if (sessionManager.isCliente() )  {
+                btnEntregado.setVisibility(View.GONE);
+                btnVerMapa.setVisibility(View.GONE);
+                btnCalificar.setVisibility("ENTREGADO".equals(pedido.getEstado()) ? View.VISIBLE : View.GONE);
+            } else if (sessionManager.isRepartidorOrAdmin()) {
+                btnCalificar.setVisibility(View.GONE);
+                btnVerMapa.setVisibility(pedido.getLatitud() != null && pedido.getLongitud() != null ? View.VISIBLE : View.GONE);
+                btnEntregado.setVisibility(
+                        !"ENTREGADO".equals(pedido.getEstado()) &&
+                                !"CANCELADO".equals(pedido.getEstado()) &&
+                                !"RECHAZADO".equals(pedido.getEstado()) ? View.VISIBLE : View.GONE);
+            }
+
             configurarEstado(pedido.getEstado());
         }
 
         private void configurarEstado(String estado) {
             int colorEstado;
+            String estadoDisplay = estado != null ? estado : "DESCONOCIDO";
 
-            // Ajustamos color y visibilidad según el estado
-            switch (estado.toLowerCase()) {
-                case "pendiente":
+            switch (estadoDisplay.toUpperCase()) {
+                case "PENDIENTE":
                     colorEstado = R.color.status_pending;
                     break;
-                case "entregando":
-                case "en camino":
+                case "EN_PREPARACION":
+                    colorEstado = R.color.status_preparing;
+                    break;
+                case "ASIGNADO":
+                    colorEstado = R.color.status_assigned;
+                    break;
+                case "EN_RUTA":
                     colorEstado = R.color.status_delivering;
                     break;
-                case "entregado":
+                case "ENTREGADO":
                     colorEstado = R.color.status_delivered;
-                    btnEntregado.setVisibility(View.GONE);
                     break;
-                case "cancelado":
+                case "CANCELADO":
                     colorEstado = R.color.status_canceled;
-                    btnEntregado.setVisibility(View.GONE);
                     break;
-                case "incidencia":
-                    colorEstado = R.color.status_incident;
+                case "RECHAZADO":
+                    colorEstado = R.color.status_rejected;
                     break;
                 default:
                     colorEstado = R.color.gray_500;
+                    estadoDisplay = "DESCONOCIDO";
                     break;
             }
 
-            chipEstado.setText(estado);
+            chipEstado.setText(estadoDisplay);
             chipEstado.setChipBackgroundColorResource(colorEstado);
             viewStatusIndicator.setBackgroundColor(ContextCompat.getColor(context, colorEstado));
         }

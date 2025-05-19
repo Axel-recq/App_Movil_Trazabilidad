@@ -20,6 +20,31 @@ public class ProductoDAO {
         dbHelper = DatabaseHelper.getInstance(context);
     }
 
+    public void actualizarEstructuraTabla() {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            // Verificar si la columna activo existe en la tabla productos
+            boolean columnaActivoExiste = false;
+            try (Cursor cursor = db.rawQuery("PRAGMA table_info(" + DatabaseHelper.TABLE_PRODUCTOS + ")", null)) {
+                while (cursor.moveToNext()) {
+                    String columnName = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                    if ("activo".equals(columnName)) {
+                        columnaActivoExiste = true;
+                        break;
+                    }
+                }
+            }
+
+            // Si la columna no existe, añadirla
+            if (!columnaActivoExiste) {
+                db.execSQL("ALTER TABLE " + DatabaseHelper.TABLE_PRODUCTOS + " ADD COLUMN " +
+                        DatabaseHelper.COLUMN_PRODUCTO_ACTIVO + " INTEGER DEFAULT 1");
+                Log.d(TAG, "Columna activo añadida a la tabla productos");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al actualizar estructura de la tabla: " + e.getMessage());
+        }
+    }
+
     public boolean insertarProducto(Producto producto) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
             ContentValues values = getProductoContentValues(producto);
@@ -43,6 +68,44 @@ public class ProductoDAO {
             return rowsAffected > 0;
         } catch (Exception e) {
             Log.e(TAG, "Error al actualizar producto: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Método para desactivar un producto en lugar de eliminarlo físicamente
+    public boolean desactivarProducto(int id) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO, 0); // 0 = inactivo
+
+            int rowsAffected = db.update(
+                    DatabaseHelper.TABLE_PRODUCTOS,
+                    values,
+                    DatabaseHelper.COLUMN_PRODUCTO_ID + " = ?",
+                    new String[]{String.valueOf(id)}
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error al desactivar producto: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Método para activar un producto
+    public boolean activarProducto(int id) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO, 1); // 1 = activo
+
+            int rowsAffected = db.update(
+                    DatabaseHelper.TABLE_PRODUCTOS,
+                    values,
+                    DatabaseHelper.COLUMN_PRODUCTO_ID + " = ?",
+                    new String[]{String.valueOf(id)}
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error al activar producto: " + e.getMessage());
             return false;
         }
     }
@@ -82,28 +145,8 @@ public class ProductoDAO {
         }
     }
 
-    public List<Producto> obtenerProductosPorPedido(int pedidoId) {
-        List<Producto> productos = new ArrayList<>();
-        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
-             Cursor cursor = db.query(
-                     DatabaseHelper.TABLE_PRODUCTOS,
-                     getProductoColumns(),
-                     DatabaseHelper.COLUMN_PRODUCTO_PEDIDO_ID + " = ?",
-                     new String[]{String.valueOf(pedidoId)},
-                     null,
-                     null,
-                     DatabaseHelper.COLUMN_PRODUCTO_NOMBRE + " ASC"
-             )) {
-            while (cursor.moveToNext()) {
-                productos.add(cursorToProducto(cursor));
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error al obtener productos por pedido: " + e.getMessage());
-        }
-        return productos;
-    }
-
-    public List<Producto> obtenerTodosLosProductos() {
+    // Obtener todos los productos ordenados por ID descendente (más recientes primero)
+    public List<Producto> obtenerTodosLosProductosOrdenadosPorId() {
         List<Producto> productos = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
              Cursor cursor = db.query(
@@ -113,7 +156,7 @@ public class ProductoDAO {
                      null,
                      null,
                      null,
-                     DatabaseHelper.COLUMN_PRODUCTO_NOMBRE + " ASC"
+                     DatabaseHelper.COLUMN_PRODUCTO_ID + " DESC"
              )) {
             while (cursor.moveToNext()) {
                 productos.add(cursorToProducto(cursor));
@@ -124,6 +167,142 @@ public class ProductoDAO {
         return productos;
     }
 
+    // Obtener productos activos
+    public List<Producto> obtenerProductosActivos() {
+        List<Producto> productos = new ArrayList<>();
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.query(
+                     DatabaseHelper.TABLE_PRODUCTOS,
+                     getProductoColumns(),
+                     DatabaseHelper.COLUMN_PRODUCTO_ACTIVO + " = 1",
+                     null,
+                     null,
+                     null,
+                     DatabaseHelper.COLUMN_PRODUCTO_ID + " DESC"
+             )) {
+            while (cursor.moveToNext()) {
+                productos.add(cursorToProducto(cursor));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener productos activos: " + e.getMessage());
+        }
+        return productos;
+    }
+
+    // Obtener productos inactivos
+    public List<Producto> obtenerProductosInactivos() {
+        List<Producto> productos = new ArrayList<>();
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.query(
+                     DatabaseHelper.TABLE_PRODUCTOS,
+                     getProductoColumns(),
+                     DatabaseHelper.COLUMN_PRODUCTO_ACTIVO + " = 0",
+                     null,
+                     null,
+                     null,
+                     DatabaseHelper.COLUMN_PRODUCTO_ID + " DESC"
+             )) {
+            while (cursor.moveToNext()) {
+                productos.add(cursorToProducto(cursor));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener productos inactivos: " + e.getMessage());
+        }
+        return productos;
+    }
+
+    // Obtener productos con stock bajo
+    public List<Producto> obtenerProductosBajoStock(int limiteStockBajo) {
+        List<Producto> productos = new ArrayList<>();
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.query(
+                     DatabaseHelper.TABLE_PRODUCTOS,
+                     getProductoColumns(),
+                     DatabaseHelper.COLUMN_PRODUCTO_CANTIDAD + " < ? AND " +
+                             DatabaseHelper.COLUMN_PRODUCTO_ACTIVO + " = 1",
+                     new String[]{String.valueOf(limiteStockBajo)},
+                     null,
+                     null,
+                     DatabaseHelper.COLUMN_PRODUCTO_ID + " DESC"
+             )) {
+            while (cursor.moveToNext()) {
+                productos.add(cursorToProducto(cursor));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener productos con stock bajo: " + e.getMessage());
+        }
+        return productos;
+    }
+
+    // Obtener productos por texto de búsqueda
+    public List<Producto> obtenerProductosPorTexto(String texto) {
+        List<Producto> productos = new ArrayList<>();
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+            String busqueda = "%" + texto.toLowerCase() + "%";
+            String sql = "SELECT * FROM " + DatabaseHelper.TABLE_PRODUCTOS +
+                    " WHERE LOWER(" + DatabaseHelper.COLUMN_PRODUCTO_NOMBRE + ") LIKE ? OR " +
+                    "LOWER(" + DatabaseHelper.COLUMN_PRODUCTO_CODIGO + ") LIKE ? OR " +
+                    "LOWER(" + DatabaseHelper.COLUMN_PRODUCTO_DESCRIPCION + ") LIKE ? " +
+                    "ORDER BY " + DatabaseHelper.COLUMN_PRODUCTO_ID + " DESC";
+
+            try (Cursor cursor = db.rawQuery(sql, new String[]{busqueda, busqueda, busqueda})) {
+                while (cursor.moveToNext()) {
+                    productos.add(cursorToProducto(cursor));
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al buscar productos por texto: " + e.getMessage());
+        }
+        return productos;
+    }
+    public int obtenerIdProductoPorCodigo(String codigo) {
+        int id = -1;
+        String query = "SELECT " + DatabaseHelper.COLUMN_PRODUCTO_ID + " FROM " + DatabaseHelper.TABLE_PRODUCTOS +
+                " WHERE " + DatabaseHelper.COLUMN_PRODUCTO_CODIGO + " = ?";
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery(query, new String[]{codigo})) {
+            if (cursor.moveToFirst()) {
+                id = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_ID));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener ID del producto por código: " + e.getMessage());
+        }
+        return id;
+    }
+
+    public int obtenerUltimoProductoId() {
+        int id = -1;
+        String query = "SELECT MAX(" + DatabaseHelper.COLUMN_PRODUCTO_ID + ") FROM " + DatabaseHelper.TABLE_PRODUCTOS;
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery(query, null)) {
+            if (cursor.moveToFirst()) {
+                id = cursor.getInt(0);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener el último ID del producto: " + e.getMessage());
+        }
+        return id;
+    }
+    public List<Producto> obtenerProductosPorPedido(int pedidoId) {
+        List<Producto> productos = new ArrayList<>();
+        String query = "SELECT p.*, pp." + DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_CANTIDAD + " AS cantidad_pedido, " +
+                "pp." + DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + " " +
+                "FROM " + DatabaseHelper.TABLE_PRODUCTOS + " p " +
+                "INNER JOIN " + DatabaseHelper.TABLE_PEDIDO_PRODUCTOS + " pp " +
+                "ON p." + DatabaseHelper.COLUMN_PRODUCTO_ID + " = pp." + DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + " " +
+                "WHERE pp." + DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + " = ?";
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(pedidoId)})) {
+            while (cursor.moveToNext()) {
+                Producto producto = cursorToProducto(cursor);
+                producto.setCantidad(cursor.getInt(cursor.getColumnIndexOrThrow("cantidad_pedido")));
+                productos.add(producto);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener productos por pedido: " + e.getMessage());
+        }
+        return productos;
+    }
     private ContentValues getProductoContentValues(Producto producto) {
         ContentValues values = new ContentValues();
         values.put(DatabaseHelper.COLUMN_PRODUCTO_CODIGO, producto.getCodigo());
@@ -131,7 +310,7 @@ public class ProductoDAO {
         values.put(DatabaseHelper.COLUMN_PRODUCTO_DESCRIPCION, producto.getDescripcion());
         values.put(DatabaseHelper.COLUMN_PRODUCTO_PRECIO, producto.getPrecio());
         values.put(DatabaseHelper.COLUMN_PRODUCTO_CANTIDAD, producto.getCantidad());
-        values.put(DatabaseHelper.COLUMN_PRODUCTO_PEDIDO_ID, producto.getPedidoId());
+        values.put(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO, producto.isActivo() ? 1 : 0);
         return values;
     }
 
@@ -143,7 +322,7 @@ public class ProductoDAO {
                 DatabaseHelper.COLUMN_PRODUCTO_DESCRIPCION,
                 DatabaseHelper.COLUMN_PRODUCTO_PRECIO,
                 DatabaseHelper.COLUMN_PRODUCTO_CANTIDAD,
-                DatabaseHelper.COLUMN_PRODUCTO_PEDIDO_ID
+                DatabaseHelper.COLUMN_PRODUCTO_ACTIVO
         };
     }
 
@@ -155,7 +334,8 @@ public class ProductoDAO {
         producto.setDescripcion(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_DESCRIPCION)));
         producto.setPrecio(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_PRECIO)));
         producto.setCantidad(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_CANTIDAD)));
-        producto.setPedidoId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_PEDIDO_ID)));
+        int activoColumnIndex = cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO);
+        producto.setActivo(cursor.getInt(activoColumnIndex) == 1);
         return producto;
     }
 }

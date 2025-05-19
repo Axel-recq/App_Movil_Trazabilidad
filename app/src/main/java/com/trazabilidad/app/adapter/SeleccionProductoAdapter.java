@@ -49,7 +49,7 @@ public class SeleccionProductoAdapter extends RecyclerView.Adapter<SeleccionProd
         holder.textViewNombre.setText(producto.getNombre());
 
         // Formatear precio con formato de moneda
-        NumberFormat formatoMoneda = NumberFormat.getCurrencyInstance(new Locale("es", "ES"));
+        NumberFormat formatoMoneda = NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
         holder.textViewPrecio.setText(formatoMoneda.format(producto.getPrecio()));
 
         // Mostrar cantidad disponible

@@ -1,13 +1,18 @@
 package com.trazabilidad.app.activities;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.controllers.ProductoController;
 import com.trazabilidad.app.models.Producto;
@@ -19,13 +24,14 @@ public class GestionProductoActivity extends AppCompatActivity {
     private EditText editTextDescripcion;
     private EditText editTextPrecio;
     private EditText editTextCantidad;
+    private SwitchMaterial switchActivo;
     private Button buttonGuardar;
 
     private ProductoController productoController;
     private int productoId = -1;
-    private int pedidoId = -1;
     private boolean modoEdicion = false;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,17 +46,10 @@ public class GestionProductoActivity extends AppCompatActivity {
         editTextDescripcion = findViewById(R.id.editTextDescripcion);
         editTextPrecio = findViewById(R.id.editTextPrecio);
         editTextCantidad = findViewById(R.id.editTextCantidad);
+        switchActivo = findViewById(R.id.switchActivo);
         buttonGuardar = findViewById(R.id.buttonGuardar);
 
-        // Obtener datos del intent
-        if (getIntent().hasExtra("pedido_id")) {
-            pedidoId = getIntent().getIntExtra("pedido_id", -1);
-        } else {
-            Toast.makeText(this, "Error: ID de pedido no proporcionado", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
+        // Obtener datos del intent para modo edición
         if (getIntent().hasExtra("producto_id")) {
             productoId = getIntent().getIntExtra("producto_id", -1);
             modoEdicion = true;
@@ -58,6 +57,7 @@ public class GestionProductoActivity extends AppCompatActivity {
             setTitle("Editar Producto");
         } else {
             setTitle("Nuevo Producto");
+            switchActivo.setChecked(true); // Por defecto activo
         }
 
         // Habilitar botón de retroceso en ActionBar
@@ -83,7 +83,7 @@ public class GestionProductoActivity extends AppCompatActivity {
                 editTextDescripcion.setText(producto.getDescripcion());
                 editTextPrecio.setText(String.valueOf(producto.getPrecio()));
                 editTextCantidad.setText(String.valueOf(producto.getCantidad()));
-                pedidoId = producto.getPedidoId();
+                switchActivo.setChecked(producto.isActivo());
             }
 
             @Override
@@ -129,7 +129,8 @@ public class GestionProductoActivity extends AppCompatActivity {
         }
         producto.setCantidad(cantidad);
 
-        producto.setPedidoId(pedidoId);
+        // Estado activo/inactivo
+        producto.setActivo(switchActivo.isChecked());
 
         // Guardar producto según el modo (nuevo o edición)
         if (modoEdicion) {
@@ -147,7 +148,7 @@ public class GestionProductoActivity extends AppCompatActivity {
                 }
             });
         } else {
-            productoController.insertarProducto(producto, new ProductoController.OperacionCallback() {
+            productoController.insertarProductoGeneral(producto, new ProductoController.OperacionCallback() {
                 @Override
                 public void onSuccess() {
                     Toast.makeText(GestionProductoActivity.this, "Producto agregado correctamente", Toast.LENGTH_SHORT).show();

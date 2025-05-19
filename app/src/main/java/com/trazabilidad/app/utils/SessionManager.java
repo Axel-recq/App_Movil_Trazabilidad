@@ -14,6 +14,9 @@ public class SessionManager {
     private static final String KEY_USER_EMAIL = "userEmail";
     private static final String KEY_USER_ROL = "userRol";
     private static final String KEY_USER_TELEFONO = "userTelefono";
+    private static final String ROL_CLIENTE = "CLIENTE";
+    private static final String ROL_REPARTIDOR = "REPARTIDOR";
+    private static final String ROL_ADMIN = "ADMINISTRADOR";
 
     private SharedPreferences pref;
     private SharedPreferences.Editor editor;
@@ -33,10 +36,13 @@ public class SessionManager {
         editor.putString(KEY_USER_ROL, usuario.getRol());
         editor.putString(KEY_USER_TELEFONO, usuario.getTelefono());
         editor.putLong("loginTimestamp", System.currentTimeMillis());
-        editor.commit();
+        editor.apply(); // Usar apply() para mejor rendimiento
     }
 
     public Usuario getUsuarioDetails() {
+        if (!isLoggedIn()) {
+            return null; // Devolver null si no hay sesión válida
+        }
         Usuario usuario = new Usuario();
         usuario.setId(pref.getInt(KEY_USER_ID, 0));
         usuario.setNombre(pref.getString(KEY_USER_NAME, ""));
@@ -53,12 +59,24 @@ public class SessionManager {
         long sessionDuration = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
         return pref.getBoolean(KEY_IS_LOGGED_IN, false) && (currentTime - loginTime < sessionDuration);
     }
+
     public boolean isUserAdmin() {
         String role = pref.getString(KEY_USER_ROL, "");
-        return "REPARTIDOR".equalsIgnoreCase(role);
+        return ROL_REPARTIDOR.equalsIgnoreCase(role);
     }
+
+    public boolean isCliente() {
+        String role = pref.getString(KEY_USER_ROL, "");
+        return ROL_CLIENTE.equalsIgnoreCase(role);
+    }
+
+    public boolean isRepartidorOrAdmin() {
+        String role = pref.getString(KEY_USER_ROL, "");
+        return ROL_REPARTIDOR.equalsIgnoreCase(role) || ROL_ADMIN.equalsIgnoreCase(role);
+    }
+
     public void logout() {
         editor.clear();
-        editor.commit();
+        editor.apply();
     }
 }
