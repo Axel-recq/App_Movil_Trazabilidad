@@ -27,14 +27,14 @@
 
         <ImageView
             android:id="@+id/ivIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:contentDescription="@string/notification_icon"
-            android:padding="4dp"
-            android:background="@drawable/circle_background"
+            android:padding="8dp"
+            android:background="@drawable/circle_notification_background"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/viewTypeIndicator"
             app:layout_constraintTop_toTopOf="parent"
@@ -45,13 +45,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:textColor="@color/text_primary"
-            android:textSize="16sp"
+            android:textSize="15sp"
+            android:fontFamily="@font/montserrat_medium"
             android:maxLines="2"
             android:ellipsize="end"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ivStatusIndicator"
             app:layout_constraintStart_toEndOf="@id/ivIcon"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Producto XYZ está por debajo del nivel mínimo de stock" />
@@ -61,24 +62,38 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:layout_marginBottom="14dp"
+            android:layout_marginBottom="16dp"
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
+            android:fontFamily="@font/montserrat"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvNotificationMessage"
             app:layout_constraintTop_toBottomOf="@id/tvNotificationMessage"
             tools:text="18/05/2025 10:30" />
 
+        <!-- Indicador de estado (leída/no leída) -->
+        <View
+            android:id="@+id/ivStatusIndicator"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/notification_unread_indicator"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@id/tvNotificationMessage"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible" />
+
         <ImageView
             android:id="@+id/ivAction"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_marginEnd="16dp"
             android:contentDescription="@string/action_icon"
             android:src="@drawable/ic_chevron_right"
             app:layout_constraintBottom_toBottomOf="@id/tvNotificationDate"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvNotificationDate" />
+            app:layout_constraintTop_toTopOf="@id/tvNotificationDate"
+            app:tint="@color/text_tertiary" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

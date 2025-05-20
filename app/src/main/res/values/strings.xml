@@ -271,4 +271,14 @@
     <string name="codigo">Código: %s</string>
     <string name="cantidad">Cantidad: %d</string>
     <string name="devolver">Devolver</string>
+
+    <string name="notifications_title">Notificaciones</string>
+    <string name="todas">Todas</string>
+    <string name="bajo_stock">Bajo stock</string>
+    <string name="devoluciones">Devoluciones</string>
+    <string name="calificaciones">Calificaciones</string>
+    <string name="no_notifications">No hay notificaciones</string>
+    <string name="mark_all_read">Marcar todas como leídas</string>
+    <string name="menu_opciones">Opciones</string>
+    <string name="cerrar">cerrar</string>
 </resources>

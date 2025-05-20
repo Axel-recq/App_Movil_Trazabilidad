@@ -8,6 +8,7 @@ import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements
     private NavigationView navigationView;
     private DatabaseHelper dbHelper;
     private ExtendedFloatingActionButton fabNuevo;
-    private MaterialButton btnNotifications;
+    private ImageView btnNotifications;
     private CircleImageView imgProfile;
     private NotificationManager notificationManager;
     private BadgeDrawable badgeDrawable;

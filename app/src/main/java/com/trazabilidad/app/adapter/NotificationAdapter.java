@@ -20,24 +20,37 @@ import com.trazabilidad.app.activities.ListaDevolucionesActivity;
 import com.trazabilidad.app.activities.ListaProductosActivity;
 import com.trazabilidad.app.database.NotificacionDAO;
 import com.trazabilidad.app.models.Notificacion;
+import com.trazabilidad.app.utils.DateUtils;
 import com.trazabilidad.app.utils.SessionManager;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
     private static final String TAG = "NotificationAdapter";
-    private final List<Notificacion> notificaciones;
+    private List<Notificacion> notificaciones;
+    private final List<Notificacion> notificacionesCompletas;
     private final Context context;
     private final NotificacionDAO notificacionDAO;
     private final SessionManager sessionManager;
+    private OnNotificationReadListener readListener;
+
+    public interface OnNotificationReadListener {
+        void onNotificationRead(int position);
+    }
 
     public NotificationAdapter(Context context, List<Notificacion> notificaciones) {
         this.context = context;
-        this.notificaciones = notificaciones;
+        this.notificaciones = new ArrayList<>(notificaciones);
+        this.notificacionesCompletas = new ArrayList<>(notificaciones);
         this.notificacionDAO = new NotificacionDAO(context);
         this.sessionManager = new SessionManager(context);
+    }
+
+    public void setOnNotificationReadListener(OnNotificationReadListener listener) {
+        this.readListener = listener;
     }
 
     @NonNull
@@ -52,14 +65,16 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Notificacion notificacion = notificaciones.get(position);
         holder.tvMensaje.setText(notificacion.getMensaje());
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-        holder.tvFecha.setText(sdf.format(notificacion.getFecha()));
 
+        // Formatear fecha relativa (hoy, ayer, o fecha completa)
+        holder.tvFecha.setText(DateUtils.getRelativeDateTimeString(context, notificacion.getFecha()));
+
+        // Establecer ícono según tipo de notificación
         int iconRes;
         int colorRes;
         switch (notificacion.getTipo()) {
             case BAJO_STOCK:
-                iconRes = R.drawable.ic_warning;
+                iconRes = R.drawable.ic_inventory;
                 colorRes = R.color.warning_color;
                 break;
             case DEVOLUCION:
@@ -78,13 +93,27 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
         holder.ivIcon.setImageResource(iconRes);
         holder.viewTypeIndicator.setBackgroundColor(ContextCompat.getColor(context, colorRes));
-        holder.ivIcon.setBackgroundTintList(ContextCompat.getColorStateList(context, colorRes));
+        holder.ivIcon.setBackground(ContextCompat.getDrawable(context, R.drawable.circle_notification_background));
+        holder.ivIcon.setColorFilter(ContextCompat.getColor(context, colorRes));
+
+        // Mostrar indicador de no leída
+        holder.ivStatusIndicator.setVisibility(notificacion.isLeida() ? View.GONE : View.VISIBLE);
 
         holder.itemView.setOnClickListener(v -> {
             Log.d(TAG, "Notification clicked: tipo=" + notificacion.getTipo() + ", referenciaId=" + notificacion.getReferenciaId());
-            notificacionDAO.marcarComoLeida(notificacion.getId());
-            notifyItemChanged(position);
 
+            // Marcar como leída
+            boolean success = notificacionDAO.marcarComoLeida(notificacion.getId());
+            if (success) {
+                notificacion.setLeida(true);
+                holder.ivStatusIndicator.setVisibility(View.GONE);
+
+                if (readListener != null) {
+                    readListener.onNotificationRead(position);
+                }
+            }
+
+            // Navegar según el tipo de notificación
             Intent intent = null;
             switch (notificacion.getTipo()) {
                 case BAJO_STOCK:
@@ -106,27 +135,28 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     break;
                 case CALIFICACION:
                     int calificacionPedidoId = notificacion.getReferenciaId();
-                    Log.d(TAG, "Attempting navigation to ListaCalificacionesActivity with pedidoId: " + calificacionPedidoId);
+                    Log.d(TAG, "Intentando navegar a ListaCalificacionesActivity con pedidoId: " + calificacionPedidoId);
                     if (calificacionPedidoId > 0) {
                         intent = new Intent(context, ListaCalificacionesActivity.class);
                         intent.putExtra("pedidoId", calificacionPedidoId);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     } else {
-                        Log.w(TAG, "Invalid pedidoId: " + calificacionPedidoId);
+                        Log.w(TAG, "ID de pedido inválido: " + calificacionPedidoId);
                         Toast.makeText(context, "ID de pedido inválido.", Toast.LENGTH_SHORT).show();
                     }
                     break;
             }
+
             if (intent != null) {
                 try {
-                    Log.d(TAG, "Starting activity with intent: " + intent);
+                    Log.d(TAG, "Iniciando actividad con intent: " + intent);
                     context.startActivity(intent);
                 } catch (Exception e) {
-                    Log.e(TAG, "Failed to start activity: " + e.getMessage(), e);
+                    Log.e(TAG, "Error al iniciar actividad: " + e.getMessage(), e);
                     Toast.makeText(context, "Error al abrir la actividad: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             } else {
-                Log.w(TAG, "No intent created for notification tipo: " + notificacion.getTipo());
+                Log.w(TAG, "No se creó intent para notificación tipo: " + notificacion.getTipo());
             }
         });
     }
@@ -136,12 +166,33 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return notificaciones.size();
     }
 
+    /**
+     * Filtra las notificaciones por tipo
+     * @param tipo Tipo de notificación a filtrar o null para mostrar todas
+     */
+    public void filtrarPorTipo(Notificacion.Tipo tipo) {
+        if (tipo == null) {
+            // Mostrar todas las notificaciones
+            notificaciones = new ArrayList<>(notificacionesCompletas);
+        } else {
+            // Filtrar por tipo
+            notificaciones = new ArrayList<>();
+            for (Notificacion notificacion : notificacionesCompletas) {
+                if (notificacion.getTipo() == tipo) {
+                    notificaciones.add(notificacion);
+                }
+            }
+        }
+        notifyDataSetChanged();
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         View viewTypeIndicator;
         ImageView ivIcon;
         TextView tvMensaje;
         TextView tvFecha;
         ImageView ivAction;
+        View ivStatusIndicator;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -150,6 +201,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             tvMensaje = itemView.findViewById(R.id.tvNotificationMessage);
             tvFecha = itemView.findViewById(R.id.tvNotificationDate);
             ivAction = itemView.findViewById(R.id.ivAction);
+            ivStatusIndicator = itemView.findViewById(R.id.ivStatusIndicator);
         }
     }
 }

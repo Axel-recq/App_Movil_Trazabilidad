@@ -1,6 +1,9 @@
 package com.trazabilidad.app.utils;
 
+import android.content.Context;
+
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -50,5 +53,31 @@ public class DateUtils {
         } catch (Exception e) {
             return null;
         }
+    }
+    public static String getRelativeDateTimeString(Context context, Date date) {
+        if (date == null) {
+            return "";
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        Calendar today = Calendar.getInstance();
+        calendar.setTime(date);
+
+        // Verificar si es hoy
+        if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
+            return "Hoy " + android.text.format.DateFormat.format("HH:mm", date);
+        }
+
+        // Verificar si es ayer
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DAY_OF_YEAR, -1);
+        if (calendar.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR) &&
+                calendar.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR)) {
+            return "Ayer " + android.text.format.DateFormat.format("HH:mm", date);
+        }
+
+        // Si no es ni hoy ni ayer, usar formato estándar
+        return android.text.format.DateFormat.format("dd/MM/yyyy HH:mm", date).toString();
     }
 }

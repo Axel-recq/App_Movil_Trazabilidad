@@ -119,7 +119,7 @@
     <color name="status_assigned">#2196F3</color> <!-- ASIGNADO -->
     <color name="status_rejected">#D81B60</color> <!-- RECHAZADO -->
 
-
+    <color name="notification_button_bg">@color/colorPrimaryLight</color> <!-- #9F8DCA -->
     <color name="gold">#FFC107</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="medium_gray">#E0E0E0</color>
@@ -132,4 +132,7 @@
     <color name="background">#F5F5F5</color>
 
     <color name="calification_color">#FFD700</color>
+    <color name="text_tertiary">#8A000000</color>
+    <color name="divider_color">#EEEEEE</color>
+
 </resources>
