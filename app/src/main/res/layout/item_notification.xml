@@ -1,99 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardNotification"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="12dp"
     android:layout_marginVertical="6dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="3dp"
+    app:cardElevation="2dp"
     android:foreground="?attr/selectableItemBackground"
-    app:contentPadding="0dp">
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingVertical="12dp">
 
         <!-- Indicador de tipo de notificación (barra lateral) -->
         <View
             android:id="@+id/viewTypeIndicator"
-            android:layout_width="6dp"
+            android:layout_width="4dp"
             android:layout_height="0dp"
-            android:background="@drawable/notification_type_indicator"
+            android:background="@color/notification_default"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/ivIcon"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="12dp"
             android:contentDescription="@string/notification_icon"
             android:padding="8dp"
-            android:background="@drawable/circle_notification_background"
+            android:src="@drawable/ic_notification"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/viewTypeIndicator"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/ic_notification" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvNotificationMessage"
+            android:id="@+id/tvMensaje"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
             android:textColor="@color/text_primary"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:fontFamily="@font/montserrat_medium"
             android:maxLines="2"
             android:ellipsize="end"
-            app:layout_constraintEnd_toStartOf="@id/ivStatusIndicator"
+            app:layout_constraintEnd_toStartOf="@id/ivUnread"
             app:layout_constraintStart_toEndOf="@id/ivIcon"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@id/ivIcon"
             tools:text="Producto XYZ está por debajo del nivel mínimo de stock" />
 
         <TextView
-            android:id="@+id/tvNotificationDate"
+            android:id="@+id/tvFecha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:layout_marginBottom="16dp"
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
             android:fontFamily="@font/montserrat"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/tvNotificationMessage"
-            app:layout_constraintTop_toBottomOf="@id/tvNotificationMessage"
-            tools:text="18/05/2025 10:30" />
+            app:layout_constraintStart_toStartOf="@id/tvMensaje"
+            app:layout_constraintTop_toBottomOf="@id/tvMensaje"
+            app:layout_constraintBottom_toBottomOf="@id/ivIcon"
+            tools:text="Hace 2 horas" />
 
-        <!-- Indicador de estado (leída/no leída) -->
-        <View
-            android:id="@+id/ivStatusIndicator"
+        <!-- Indicador de estado (no leída) -->
+        <ImageView
+            android:id="@+id/ivUnread"
             android:layout_width="8dp"
             android:layout_height="8dp"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/notification_unread_indicator"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="@id/tvNotificationMessage"
-            app:layout_constraintEnd_toEndOf="parent"
-            tools:visibility="visible" />
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/dot_indicator"
+            android:visibility="visible"
+            app:layout_constraintTop_toTopOf="@id/tvMensaje"
+            app:layout_constraintEnd_toStartOf="@id/ivDelete"
+            app:layout_constraintBottom_toBottomOf="@id/tvMensaje" />
 
+        <!-- Botón eliminar -->
         <ImageView
-            android:id="@+id/ivAction"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginEnd="16dp"
-            android:contentDescription="@string/action_icon"
-            android:src="@drawable/ic_chevron_right"
-            app:layout_constraintBottom_toBottomOf="@id/tvNotificationDate"
+            android:id="@+id/ivDelete"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="@string/delete_notification"
+            android:padding="4dp"
+            android:src="@drawable/ic_remove"
+            android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tvNotificationDate"
-            app:tint="@color/text_tertiary" />
+            app:layout_constraintTop_toTopOf="@id/tvMensaje"
+            app:layout_constraintBottom_toBottomOf="@id/tvMensaje"
+            app:tint="@color/black" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

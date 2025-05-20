@@ -229,7 +229,7 @@
                             android:id="@+id/textViewTotalPedido"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Total: €0.00"
+                            android:text="Total: S/ 0.00"
                             android:textAppearance="@style/TextAppearance.App.Subtitle1"
                             android:textStyle="bold"
                             android:visibility="gone" />

@@ -14,19 +14,20 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.activities.ListaCalificacionesActivity;
 import com.trazabilidad.app.activities.ListaDevolucionesActivity;
 import com.trazabilidad.app.activities.ListaProductosActivity;
+import com.trazabilidad.app.activities.DetallePedidoActivity;
 import com.trazabilidad.app.database.NotificacionDAO;
 import com.trazabilidad.app.models.Notificacion;
 import com.trazabilidad.app.utils.DateUtils;
+import com.trazabilidad.app.utils.NotificationManager;
 import com.trazabilidad.app.utils.SessionManager;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.ViewHolder> {
     private static final String TAG = "NotificationAdapter";
@@ -35,10 +36,13 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     private final Context context;
     private final NotificacionDAO notificacionDAO;
     private final SessionManager sessionManager;
-    private OnNotificationReadListener readListener;
+    private final NotificationManager notificationManager;
+    private OnNotificationActionListener actionListener;
 
-    public interface OnNotificationReadListener {
+    public interface OnNotificationActionListener {
         void onNotificationRead(int position);
+        void onNotificationDeleted(int position);
+        void onEmptyState(boolean isEmpty);
     }
 
     public NotificationAdapter(Context context, List<Notificacion> notificaciones) {
@@ -47,10 +51,11 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         this.notificacionesCompletas = new ArrayList<>(notificaciones);
         this.notificacionDAO = new NotificacionDAO(context);
         this.sessionManager = new SessionManager(context);
+        this.notificationManager = new NotificationManager(context);
     }
 
-    public void setOnNotificationReadListener(OnNotificationReadListener listener) {
-        this.readListener = listener;
+    public void setOnNotificationActionListener(OnNotificationActionListener listener) {
+        this.actionListener = listener;
     }
 
     @NonNull
@@ -94,82 +99,146 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.ivIcon.setImageResource(iconRes);
         holder.viewTypeIndicator.setBackgroundColor(ContextCompat.getColor(context, colorRes));
         holder.ivIcon.setBackground(ContextCompat.getDrawable(context, R.drawable.circle_notification_background));
-        holder.ivIcon.setColorFilter(ContextCompat.getColor(context, colorRes));
 
-        // Mostrar indicador de no leída
-        holder.ivStatusIndicator.setVisibility(notificacion.isLeida() ? View.GONE : View.VISIBLE);
+        // Marcar visualmente notificaciones leídas vs no leídas
+        if (notificacion.isLeida()) {
+            holder.cardNotification.setAlpha(0.7f);
+            holder.ivUnread.setVisibility(View.GONE);
+        } else {
+            holder.cardNotification.setAlpha(1.0f);
+            holder.ivUnread.setVisibility(View.VISIBLE);
+        }
 
+        // Configurar botón de eliminar
+        holder.ivDelete.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition != RecyclerView.NO_POSITION) {
+                eliminarNotificacion(adapterPosition);
+            }
+        });
+
+        // Configurar clic para abrir detalle
         holder.itemView.setOnClickListener(v -> {
-            Log.d(TAG, "Notification clicked: tipo=" + notificacion.getTipo() + ", referenciaId=" + notificacion.getReferenciaId());
-
-            // Marcar como leída
-            boolean success = notificacionDAO.marcarComoLeida(notificacion.getId());
-            if (success) {
-                notificacion.setLeida(true);
-                holder.ivStatusIndicator.setVisibility(View.GONE);
-
-                if (readListener != null) {
-                    readListener.onNotificationRead(position);
-                }
-            }
-
-            // Navegar según el tipo de notificación
-            Intent intent = null;
-            switch (notificacion.getTipo()) {
-                case BAJO_STOCK:
-                    intent = new Intent(context, ListaProductosActivity.class);
-                    intent.putExtra("productoId", notificacion.getProductoId());
-                    break;
-                case DEVOLUCION:
-                    if (sessionManager.isLoggedIn()) {
-                        String rol = sessionManager.getUsuarioDetails().getRol();
-                        if (rol.equals("ADMINISTRADOR") || rol.equals("REPARTIDOR")) {
-                            intent = new Intent(context, ListaDevolucionesActivity.class);
-                            intent.putExtra("pedidoId", notificacion.getReferenciaId());
-                        } else {
-                            Toast.makeText(context, "Acceso restringido. Solo para administradores y repartidores.", Toast.LENGTH_LONG).show();
-                        }
-                    } else {
-                        Toast.makeText(context, "Debe iniciar sesión.", Toast.LENGTH_LONG).show();
-                    }
-                    break;
-                case CALIFICACION:
-                    int calificacionPedidoId = notificacion.getReferenciaId();
-                    Log.d(TAG, "Intentando navegar a ListaCalificacionesActivity con pedidoId: " + calificacionPedidoId);
-                    if (calificacionPedidoId > 0) {
-                        intent = new Intent(context, ListaCalificacionesActivity.class);
-                        intent.putExtra("pedidoId", calificacionPedidoId);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    } else {
-                        Log.w(TAG, "ID de pedido inválido: " + calificacionPedidoId);
-                        Toast.makeText(context, "ID de pedido inválido.", Toast.LENGTH_SHORT).show();
-                    }
-                    break;
-            }
-
-            if (intent != null) {
-                try {
-                    Log.d(TAG, "Iniciando actividad con intent: " + intent);
-                    context.startActivity(intent);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error al iniciar actividad: " + e.getMessage(), e);
-                    Toast.makeText(context, "Error al abrir la actividad: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            } else {
-                Log.w(TAG, "No se creó intent para notificación tipo: " + notificacion.getTipo());
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition != RecyclerView.NO_POSITION) {
+                abrirDetalleNotificacion(notificaciones.get(adapterPosition));
+                marcarComoLeida(adapterPosition);
             }
         });
     }
 
-    @Override
-    public int getItemCount() {
-        return notificaciones.size();
+    private void abrirDetalleNotificacion(Notificacion notificacion) {
+        Intent intent = null;
+
+        switch (notificacion.getTipo()) {
+            case BAJO_STOCK:
+                intent = new Intent(context, ListaProductosActivity.class);
+                if (notificacion.getProductoId() != null) {
+                    intent.putExtra("producto_id", notificacion.getProductoId());
+                }
+                break;
+
+            case DEVOLUCION:
+                if (sessionManager.isLoggedIn()) {
+                    String rol = sessionManager.getUsuarioDetails().getRol();
+                    if (rol.equals("ADMINISTRADOR") || rol.equals("REPARTIDOR")) {
+                        intent = new Intent(context, ListaDevolucionesActivity.class);
+                        intent.putExtra("pedidoId", notificacion.getReferenciaId());
+                    } else {
+                        Toast.makeText(context, "Acceso restringido. Solo para administradores y repartidores.", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(context, "Debe iniciar sesión.", Toast.LENGTH_LONG).show();
+                }
+                break;
+
+            case CALIFICACION:
+                int calificacionPedidoId = notificacion.getReferenciaId();
+                Log.d(TAG, "Attempting navigation to ListaCalificacionesActivity with pedidoId: " + calificacionPedidoId);
+                if (calificacionPedidoId > 0) {
+                    intent = new Intent(context, ListaCalificacionesActivity.class);
+                    intent.putExtra("pedidoId", calificacionPedidoId);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                } else {
+                    Log.w(TAG, "Invalid pedidoId: " + calificacionPedidoId);
+                    Toast.makeText(context, "ID de pedido inválido.", Toast.LENGTH_SHORT).show();
+                }
+                break;
+
+            default:
+                // Para otros tipos, por ahora no hacemos nada
+                Toast.makeText(context, "Notificación: " + notificacion.getMensaje(), Toast.LENGTH_SHORT).show();
+                break;
+        }
+
+        if (intent != null) {
+            context.startActivity(intent);
+        }
     }
 
-    /**
-     * Filtra las notificaciones por tipo
-     * @param tipo Tipo de notificación a filtrar o null para mostrar todas
-     */
+    private void marcarComoLeida(int position) {
+        Notificacion notificacion = notificaciones.get(position);
+
+        if (!notificacion.isLeida()) {
+            // Marcar como leída en la base de datos
+            boolean result = notificacionDAO.marcarComoLeida(notificacion.getId());
+
+            if (result) {
+                // Actualizar el modelo local
+                notificacion.setLeida(true);
+                notifyItemChanged(position);
+
+                // Actualizar en la lista completa también
+                for (Notificacion n : notificacionesCompletas) {
+                    if (n.getId() == notificacion.getId()) {
+                        n.setLeida(true);
+                        break;
+                    }
+                }
+
+                // Notificar al listener
+                if (actionListener != null) {
+                    actionListener.onNotificationRead(position);
+                }
+            } else {
+                Log.e(TAG, "Error al marcar como leída la notificación: " + notificacion.getId());
+            }
+        }
+    }
+
+    private void eliminarNotificacion(int position) {
+        final Notificacion notificacion = notificaciones.get(position);
+
+        notificationManager.eliminarNotificacion(notificacion.getId(), new NotificationManager.OperationCallback() {
+            @Override
+            public void onSuccess(String message) {
+                // Eliminar de ambas listas
+                notificaciones.remove(position);
+                notificacionesCompletas.remove(notificacion);
+
+                notifyItemRemoved(position);
+                notifyItemRangeChanged(position, getItemCount());
+
+                // Verificar si quedó vacía la lista
+                if (notificaciones.isEmpty() && actionListener != null) {
+                    actionListener.onEmptyState(true);
+                }
+
+                // Notificar al listener
+                if (actionListener != null) {
+                    actionListener.onNotificationDeleted(position);
+                }
+
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     public void filtrarPorTipo(Notificacion.Tipo tipo) {
         if (tipo == null) {
             // Mostrar todas las notificaciones
@@ -183,25 +252,75 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 }
             }
         }
+
+        // Notificar cambio en el dataset
         notifyDataSetChanged();
+
+        // Notificar si quedó vacía la lista después del filtrado
+        if (actionListener != null) {
+            actionListener.onEmptyState(notificaciones.isEmpty());
+        }
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        View viewTypeIndicator;
-        ImageView ivIcon;
+    public void marcarTodasComoLeidas() {
+        boolean hayNoLeidas = false;
+
+        // Verificar si hay alguna sin leer
+        for (Notificacion notificacion : notificaciones) {
+            if (!notificacion.isLeida()) {
+                hayNoLeidas = true;
+                break;
+            }
+        }
+
+        if (!hayNoLeidas) {
+            return; // No hay nada que marcar
+        }
+
+        // Marcar todas como leídas
+        notificationManager.marcarComoLeidas();
+
+        // Actualizar modelos locales
+        for (Notificacion notificacion : notificaciones) {
+            notificacion.setLeida(true);
+        }
+
+        for (Notificacion notificacion : notificacionesCompletas) {
+            notificacion.setLeida(true);
+        }
+
+        // Notificar cambios en la UI
+        notifyDataSetChanged();
+
+        // Notificar al listener
+        if (actionListener != null) {
+            actionListener.onNotificationRead(-1); // -1 indica que son todas
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return notificaciones.size();
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvMensaje;
         TextView tvFecha;
-        ImageView ivAction;
-        View ivStatusIndicator;
+        ImageView ivIcon;
+        ImageView ivDelete;
+        ImageView ivUnread;
+        View viewTypeIndicator;
+        MaterialCardView cardNotification;
 
-        ViewHolder(View itemView) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            viewTypeIndicator = itemView.findViewById(R.id.viewTypeIndicator);
+            tvMensaje = itemView.findViewById(R.id.tvMensaje);
+            tvFecha = itemView.findViewById(R.id.tvFecha);
             ivIcon = itemView.findViewById(R.id.ivIcon);
-            tvMensaje = itemView.findViewById(R.id.tvNotificationMessage);
-            tvFecha = itemView.findViewById(R.id.tvNotificationDate);
-            ivAction = itemView.findViewById(R.id.ivAction);
-            ivStatusIndicator = itemView.findViewById(R.id.ivStatusIndicator);
+            ivDelete = itemView.findViewById(R.id.ivDelete);
+            ivUnread = itemView.findViewById(R.id.ivUnread);
+            viewTypeIndicator = itemView.findViewById(R.id.viewTypeIndicator);
+            cardNotification = itemView.findViewById(R.id.cardNotification);
         }
     }
 }

@@ -281,4 +281,6 @@
     <string name="mark_all_read">Marcar todas como leídas</string>
     <string name="menu_opciones">Opciones</string>
     <string name="cerrar">cerrar</string>
+    <string name="delete_notification">Eliminar</string>
+    <string name="precio_unitario_s_24_99">Precio unitario: S/</string>
 </resources>
