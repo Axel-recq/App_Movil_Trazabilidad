@@ -9,6 +9,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
@@ -143,16 +146,20 @@ public class MainActivity extends AppCompatActivity implements
         // Configurar texto de bienvenida
         tvBienvenida.setText(getString(R.string.welcome_format, usuarioActual.getNombre()));
 
-        // Inicializar badge para notificaciones
+        // Inicializar badge para notificaciones solo para administradores
         badgeDrawable = BadgeDrawable.create(this);
         badgeDrawable.setBackgroundColor(getResources().getColor(R.color.colorPrimary, getTheme()));
         badgeDrawable.setBadgeTextColor(getResources().getColor(R.color.colorOnPrimary, getTheme()));
         badgeDrawable.setVisible(false);
-
         badgeDrawable.setHorizontalOffset(10);
         badgeDrawable.setVerticalOffset(10);
 
-        com.google.android.material.badge.BadgeUtils.attachBadgeDrawable(badgeDrawable, btnNotifications, findViewById(R.id.notificationButtonContainer));
+        // Mostrar el botón de notificaciones y el badge solo para administradores
+        if (sessionManager.isUserAdmin()) {
+            com.google.android.material.badge.BadgeUtils.attachBadgeDrawable(badgeDrawable, btnNotifications, findViewById(R.id.notificationButtonContainer));
+        } else {
+            btnNotifications.setVisibility(View.GONE); // Ocultar el botón para no administradores
+        }
     }
 
     private void setupDate() {
@@ -227,7 +234,6 @@ public class MainActivity extends AppCompatActivity implements
                 case MainViewPagerAdapter.OVERVIEW_PAGE:
                     showNewActionBottomSheet();
                     break;
-
             }
         });
 
@@ -245,25 +251,99 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void setupNotifications() {
+        if (!sessionManager.isUserAdmin()) {
+            return; // No configurar notificaciones para no administradores
+        }
+
         btnNotifications.setOnClickListener(v -> {
             BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
             View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_notifications, null);
             bottomSheetDialog.setContentView(bottomSheetView);
 
             RecyclerView rvNotifications = bottomSheetView.findViewById(R.id.rvNotifications);
+            LinearLayout emptyStateContainer = bottomSheetView.findViewById(R.id.emptyStateContainer);
+            ProgressBar progressBar = bottomSheetView.findViewById(R.id.progressBar);
+            ChipGroup chipGroup = bottomSheetView.findViewById(R.id.chipGroup);
+            MaterialButton btnMarkAllRead = bottomSheetView.findViewById(R.id.btnMarkAllRead);
+
             rvNotifications.setLayoutManager(new LinearLayoutManager(this));
 
+            // Mostrar el ProgressBar mientras se cargan las notificaciones
+            progressBar.setVisibility(View.VISIBLE);
+            emptyStateContainer.setVisibility(View.GONE);
+            rvNotifications.setVisibility(View.GONE);
+
+            // Obtener notificaciones iniciales (sin filtro)
             notificationManager.obtenerNotificaciones(new NotificationManager.NotificationCallback() {
                 @Override
                 public void onSuccess(List<Notificacion> notificaciones) {
+                    progressBar.setVisibility(View.GONE);
                     NotificationAdapter adapter = new NotificationAdapter(MainActivity.this, notificaciones);
                     rvNotifications.setAdapter(adapter);
-                    notificationManager.marcarComoLeidas();
-                    actualizarBadgeNotificaciones();
+
+                    // Configurar el listener para el estado vacío
+                    adapter.setOnNotificationActionListener(new NotificationAdapter.OnNotificationActionListener() {
+                        @Override
+                        public void onNotificationRead(int position) {
+                            actualizarBadgeNotificaciones();
+                        }
+
+                        @Override
+                        public void onNotificationDeleted(int position) {
+                            actualizarBadgeNotificaciones();
+                        }
+
+                        @Override
+                        public void onEmptyState(boolean isEmpty) {
+                            emptyStateContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                            rvNotifications.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                        }
+                    });
+
+                    // Configurar los filtros de los chips
+                    chipGroup.setOnCheckedChangeListener(new ChipGroup.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(ChipGroup group, int checkedId) {
+                            Notificacion.Tipo tipoFiltro = null;
+                            if (checkedId == R.id.chipStock) {
+                                tipoFiltro = Notificacion.Tipo.BAJO_STOCK;
+                            } else if (checkedId == R.id.chipDevolucion) {
+                                tipoFiltro = Notificacion.Tipo.DEVOLUCION;
+                            } else if (checkedId == R.id.chipCalificacion) {
+                                tipoFiltro = Notificacion.Tipo.CALIFICACION;
+                            }
+                            adapter.filtrarPorTipo(tipoFiltro);
+                        }
+                    });
+
+                    // Configurar el botón "Marcar todas como leídas"
+                    btnMarkAllRead.setOnClickListener(v1 -> {
+                        int checkedChipId = chipGroup.getCheckedChipId();
+                        if (checkedChipId == R.id.chipAll || checkedChipId == -1) {
+                            adapter.marcarTodasComoLeidas();
+                        } else {
+                            Notificacion.Tipo tipoFiltro = null;
+                            if (checkedChipId == R.id.chipStock) {
+                                tipoFiltro = Notificacion.Tipo.BAJO_STOCK;
+                            } else if (checkedChipId == R.id.chipDevolucion) {
+                                tipoFiltro = Notificacion.Tipo.DEVOLUCION;
+                            } else if (checkedChipId == R.id.chipCalificacion) {
+                                tipoFiltro = Notificacion.Tipo.CALIFICACION;
+                            }
+                            notificationManager.marcarComoLeidasPorTipo(tipoFiltro);
+                            adapter.filtrarPorTipo(tipoFiltro); // Refrescar la lista con el filtro actual
+                        }
+                        actualizarBadgeNotificaciones();
+                    });
+
+                    // Mostrar la lista de notificaciones
+                    rvNotifications.setVisibility(View.VISIBLE);
+                    emptyStateContainer.setVisibility(notificaciones.isEmpty() ? View.VISIBLE : View.GONE);
                 }
 
                 @Override
                 public void onError(String message) {
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, "Error al cargar notificaciones: " + message, Toast.LENGTH_SHORT).show();
                 }
             });
@@ -279,6 +359,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void actualizarBadgeNotificaciones() {
+        if (!sessionManager.isUserAdmin()) {
+            badgeDrawable.setVisible(false); // Asegurar que el badge esté oculto para no administradores
+            return;
+        }
+
         notificationManager.obtenerNotificaciones(new NotificationManager.NotificationCallback() {
             @Override
             public void onSuccess(List<Notificacion> notificaciones) {
@@ -299,26 +384,49 @@ public class MainActivity extends AppCompatActivity implements
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_new_actions, null);
         bottomSheetDialog.setContentView(bottomSheetView);
 
-        bottomSheetView.findViewById(R.id.btnNewPedido).setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, NuevoPedidoActivity.class));
-            bottomSheetDialog.dismiss();
+        // Configurar visibilidad de botones solo para administradores
+        View btnNewPedido = bottomSheetView.findViewById(R.id.btnNewPedido);
+        btnNewPedido.setVisibility(sessionManager.isUserAdmin() ? View.VISIBLE : View.GONE);
+        btnNewPedido.setOnClickListener(v -> {
+            if (sessionManager.isUserAdmin()) {
+                startActivity(new Intent(MainActivity.this, NuevoPedidoActivity.class));
+                bottomSheetDialog.dismiss();
+            } else {
+                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
+            }
         });
 
-        bottomSheetView.findViewById(R.id.btnNewIncidencia).setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, IncidenciaActivity.class));
-            bottomSheetDialog.dismiss();
+        View btnNewIncidencia = bottomSheetView.findViewById(R.id.btnNewIncidencia);
+        btnNewIncidencia.setVisibility(sessionManager.isUserAdmin() ? View.VISIBLE : View.GONE);
+        btnNewIncidencia.setOnClickListener(v -> {
+            if (sessionManager.isUserAdmin()) {
+                startActivity(new Intent(MainActivity.this, IncidenciaActivity.class));
+                bottomSheetDialog.dismiss();
+            } else {
+                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
+            }
         });
 
-        bottomSheetView.findViewById(R.id.btnNewProducto).setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, GestionProductoActivity.class));
-            bottomSheetDialog.dismiss();
+        View btnNewProducto = bottomSheetView.findViewById(R.id.btnNewProducto);
+        btnNewProducto.setVisibility(sessionManager.isUserAdmin() ? View.VISIBLE : View.GONE);
+        btnNewProducto.setOnClickListener(v -> {
+            if (sessionManager.isUserAdmin()) {
+                startActivity(new Intent(MainActivity.this, GestionProductoActivity.class));
+                bottomSheetDialog.dismiss();
+            } else {
+                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
+            }
         });
 
-         View btnNewUsuario = bottomSheetView.findViewById(R.id.btnNewUsuario);
+        View btnNewUsuario = bottomSheetView.findViewById(R.id.btnNewUsuario);
         btnNewUsuario.setVisibility(sessionManager.isUserAdmin() ? View.VISIBLE : View.GONE);
         btnNewUsuario.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, CrearEditarUsuarioActivity.class));
-            bottomSheetDialog.dismiss();
+            if (sessionManager.isUserAdmin()) {
+                startActivity(new Intent(MainActivity.this, CrearEditarUsuarioActivity.class));
+                bottomSheetDialog.dismiss();
+            } else {
+                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
+            }
         });
 
         bottomSheetDialog.show();
@@ -329,33 +437,36 @@ public class MainActivity extends AppCompatActivity implements
         int id = item.getItemId();
         Intent intent = null;
 
-        if (id == R.id.nav_home) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        } else if (id == R.id.nav_pedidos) {
+        if (id == R.id.nav_pedidos) {
             intent = new Intent(this, ListaPedidosActivity.class);
         } else if (id == R.id.nav_mapa) {
-            intent = new Intent(this, MapaActivity.class);
+            if (sessionManager.isUserAdmin() || sessionManager.isRepartidor()) {
+                intent = new Intent(this, MapaActivity.class);
+            } else {
+                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
+            }
         } else if (id == R.id.nav_reportes) {
-            intent = new Intent(this, ReporteActivity.class);
-        } else if (id == R.id.nav_incidencias) {
-            intent = new Intent(this, IncidenciasListActivity.class);
-        } else if (id == R.id.nav_lista_productos) {
-            intent = new Intent(this, ListaProductosActivity.class);
+            if (sessionManager.isUserAdmin()) {
+                intent = new Intent(this, ReporteActivity.class);
+            } else {
+                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
+            }
         } else if (id == R.id.nav_perfil) {
             intent = new Intent(this, PerfilActivity.class);
         } else if (id == R.id.nav_usuarios) {
-            intent = new Intent(this, ListaUsuariosActivity.class);
+            if (sessionManager.isUserAdmin()) {
+                intent = new Intent(this, ListaUsuariosActivity.class);
+            } else {
+                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
+            }
         } else if (id == R.id.nav_logout) {
             mostrarDialogoConfirmacionCerrarSesion();
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
-
         if (intent != null) {
             startActivity(intent);
         }
-
         return true;
     }
 

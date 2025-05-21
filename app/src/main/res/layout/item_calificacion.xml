@@ -1,37 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
-    android:layout_marginVertical="4dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/stroke_color"
+    android:clickable="true"
+    android:focusable="true"
+    app:rippleColor="@color/colorPrimary"
+    app:cardBackgroundColor="@color/background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvPedidoNumero"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="?android:attr/textColorPrimary"
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivPedidoIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/circle_background"
+            android:padding="8dp"
+            android:src="@drawable/ic_pedido"
+            android:contentDescription="@string/icono_pedido"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Circle"/>
+
+        <TextView
+            android:id="@+id/tvPedidoNumero"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textColor="?android:attr/textColorPrimary"
+            app:layout_constraintEnd_toStartOf="@id/ratingBar"
+            app:layout_constraintStart_toEndOf="@id/ivPedidoIcon"
+            app:layout_constraintTop_toTopOf="@id/ivPedidoIcon"
             tools:text="Pedido #12345" />
 
         <TextView
             android:id="@+id/tvCliente"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_marginTop="2dp"
+            android:textAppearance="?attr/textAppearanceBody2"
             android:textColor="?android:attr/textColorSecondary"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ratingBar"
+            app:layout_constraintStart_toStartOf="@id/tvPedidoNumero"
             app:layout_constraintTop_toBottomOf="@id/tvPedidoNumero"
             tools:text="Cliente: Juan Pérez" />
 
@@ -43,44 +64,82 @@
             android:isIndicator="true"
             android:numStars="5"
             android:stepSize="1"
+            android:progressTint="@color/yellow"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvPedidoNumero"
+            app:layout_constraintBottom_toBottomOf="@id/tvCliente"
             tools:rating="4" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipCategoria"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:chipBackgroundColor="@color/colorPrimary"
+            app:chipStrokeWidth="0dp"
+            android:textColor="@android:color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCliente"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="Muy bueno" />
 
         <TextView
             android:id="@+id/tvCategoria"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/colorPrimary"
+            android:layout_marginTop="12dp"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvCliente"
-            tools:text="Categoría: Muy buenas" />
+            tools:text="Categoría: Muy bueno"
+            tools:textColor="@color/green" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintTop_toBottomOf="@id/tvCategoria" />
+
+        <TextView
+            android:id="@+id/tvComentarioLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/comentario"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider" />
 
         <TextView
             android:id="@+id/tvComentario"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:maxLines="3"
             android:ellipsize="end"
-            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textAppearance="?attr/textAppearanceBody2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvCategoria"
-            tools:text="Muy buen servicio, entrega rápida." />
+            app:layout_constraintTop_toBottomOf="@id/tvComentarioLabel"
+            tools:text="Muy buen servicio, entrega rápida y el producto llegó en excelentes condiciones. Recomiendo este servicio a todos." />
 
         <TextView
             android:id="@+id/tvFecha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_marginTop="12dp"
+            android:textAppearance="?attr/textAppearanceCaption"
             android:textColor="?android:attr/textColorSecondary"
+            android:drawableStart="@drawable/ic_calendar"
+            android:drawablePadding="4dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvComentario"
             tools:text="18/05/2025" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

@@ -140,7 +140,7 @@ public class PedidoAdapter extends RecyclerView.Adapter<PedidoAdapter.PedidoView
                 btnVerMapa.setVisibility(View.GONE);
                 btnCalificar.setVisibility("ENTREGADO".equals(pedido.getEstado()) ? View.VISIBLE : View.GONE);
                 btnDevolver.setVisibility("ENTREGADO".equals(pedido.getEstado()) ? View.VISIBLE : View.GONE);
-            } else if (sessionManager.isRepartidorOrAdmin()) {
+            } else if (sessionManager.isRepartidor()) {
                 btnCalificar.setVisibility(View.GONE);
                 btnDevolver.setVisibility("ENTREGADO".equals(pedido.getEstado()) ? View.VISIBLE : View.GONE);
                 btnVerMapa.setVisibility(pedido.getLatitud() != null && pedido.getLongitud() != null ? View.VISIBLE : View.GONE);

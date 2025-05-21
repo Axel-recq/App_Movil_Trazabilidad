@@ -725,7 +725,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_USUARIO_ROL + ", " +
                     COLUMN_USUARIO_TELEFONO + ", " +
                     COLUMN_USUARIO_ACTIVO + ") " +
-                    "VALUES ('Juan Pérez', 'bryanmp', 'Inversiones', 'REPARTIDOR', '999-123-456', 1)");
+                    "VALUES ('Juan Pérez', 'bryanmp', 'Inversiones', 'ADMINISTRADOR', '999-123-456', 1)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_USUARIOS +
                     " (" + COLUMN_USUARIO_NOMBRE + ", " +
                     COLUMN_USUARIO_EMAIL + ", " +
@@ -781,7 +781,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_USUARIO_ROL + ", " +
                     COLUMN_USUARIO_TELEFONO + ", " +
                     COLUMN_USUARIO_ACTIVO + ") " +
-                    "VALUES ('Cliente Uno', 'cliente1@example.pe', 'cliente123', 'CLIENTE', '999-111-222', 1)");
+                    "VALUES ('Cliente Uno', 'cliente1@inversiones.pe', 'cliente123', 'CLIENTE', '999-111-222', 1)");
             Log.d(TAG, "Usuarios de prueba insertados");
 
             // Insertar tipos de incidencias
@@ -1030,77 +1030,77 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-001', 'Chompa de Alpaca', 'Chompa tejida a mano', 150.00, 2)");
+                    "VALUES ('PROD-001', 'Chompa de Alpaca', 'Chompa tejida a mano', 150.00, 20)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-002', 'Poncho Tradicional', 'Poncho de lana', 120.50, 1)");
+                    "VALUES ('PROD-002', 'Poncho Tradicional', 'Poncho de lana', 120.50, 20)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-003', 'Sombrero de Paja', 'Sombrero típico', 50.00, 3)");
+                    "VALUES ('PROD-003', 'Sombrero de Paja', 'Sombrero típico', 50.00, 15)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-004', 'Chalina de Alpaca', 'Chalina tejida', 80.00, 1)");
+                    "VALUES ('PROD-004', 'Chalina de Alpaca', 'Chalina tejida', 80.00, 5)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-005', 'Bufanda de Lana', 'Bufanda abrigadora', 60.00, 2)");
+                    "VALUES ('PROD-005', 'Bufanda de Lana', 'Bufanda abrigadora', 60.00,10)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-006', 'Gorro Andino', 'Gorro de lana', 40.00, 3)");
+                    "VALUES ('PROD-006', 'Gorro Andino', 'Gorro de lana', 40.00, 20)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-007', 'Chullo Peruano', 'Gorro tradicional', 30.00, 1)");
+                    "VALUES ('PROD-007', 'Chullo Peruano', 'Gorro tradicional', 30.00, 10)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-008', 'Chompa de Alpaca', 'Chompa tejida a mano', 150.00, 1)");
+                    "VALUES ('PROD-008', 'Chompa de Alpaca', 'Chompa tejida a mano', 150.00, 15)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-009', 'Poncho Tradicional', 'Poncho de lana', 120.50, 2)");
+                    "VALUES ('PROD-009', 'Poncho Tradicional', 'Poncho de lana', 120.50, 30)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-010', 'Sombrero de Paja', 'Sombrero típico', 50.00, 1)");
+                    "VALUES ('PROD-010', 'Sombrero de Paja', 'Sombrero típico', 50.00, 50)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PRODUCTOS +
                     " (" + COLUMN_PRODUCTO_CODIGO + ", " +
                     COLUMN_PRODUCTO_NOMBRE + ", " +
                     COLUMN_PRODUCTO_DESCRIPCION + ", " +
                     COLUMN_PRODUCTO_PRECIO + ", " +
                     COLUMN_PRODUCTO_CANTIDAD + ") " +
-                    "VALUES ('PROD-011', 'Chalina de Alpaca', 'Chalina tejida', 80.00, 1)");
+                    "VALUES ('PROD-011', 'Chalina de Alpaca', 'Chalina tejida', 80.00, 13)");
             Log.d(TAG, "Productos de prueba insertados");
 
             // Insertar incidencias
@@ -1224,7 +1224,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_CALIFICACION_VALOR + ", " +
                     COLUMN_CALIFICACION_COMENTARIO + ", " +
                     COLUMN_CALIFICACION_FECHA + ") " +
-                    "VALUES (9, 5, 3, 'Retraso en la entrega', " + (fechaActual - 1 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000) + ")");
+                    "VALUES (9, 5, 2, 'Retraso en la entrega', " + (fechaActual - 1 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000) + ")");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_CALIFICACIONES +
                     " (" + COLUMN_CALIFICACION_PEDIDO_ID + ", " +
                     COLUMN_CALIFICACION_USUARIO_ID + ", " +
@@ -1240,73 +1240,73 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (1, 1, 1, 150.00)");
+                    "VALUES (1, 1, 20, 150.00)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (2, 2, 1, 120.50)");
+                    "VALUES (2, 2, 10, 120.50)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (3, 3, 1, 50.00)");
+                    "VALUES (3, 3, 20, 50.00)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (4, 4, 1, 80.00)");
+                    "VALUES (4, 4, 5, 80.00)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (5, 5, 1, 60.00)");
+                    "VALUES (5, 5, 20, 60.00)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (6, 6, 1, 40.00)");
+                    "VALUES (6, 6, 10, 40.00)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (7, 7, 1, 30.00)");
+                    "VALUES (7, 7, 5, 30.00)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (8, 8, 1, 150.00)");
+                    "VALUES (8, 8, 20, 150.00)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (9, 9, 1, 120.50)");
+                    "VALUES (9, 9, 20, 120.50)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (10, 10, 1, 50.00)");
+                    "VALUES (10, 10, 20, 50.00)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (11, 11, 1, 80.00)");
+                    "VALUES (11, 11, 20, 80.00)");
             db.execSQL("INSERT OR IGNORE INTO " + TABLE_PEDIDO_PRODUCTOS +
                     " (" + COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID + ", " +
                     COLUMN_PEDIDO_PRODUCTO_CANTIDAD + ", " +
                     COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + ") " +
-                    "VALUES (12, 1, 2, 150.00)");
+                    "VALUES (12, 1, 30, 150.00)");
             Log.d(TAG, "Relaciones pedido_productos de prueba insertadas");
 
 // Insertar notificaciones (al final para respetar claves foráneas)

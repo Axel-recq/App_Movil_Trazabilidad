@@ -6,6 +6,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.app.AlertDialog;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,11 +39,6 @@ public class PerfilActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Mi Perfil");
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Mi Perfil");
-        }
 
         inicializarUI();
         inicializarControladores();
@@ -114,9 +110,17 @@ public class PerfilActivity extends AppCompatActivity {
     }
 
     private void cerrarSesion() {
-        sessionManager.logout();
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.logout);
+        builder.setMessage(R.string.logout_confirmation);
+        builder.setPositiveButton(R.string.yes_logout, (dialog, which) -> {
+            sessionManager.logout();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        });
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void limpiarCamposPassword() {

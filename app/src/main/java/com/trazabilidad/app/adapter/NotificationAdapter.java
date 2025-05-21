@@ -52,6 +52,10 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         this.notificacionDAO = new NotificacionDAO(context);
         this.sessionManager = new SessionManager(context);
         this.notificationManager = new NotificationManager(context);
+
+        if (actionListener != null) {
+            actionListener.onEmptyState(notificaciones.isEmpty());
+        }
     }
 
     public void setOnNotificationActionListener(OnNotificationActionListener listener) {

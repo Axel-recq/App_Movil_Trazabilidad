@@ -107,7 +107,7 @@ public class ListaPedidosActivity extends AppCompatActivity {
                 R.color.colorSecondary);
 
         // Configurar FAB solo para administradores
-        if (sessionManager.isRepartidorOrAdmin()) {
+        if (sessionManager.isRepartidor()) {
             fabAction.setVisibility(View.VISIBLE);
             fabAction.setOnClickListener(v -> {
                 Intent intent = new Intent(ListaPedidosActivity.this, NuevoPedidoActivity.class);
