@@ -162,6 +162,10 @@ public class OverviewFragment extends Fragment implements View.OnClickListener {
         lineChart.setDescription(desc);
         lineChart.getLegend().setEnabled(true);
         lineChart.animateXY(1000, 1000);
+
+        // Set the chart's plot area background to white
+        lineChart.setBackgroundColor(Color.WHITE);
+
         lineChart.invalidate();
     }
 

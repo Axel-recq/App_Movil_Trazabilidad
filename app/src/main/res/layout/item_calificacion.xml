@@ -9,11 +9,11 @@
     app:cardCornerRadius="12dp"
     app:cardElevation="3dp"
     app:strokeWidth="1dp"
-    app:strokeColor="@color/stroke_color"
+    app:strokeColor="@color/colorPrimary"
     android:clickable="true"
     android:focusable="true"
     app:rippleColor="@color/colorPrimary"
-    app:cardBackgroundColor="@color/background">
+    app:cardBackgroundColor="@color/colorBackgroundNight">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

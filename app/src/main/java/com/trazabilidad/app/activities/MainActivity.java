@@ -379,6 +379,38 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        Intent intent = null;
+
+        if (id == R.id.nav_home) {
+            intent = new Intent(this, MainActivity.class);
+        } else if (id == R.id.nav_pedidos) {
+            intent = new Intent(this, ListaPedidosActivity.class);
+        } else if (id == R.id.nav_mapa) {
+            intent = new Intent(this, MapaActivity.class);
+        } else if (id == R.id.nav_reportes) {
+            intent = new Intent(this, ReporteActivity.class);
+        } else if (id == R.id.nav_incidencias) {
+            intent = new Intent(this, IncidenciasListActivity.class);
+        } else if (id == R.id.nav_lista_productos) {
+            intent = new Intent(this, ListaProductosActivity.class);
+        } else if (id == R.id.nav_usuarios) {
+            intent = new Intent(this, ListaUsuariosActivity.class);
+        } else if (id == R.id.nav_perfil) {
+            intent = new Intent(this, PerfilActivity.class);
+        } else if (id == R.id.nav_logout) {
+            mostrarDialogoConfirmacionCerrarSesion();
+        }
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+        if (intent != null) {
+            startActivity(intent);
+        }
+        return true;
+    }
+
     private void showNewActionBottomSheet() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_new_actions, null);
@@ -431,45 +463,6 @@ public class MainActivity extends AppCompatActivity implements
 
         bottomSheetDialog.show();
     }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-        Intent intent = null;
-
-        if (id == R.id.nav_pedidos) {
-            intent = new Intent(this, ListaPedidosActivity.class);
-        } else if (id == R.id.nav_mapa) {
-            if (sessionManager.isUserAdmin() || sessionManager.isRepartidor()) {
-                intent = new Intent(this, MapaActivity.class);
-            } else {
-                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
-            }
-        } else if (id == R.id.nav_reportes) {
-            if (sessionManager.isUserAdmin()) {
-                intent = new Intent(this, ReporteActivity.class);
-            } else {
-                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
-            }
-        } else if (id == R.id.nav_perfil) {
-            intent = new Intent(this, PerfilActivity.class);
-        } else if (id == R.id.nav_usuarios) {
-            if (sessionManager.isUserAdmin()) {
-                intent = new Intent(this, ListaUsuariosActivity.class);
-            } else {
-                Toast.makeText(this, "Acceso denegado", Toast.LENGTH_SHORT).show();
-            }
-        } else if (id == R.id.nav_logout) {
-            mostrarDialogoConfirmacionCerrarSesion();
-        }
-
-        drawerLayout.closeDrawer(GravityCompat.START);
-        if (intent != null) {
-            startActivity(intent);
-        }
-        return true;
-    }
-
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {

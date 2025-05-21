@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Resumen del Pedido"
+        android:textColor="@color/black"
         android:textAppearance="@style/TextAppearance.App.Headline6"
         android:layout_marginBottom="16dp" />
 
@@ -22,6 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Cliente:"
+            android:textColor="@color/black"
             android:textAppearance="@style/TextAppearance.App.Subtitle2"
             android:layout_marginEnd="8dp" />
 
@@ -30,6 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Nombre del cliente"
+            android:textColor="@color/black"
             android:textAppearance="@style/TextAppearance.App.Body1" />
     </LinearLayout>
 
@@ -43,6 +46,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Dirección:"
+            android:textColor="@color/black"
             android:textAppearance="@style/TextAppearance.App.Subtitle2"
             android:layout_marginEnd="8dp" />
 
@@ -50,6 +54,7 @@
             android:id="@+id/tvDireccion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/black"
             android:text="Dirección del cliente"
             android:textAppearance="@style/TextAppearance.App.Body1" />
     </LinearLayout>
@@ -71,12 +76,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Productos:"
+            android:textColor="@color/black"
             android:textAppearance="@style/TextAppearance.App.Subtitle2" />
 
         <TextView
             android:id="@+id/tvCantidadProductos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/black"
             android:text="3"
             android:textAppearance="@style/TextAppearance.App.Body1"
             android:textStyle="bold" />
@@ -93,6 +100,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Total del pedido:"
+            android:textColor="@color/black"
             android:textAppearance="@style/TextAppearance.App.Subtitle2"
             android:textStyle="bold" />
 
@@ -101,8 +109,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="€99.99"
+
             android:textAppearance="@style/TextAppearance.App.Subtitle1"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/black"
             android:textStyle="bold" />
     </LinearLayout>
 

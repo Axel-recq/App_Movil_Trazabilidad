@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Nombre del Producto"
+        android:textColor="@color/black"
         android:textAppearance="@style/TextAppearance.App.Headline6"
         android:layout_marginBottom="16dp" />
 
@@ -18,6 +19,7 @@
         android:id="@+id/tvPrecioUnitario"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/black"
         android:text="@string/precio_unitario_s_24_99"
         android:textAppearance="@style/TextAppearance.App.Body1"
         android:layout_marginBottom="24dp" />
@@ -28,6 +30,7 @@
         android:layout_height="wrap_content"
         android:hint="Cantidad"
         app:helperTextEnabled="true"
+        android:textColor="@color/black"
         app:helperText="Subtotal: S/"
         style="@style/App.TextInputLayout">
 
@@ -35,6 +38,7 @@
             android:id="@+id/etCantidad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/black"
             android:inputType="number"
             android:text="1" />
 
