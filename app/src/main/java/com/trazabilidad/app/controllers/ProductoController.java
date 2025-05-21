@@ -281,7 +281,23 @@ public class ProductoController {
             callback.onError("Error al obtener el producto: " + e.getMessage());
         }
     }
+    public void obtenerProductoPorId(int id, SQLiteDatabase db, ProductoCallback callback) {
+        Producto producto = productoDAO.obtenerProductoPorId(id, db);
+        if (producto != null) {
+            callback.onSuccess(producto);
+        } else {
+            callback.onError("Producto no encontrado");
+        }
+    }
 
+    public void actualizarProducto(Producto producto, SQLiteDatabase db, OperacionCallback callback) {
+        boolean resultado = productoDAO.actualizarProducto(producto, db);
+        if (resultado) {
+            callback.onSuccess();
+        } else {
+            callback.onError("Error al actualizar el producto");
+        }
+    }
     // Interfaz para operaciones de stock
     public interface OperacionStockCallback {
         void onSuccess(int nuevoStock, boolean bajoStock);

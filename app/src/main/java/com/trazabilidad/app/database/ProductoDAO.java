@@ -89,19 +89,18 @@ public class ProductoDAO {
         }
     }
 
-    public boolean activarProducto(int id) {
-        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
-            ContentValues values = new ContentValues();
-            values.put(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO, 1);
+    public boolean actualizarProducto(Producto producto, SQLiteDatabase db) {
+        try {
+            ContentValues values = getProductoContentValues(producto);
             int rowsAffected = db.update(
                     DatabaseHelper.TABLE_PRODUCTOS,
                     values,
                     DatabaseHelper.COLUMN_PRODUCTO_ID + " = ?",
-                    new String[]{String.valueOf(id)}
+                    new String[]{String.valueOf(producto.getId())}
             );
             return rowsAffected > 0;
         } catch (Exception e) {
-            Log.e(TAG, "Error al activar producto: " + e.getMessage());
+            Log.e(TAG, "Error al actualizar producto: " + e.getMessage());
             return false;
         }
     }
@@ -119,28 +118,49 @@ public class ProductoDAO {
             return false;
         }
     }
-
     public Producto obtenerProductoPorId(int id) {
-        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
-             Cursor cursor = db.query(
-                     DatabaseHelper.TABLE_PRODUCTOS,
-                     getProductoColumns(),
-                     DatabaseHelper.COLUMN_PRODUCTO_ID + " = ?",
-                     new String[]{String.valueOf(id)},
-                     null,
-                     null,
-                     null
-             )) {
-            if (cursor.moveToFirst()) {
-                return cursorToProducto(cursor);
-            }
-            return null;
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase()) {
+            return obtenerProductoPorId(id, db);
         } catch (Exception e) {
             Log.e(TAG, "Error al obtener producto por ID: " + e.getMessage());
             return null;
         }
     }
-
+    public Producto obtenerProductoPorId(int id, SQLiteDatabase db) {
+        String query = "SELECT * FROM " + DatabaseHelper.TABLE_PRODUCTOS +
+                " WHERE " + DatabaseHelper.COLUMN_PRODUCTO_ID + " = ?";
+        try (Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(id)})) {
+            if (cursor.moveToFirst()) {
+                Producto producto = new Producto();
+                producto.setId(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_ID)));
+                producto.setCodigo(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_CODIGO)));
+                producto.setNombre(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_NOMBRE)));
+                producto.setCantidad(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_CANTIDAD)));
+                producto.setPrecio(cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_PRECIO)));
+                producto.setActivo(cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO)) == 1);
+                return producto;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al consultar producto por ID: " + e.getMessage());
+        }
+        return null;
+    }
+    public boolean activarProducto(int id) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseHelper.COLUMN_PRODUCTO_ACTIVO, 1);
+            int rowsAffected = db.update(
+                    DatabaseHelper.TABLE_PRODUCTOS,
+                    values,
+                    DatabaseHelper.COLUMN_PRODUCTO_ID + " = ?",
+                    new String[]{String.valueOf(id)}
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error al activar producto: " + e.getMessage());
+            return false;
+        }
+    }
     public List<Producto> obtenerTodosLosProductosOrdenadosPorId() {
         List<Producto> productos = new ArrayList<>();
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();

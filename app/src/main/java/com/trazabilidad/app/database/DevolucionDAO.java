@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.trazabilidad.app.models.Devolucion;
 
@@ -18,8 +19,8 @@ public class DevolucionDAO {
         dbHelper = DatabaseHelper.getInstance(context);
     }
 
-    public boolean insertarDevolucion(Devolucion devolucion) {
-        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+    public boolean insertarDevolucion(Devolucion devolucion, SQLiteDatabase db) {
+        try {
             ContentValues values = new ContentValues();
             values.put(DatabaseHelper.COLUMN_DEVOLUCION_PEDIDO_ID, devolucion.getPedidoId());
             values.put(DatabaseHelper.COLUMN_DEVOLUCION_PRODUCTO_ID, devolucion.getProductoId());
@@ -30,6 +31,7 @@ public class DevolucionDAO {
             long id = db.insert(DatabaseHelper.TABLE_DEVOLUCIONES, null, values);
             return id != -1;
         } catch (Exception e) {
+            Log.e("DevolucionDAO", "Error al insertar devolución: " + e.getMessage());
             return false;
         }
     }
