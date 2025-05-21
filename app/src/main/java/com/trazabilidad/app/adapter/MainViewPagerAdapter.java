@@ -11,7 +11,7 @@ import com.trazabilidad.app.fragments.PedidosFragment;
 
 public class MainViewPagerAdapter extends FragmentStateAdapter {
 
-    private static final int NUM_PAGES = 3;
+    private static final int NUM_PAGES = 1;
     public static final int OVERVIEW_PAGE = 0;
     public static final int PEDIDOS_PAGE = 1;
     public static final int INCIDENCIAS_PAGE = 2;
@@ -26,10 +26,6 @@ public class MainViewPagerAdapter extends FragmentStateAdapter {
         switch (position) {
             case OVERVIEW_PAGE:
                 return new OverviewFragment();
-            case PEDIDOS_PAGE:
-                return new PedidosFragment();
-            case INCIDENCIAS_PAGE:
-                return new IncidenciasFragment();
             default:
                 return new OverviewFragment();
         }

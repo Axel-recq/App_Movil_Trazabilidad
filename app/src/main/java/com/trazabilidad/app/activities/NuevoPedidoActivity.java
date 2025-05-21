@@ -82,7 +82,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_nuevo_pedido);
 
         // Inicializar formato de moneda
-        formatoMoneda = NumberFormat.getCurrencyInstance(new Locale("es", "ES"));
+        formatoMoneda = NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
 
         // Inicializar componentes de la UI
         inicializarUI();
@@ -179,6 +179,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
         actualizarListaProductos();
     }
 
+    @SuppressLint("SetTextI18n")
     private void mostrarDialogoCantidad(int position, Producto producto) {
         View view = getLayoutInflater().inflate(R.layout.dialog_editar_cantidad, null);
         TextInputLayout tilCantidad = view.findViewById(R.id.tilCantidad);
@@ -377,6 +378,7 @@ public class NuevoPedidoActivity extends AppCompatActivity {
                 .show();
     }
 
+    @SuppressLint("SetTextI18n")
     private void actualizarListaProductos() {
         productoAdapter.actualizarProductos(productosSeleccionados);
 

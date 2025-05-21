@@ -18,7 +18,7 @@
         android:id="@+id/tvPrecioUnitario"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Precio unitario: €24.99"
+        android:text="@string/precio_unitario_s_24_99"
         android:textAppearance="@style/TextAppearance.App.Body1"
         android:layout_marginBottom="24dp" />
 
@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:hint="Cantidad"
         app:helperTextEnabled="true"
-        app:helperText="Subtotal: €24.99"
+        app:helperText="Subtotal: S/"
         style="@style/App.TextInputLayout">
 
         <com.google.android.material.textfield.TextInputEditText

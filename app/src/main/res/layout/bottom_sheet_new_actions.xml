@@ -1,44 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/colorSurface"
+    android:elevation="4dp">
+
+    <!-- Título del menú (opcional) -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/menu_opciones"
+        android:textAppearance="@style/TextAppearance.App.Headline6"
+        android:textColor="@color/colorPrimary"
+        android:layout_marginBottom="16dp"/>
 
     <!-- Botón Nuevo Pedido -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNewPedido"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/nuevo_pedido"
-        style="@style/Widget.Material3.Button.OutlinedButton"/>
+        style="@style/App.Button.Outlined"
+        android:drawableStart="@drawable/ic_orders"
+        android:drawablePadding="8dp"
+        app:iconTint="@color/colorPrimary"
+        android:layout_marginBottom="8dp"/>
 
     <!-- Botón Nueva Incidencia -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNewIncidencia"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/nueva_incidencia"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_marginTop="8dp"/>
+        style="@style/App.Button.Outlined"
+        android:drawableStart="@drawable/ic_reports"
+        android:drawablePadding="8dp"
+        app:iconTint="@color/colorPrimary"
+        android:layout_marginBottom="8dp"/>
 
     <!-- Botón Nuevo Producto -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNewProducto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/nuevo_producto"
-        style="@style/Widget.Material3.Button.OutlinedButton"
-        android:layout_marginTop="8dp"/>
+        style="@style/App.Button.Outlined"
+        android:drawableStart="@drawable/ic_add"
+        android:drawablePadding="8dp"
+        app:iconTint="@color/colorPrimary"
+        android:layout_marginBottom="8dp"/>
 
     <!-- Botón Nuevo Usuario (solo visible para admin) -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNewUsuario"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/nuevo_usuario"
-        style="@style/Widget.Material3.Button.OutlinedButton"
+        style="@style/App.Button.Outlined"
+        android:drawableStart="@drawable/ic_users"
+        android:drawablePadding="8dp"
+        app:iconTint="@color/colorPrimary"
+        android:visibility="gone"/>
+
+    <!-- Botón para cerrar el menú -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCerrar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/cerrar"
+        style="@style/App.Button.Text"
         android:layout_marginTop="8dp"/>
 
 </LinearLayout>

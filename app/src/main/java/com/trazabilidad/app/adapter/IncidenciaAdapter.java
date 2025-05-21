@@ -1,5 +1,6 @@
 package com.trazabilidad.app.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -89,6 +90,7 @@ public class IncidenciaAdapter extends RecyclerView.Adapter<IncidenciaAdapter.In
             chipEstado = itemView.findViewById(R.id.chipEstado);
         }
 
+        @SuppressLint("SetTextI18n")
         void bind(Incidencia incidencia) {
             // Configurar datos principales
             tvDescripcion.setText(incidencia.getDescripcion());

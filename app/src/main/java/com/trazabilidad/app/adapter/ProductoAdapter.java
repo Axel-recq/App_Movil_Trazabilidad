@@ -47,7 +47,7 @@ public class ProductoAdapter extends RecyclerView.Adapter<ProductoAdapter.Produc
         this.listaProductos = listaProductos;
         this.listaProductosCompleta = new ArrayList<>(listaProductos);
         this.listener = listener;
-        this.formatoMoneda = NumberFormat.getCurrencyInstance(new Locale("es", "PE")); // Soles peruanos
+        this.formatoMoneda = NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
     }
 
     @NonNull

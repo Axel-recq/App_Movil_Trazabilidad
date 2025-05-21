@@ -79,6 +79,56 @@ public class NotificacionDAO {
     }
 
     /**
+     * Elimina una notificación específica.
+     * @param notificacionId ID de la notificación a eliminar
+     * @return true si la eliminación fue exitosa, false en caso contrario
+     */
+    public boolean eliminarNotificacion(int notificacionId) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            int rows = db.delete(
+                    DatabaseHelper.TABLE_NOTIFICACIONES,
+                    DatabaseHelper.COLUMN_NOTIFICACION_ID + " = ?",
+                    new String[]{String.valueOf(notificacionId)}
+            );
+            if (rows > 0) {
+                Log.d(TAG, "Notificación eliminada correctamente: " + notificacionId);
+                return true;
+            } else {
+                Log.w(TAG, "No se encontró la notificación a eliminar: " + notificacionId);
+                return false;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error al eliminar notificación: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Elimina todas las notificaciones o las de un tipo específico.
+     * @param tipo Tipo de notificación (puede ser null para eliminar todas)
+     * @return Número de notificaciones eliminadas
+     */
+    public int eliminarNotificaciones(String tipo) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            int rows;
+            if (tipo != null) {
+                rows = db.delete(
+                        DatabaseHelper.TABLE_NOTIFICACIONES,
+                        DatabaseHelper.COLUMN_NOTIFICACION_TIPO + " = ?",
+                        new String[]{tipo}
+                );
+            } else {
+                rows = db.delete(DatabaseHelper.TABLE_NOTIFICACIONES, null, null);
+            }
+            Log.d(TAG, "Notificaciones eliminadas: " + rows + " (tipo: " + (tipo != null ? tipo : "TODAS") + ")");
+            return rows;
+        } catch (Exception e) {
+            Log.e(TAG, "Error al eliminar notificaciones: " + e.getMessage(), e);
+            return 0;
+        }
+    }
+
+    /**
      * Obtiene todas las notificaciones, opcionalmente filtradas por tipo.
      * @param tipo Tipo de notificación (puede ser null para todas)
      * @return Lista de notificaciones
@@ -121,5 +171,31 @@ public class NotificacionDAO {
             Log.e(TAG, "Error al obtener notificaciones: " + e.getMessage(), e);
         }
         return notificaciones;
+    }
+
+    /**
+     * Obtiene el conteo de notificaciones por tipo.
+     * @param tipo Tipo de notificación (puede ser null para todas)
+     * @return Número de notificaciones del tipo especificado
+     */
+    public int obtenerConteoNotificaciones(String tipo) {
+        try (SQLiteDatabase db = dbHelper.getReadableDatabase();
+             Cursor cursor = db.query(
+                     DatabaseHelper.TABLE_NOTIFICACIONES,
+                     new String[]{"COUNT(*) as count"},
+                     tipo != null ? DatabaseHelper.COLUMN_NOTIFICACION_TIPO + " = ?" : null,
+                     tipo != null ? new String[]{tipo} : null,
+                     null,
+                     null,
+                     null
+             )) {
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0);
+            }
+            return 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error al obtener conteo de notificaciones: " + e.getMessage(), e);
+            return 0;
+        }
     }
 }

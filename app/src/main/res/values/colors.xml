@@ -119,7 +119,7 @@
     <color name="status_assigned">#2196F3</color> <!-- ASIGNADO -->
     <color name="status_rejected">#D81B60</color> <!-- RECHAZADO -->
 
-
+    <color name="notification_button_bg">@color/colorPrimaryLight</color> <!-- #9F8DCA -->
     <color name="gold">#FFC107</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="medium_gray">#E0E0E0</color>
@@ -132,4 +132,25 @@
     <color name="background">#F5F5F5</color>
 
     <color name="calification_color">#FFD700</color>
+    <color name="text_tertiary">#8A000000</color>
+
+
+    <color name="primary_color">#1976D2</color>
+    <color name="primary_dark_color">#0D47A1</color>
+    <color name="primary_light_color">#BBDEFB</color>
+    <color name="accent_color">#FF4081</color>
+
+    <!-- Colores para texto y elementos secundarios -->
+    <color name="primary_text_color">#212121</color>
+    <color name="secondary_text_color">#757575</color>
+    <color name="divider_color">#BDBDBD</color>
+    <color name="background_color">#F5F5F5</color>
+    <color name="card_background_color">#FFFFFF</color>
+    <color name="stroke_color">#E0E0E0</color>
+
+    <!-- Colores para estados -->
+    <color name="success_color">#4CAF50</color>
+    <color name="error_color">#F44336</color>
+    <color name="info_color">#2196F3</color>
+
 </resources>

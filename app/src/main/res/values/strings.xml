@@ -247,7 +247,6 @@
     </string-array>
     <!-- Strings existentes -->
 
-    <string name="cantidad_devuelta">Cantidad devuelta: %d</string>
     <!-- Existing strings (assumed) -->
     <string name="lista_devoluciones">Lista de Devoluciones</string>
     <string name="lista_calificaciones">Lista de Calificaciones</string>
@@ -271,4 +270,50 @@
     <string name="codigo">Código: %s</string>
     <string name="cantidad">Cantidad: %d</string>
     <string name="devolver">Devolver</string>
+
+    <string name="notifications_title">Notificaciones</string>
+    <string name="todas">Todas</string>
+    <string name="bajo_stock">Bajo stock</string>
+    <string name="devoluciones">Devoluciones</string>
+    <string name="calificaciones">Calificaciones</string>
+    <string name="no_notifications">No hay notificaciones</string>
+    <string name="mark_all_read">Marcar todas como leídas</string>
+    <string name="menu_opciones">Opciones</string>
+    <string name="cerrar">cerrar</string>
+    <string name="delete_notification">Eliminar</string>
+    <string name="precio_unitario_s_24_99">Precio unitario: S/</string>
+
+
+    <!-- Textos para gestión de devoluciones -->
+    <string name="titulo_gestion_devolucion">Gestión de Devoluciones</string>
+    <string name="info_pedido">Información del Pedido</string>
+    <string name="seleccione_productos">Seleccione los productos a devolver</string>
+    <string name="codigo_pedido">Código del Pedido: %s</string>
+    <string name="nombre_pedido">Nombre del Pedido: %s</string>
+    <string name="fecha_entrega">Fecha de Entrega: %s</string>
+    <string name="dias_restantes">Días restantes para devolución: %d</string>
+    <string name="cantidad_devuelta">Cantidad devuelta: %d</string>
+    <string name="registrar_devoluciones">Registrar Devoluciones</string>
+    <string name="cantidad_a_devolver">Cantidad a devolver</string>
+    <string name="motivo_devolucion">Motivo de devolución</string>
+    <string name="ingrese_cantidad">Ingrese la cantidad</string>
+    <string name="ingrese_motivo">Ingrese el motivo</string>
+    <string name="producto_cantidad">%s (Cantidad comprada: %d)</string>
+
+    <!-- Mensajes de error y validación -->
+    <string name="error_cantidad_negativa">La cantidad no puede ser negativa</string>
+    <string name="error_cantidad_excede">No puede devolver más de %d</string>
+    <string name="error_cantidad_requerida">La cantidad debe ser mayor que cero</string>
+    <string name="error_motivo_requerido">El motivo es requerido</string>
+    <string name="error_seleccione_producto">Seleccione al menos un producto para devolver</string>
+    <string name="error_pedido_invalido">ID de pedido inválido</string>
+    <string name="error_pedido_no_existe">El pedido no existe</string>
+    <string name="error_solo_entregados">Solo se pueden devolver productos de pedidos entregados</string>
+    <string name="error_sin_fecha_entrega">El pedido no tiene una fecha de entrega registrada</string>
+    <string name="error_periodo_expirado">El período de devolución (7 días) ha expirado</string>
+    <string name="error_sesion_expirada">Sesión expirada. Por favor, inicia sesión</string>
+    <string name="error_usuario_id">Error: No se pudo obtener el ID del usuario</string>
+
+    <!-- Mensajes de éxito -->
+    <string name="exito_devoluciones">Devoluciones registradas correctamente</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.trazabilidad.app.adapter;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,7 @@ public class PedidoProductoAdapter extends RecyclerView.Adapter<PedidoProductoAd
         return new PedidoProductoViewHolder(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull PedidoProductoViewHolder holder, int position) {
         Producto producto = listaProductos.get(position);
