@@ -33,13 +33,14 @@ public class PedidoController {
     private APIService apiService;
     private StockService stockService;
     private Context context;
+
     public PedidoController(Context context) {
         this.context = context;
         this.dbHelper = DatabaseHelper.getInstance(context);
         pedidoDAO = new PedidoDAO(context);
         productoDAO = new ProductoDAO(context);
         incidenciaDAO = new IncidenciaDAO(context);
-        gpsController = new GPSController(context,0);
+        gpsController = new GPSController(context, 0);
         apiService = new APIService(context);
         stockService = new StockService(context);
     }
@@ -48,23 +49,13 @@ public class PedidoController {
         return apiService.isNetworkAvailable();
     }
 
-    /**
-     * Registra un nuevo pedido, validando primero el stock disponible y
-     * descontándolo si el pedido se crea correctamente
-     *
-     * @param pedido Pedido a registrar
-     * @param productos Lista de productos del pedido
-     * @param callback Callback para notificar resultado
-     */
     public void registrarPedido(Pedido pedido, List<Producto> productos, OperacionCallback callback) {
         try {
-            // Verificar que haya productos
             if (productos == null || productos.isEmpty()) {
                 callback.onError("No se puede crear un pedido sin productos");
                 return;
             }
 
-            // PASO 1: Verificar stock disponible para todos los productos
             verificarStockDisponible(productos, new VerificacionStockCallback() {
                 @Override
                 public void onStockVerificado(boolean stockSuficiente, String mensaje) {
@@ -73,30 +64,25 @@ public class PedidoController {
                         return;
                     }
 
-                    // PASO 2: Insertar el pedido
                     boolean pedidoInsertado = pedidoDAO.insertarPedido(pedido);
                     if (!pedidoInsertado) {
                         callback.onError("Error al insertar el pedido en la base de datos");
                         return;
                     }
 
-                    // PASO 3: Obtener el ID del pedido recién insertado
                     int pedidoId = obtenerUltimoPedidoId();
                     if (pedidoId == -1) {
                         callback.onError("No se pudo obtener el ID del pedido recién creado");
                         return;
                     }
 
-                    // PASO 4: Insertar los productos asociados al pedido en la tabla pedido_productos
                     final AtomicBoolean todosProductosInsertados = new AtomicBoolean(true);
                     final AtomicInteger productosCompletados = new AtomicInteger(0);
                     final int totalProductos = productos.size();
 
                     for (Producto producto : productos) {
-                        // Verificar si el producto ya existe en la base de datos por su código
                         int productoId = productoDAO.obtenerIdProductoPorCodigo(producto.getCodigo());
                         if (productoId == -1) {
-                            // Insertar nuevo producto si no existe
                             boolean productoInsertado = productoDAO.insertarProducto(producto);
                             if (!productoInsertado) {
                                 todosProductosInsertados.set(false);
@@ -107,13 +93,11 @@ public class PedidoController {
                             productoId = productoDAO.obtenerUltimoProductoId();
                         }
 
-                        // Insertar la relación en la tabla pedido_productos
                         ContentValues values = new ContentValues();
                         values.put(DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID, pedidoId);
                         values.put(DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_PRODUCTO_ID, productoId);
                         values.put(DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_CANTIDAD, producto.getCantidad());
 
-                        // Obtener el precio unitario del producto
                         Producto productoDB = productoDAO.obtenerProductoPorId(productoId);
                         if (productoDB == null) {
                             todosProductosInsertados.set(false);
@@ -132,11 +116,9 @@ public class PedidoController {
                             }
                         }
 
-                        // Actualizar el total del pedido
                         double subtotal = productoDB.getPrecio() * producto.getCantidad();
                         actualizarTotalPedido(pedidoId, subtotal);
 
-                        // PASO 5: Descontar stock para este producto
                         final int cantidadADescontar = producto.getCantidad();
                         final int productoGeneralId = obtenerIdProductoGeneral(producto.getCodigo());
 
@@ -169,7 +151,6 @@ public class PedidoController {
                         }
                     }
 
-                    // Si no hay productos que procesar, llamar al callback directamente
                     if (totalProductos == 0) {
                         callback.onSuccess();
                     }
@@ -179,9 +160,9 @@ public class PedidoController {
             callback.onError("Error al registrar el pedido y productos: " + e.getMessage());
         }
     }
+
     private void actualizarTotalPedido(int pedidoId, double subtotalToAdd) {
         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
-            // Obtener el total actual
             String query = "SELECT " + DatabaseHelper.COLUMN_PEDIDO_TOTAL + " FROM " + DatabaseHelper.TABLE_PEDIDOS +
                     " WHERE " + DatabaseHelper.COLUMN_PEDIDO_ID + " = ?";
             double currentTotal = 0;
@@ -191,10 +172,8 @@ public class PedidoController {
                 }
             }
 
-            // Sumar el nuevo subtotal
             double newTotal = currentTotal + subtotalToAdd;
 
-            // Actualizar el total en la tabla pedidos
             ContentValues values = new ContentValues();
             values.put(DatabaseHelper.COLUMN_PEDIDO_TOTAL, newTotal);
             int rowsAffected = db.update(
@@ -210,9 +189,7 @@ public class PedidoController {
             Log.e(TAG, "Error al actualizar el total del pedido: " + e.getMessage());
         }
     }
-    /**
-     * Verifica si hay stock suficiente para todos los productos de un pedido
-     */
+
     private void verificarStockDisponible(List<Producto> productos, VerificacionStockCallback callback) {
         if (productos == null || productos.isEmpty()) {
             callback.onStockVerificado(true, "");
@@ -224,7 +201,6 @@ public class PedidoController {
         final List<String> productosSinStock = new ArrayList<>();
 
         for (Producto productoPedido : productos) {
-            // Obtenemos el ID del producto general (inventario) basado en el código
             int productoGeneralId = obtenerIdProductoGeneral(productoPedido.getCodigo());
 
             if (productoGeneralId <= 0) {
@@ -232,30 +208,24 @@ public class PedidoController {
                 productosSinStock.add(error);
                 Log.e(TAG, error);
 
-                // Verificar si ya procesamos todos los productos
                 if (productosVerificados.incrementAndGet() == totalProductos) {
                     finalizarVerificacion(productosSinStock, callback);
                 }
                 continue;
             }
 
-            // Consultar el stock actual del producto en el inventario
             ProductoController productoController = new ProductoController(this.context);
             productoController.obtenerProductoPorId(productoGeneralId, new ProductoController.ProductoCallback() {
                 @Override
                 public void onSuccess(Producto productoGeneral) {
-                    // Verificar si el producto está activo
                     if (!productoGeneral.isActivo()) {
                         productosSinStock.add("El producto " + productoGeneral.getNombre() + " está inactivo");
-                    }
-                    // Verificar si hay suficiente stock
-                    else if (productoGeneral.getCantidad() < productoPedido.getCantidad()) {
+                    } else if (productoGeneral.getCantidad() < productoPedido.getCantidad()) {
                         productosSinStock.add("Stock insuficiente para " + productoGeneral.getNombre() +
                                 ". Disponible: " + productoGeneral.getCantidad() +
                                 ", Requerido: " + productoPedido.getCantidad());
                     }
 
-                    // Verificar si ya procesamos todos los productos
                     if (productosVerificados.incrementAndGet() == totalProductos) {
                         finalizarVerificacion(productosSinStock, callback);
                     }
@@ -265,7 +235,6 @@ public class PedidoController {
                 public void onError(String message) {
                     productosSinStock.add("Error al verificar stock: " + message);
 
-                    // Verificar si ya procesamos todos los productos
                     if (productosVerificados.incrementAndGet() == totalProductos) {
                         finalizarVerificacion(productosSinStock, callback);
                     }
@@ -274,9 +243,6 @@ public class PedidoController {
         }
     }
 
-    /**
-     * Finaliza el proceso de verificación de stock
-     */
     private void finalizarVerificacion(List<String> productosSinStock, VerificacionStockCallback callback) {
         if (productosSinStock.isEmpty()) {
             callback.onStockVerificado(true, "");
@@ -289,9 +255,6 @@ public class PedidoController {
         }
     }
 
-    /**
-     * Obtiene el ID del producto en el inventario general basado en su código
-     */
     private int obtenerIdProductoGeneral(String codigoProducto) {
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
              Cursor cursor = db.query(
@@ -305,7 +268,7 @@ public class PedidoController {
             if (cursor.moveToFirst()) {
                 return cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRODUCTO_ID));
             }
-            return -1; // No encontrado
+            return -1;
         } catch (Exception e) {
             Log.e(TAG, "Error al buscar producto general: " + e.getMessage());
             return -1;
@@ -354,7 +317,6 @@ public class PedidoController {
                         ubicacion.setFecha(new Date());
                         ubicacion.setUsuarioId(pedido.getUsuarioId());
                         ubicacion.setPedidoId(pedidoId);
-                        // Guardar ubicación en la base de datos local
                         try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
                             ContentValues values = new ContentValues();
                             values.put(DatabaseHelper.COLUMN_UBICACION_LATITUD, ubicacion.getLatitud());
@@ -369,7 +331,7 @@ public class PedidoController {
 
                     @Override
                     public void onError(String message) {
-                        callback.onSuccess(); // Continuar aunque no se obtenga la ubicación
+                        callback.onSuccess();
                     }
                 });
             } else {
@@ -377,6 +339,59 @@ public class PedidoController {
             }
         } catch (Exception e) {
             callback.onError("Error al marcar pedido como entregado: " + e.getMessage());
+        }
+    }
+
+    public void actualizarEstadoPedido(int pedidoId, String nuevoEstado, OperacionCallback callback) {
+        try {
+            Pedido pedido = pedidoDAO.obtenerPedidoPorId(pedidoId);
+            if (pedido == null) {
+                callback.onError("Pedido no encontrado");
+                return;
+            }
+
+            if (!esTransicionValida(pedido.getEstado(), nuevoEstado)) {
+                callback.onError("Transición de estado no válida desde " + pedido.getEstado() + " a " + nuevoEstado);
+                return;
+            }
+
+            boolean resultado = pedidoDAO.actualizarEstado(pedidoId, nuevoEstado);
+            if (resultado) {
+                if ("ENTREGADO".equals(nuevoEstado)) {
+                    gpsController.obtenerUbicacionActual(new GPSController.UbicacionCallback() {
+                        @Override
+                        public void onUbicacionObtenida(double latitud, double longitud) {
+                            Ubicacion ubicacion = new Ubicacion();
+                            ubicacion.setLatitud(latitud);
+                            ubicacion.setLongitud(longitud);
+                            ubicacion.setFecha(new Date());
+                            ubicacion.setUsuarioId(pedido.getUsuarioId());
+                            ubicacion.setPedidoId(pedidoId);
+                            try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+                                ContentValues values = new ContentValues();
+                                values.put(DatabaseHelper.COLUMN_UBICACION_LATITUD, ubicacion.getLatitud());
+                                values.put(DatabaseHelper.COLUMN_UBICACION_LONGITUD, ubicacion.getLongitud());
+                                values.put(DatabaseHelper.COLUMN_UBICACION_FECHA, ubicacion.getFecha().getTime());
+                                values.put(DatabaseHelper.COLUMN_UBICACION_USUARIO_ID, ubicacion.getUsuarioId());
+                                values.put(DatabaseHelper.COLUMN_UBICACION_PEDIDO_ID, ubicacion.getPedidoId());
+                                db.insert(DatabaseHelper.TABLE_UBICACIONES, null, values);
+                            }
+                            callback.onSuccess();
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            callback.onSuccess();
+                        }
+                    });
+                } else {
+                    callback.onSuccess();
+                }
+            } else {
+                callback.onError("Error al actualizar el estado del pedido");
+            }
+        } catch (Exception e) {
+            callback.onError("Error al actualizar estado del pedido: " + e.getMessage());
         }
     }
 
@@ -393,11 +408,11 @@ public class PedidoController {
 
                         @Override
                         public void onError(String message) {
-                            callback.onSuccess(); // Éxito local, pero pendiente de sincronización
+                            callback.onSuccess();
                         }
                     });
                 } else {
-                    callback.onSuccess(); // Solo local, sincronizar después
+                    callback.onSuccess();
                 }
 
                 if (incidencia.getPedidoId() > 0) {
@@ -415,41 +430,33 @@ public class PedidoController {
         }
     }
 
-    // Método auxiliar para obtener el ID del último pedido insertado
     private int obtenerUltimoPedidoId() {
         try (SQLiteDatabase db = dbHelper.getReadableDatabase();
              Cursor cursor = db.rawQuery("SELECT MAX(" + DatabaseHelper.COLUMN_PEDIDO_ID + ") FROM " + DatabaseHelper.TABLE_PEDIDOS, null)) {
             if (cursor.moveToFirst()) {
                 return cursor.getInt(0);
             }
-            return -1; // Indica un error si no se encuentra
+            return -1;
         } catch (Exception e) {
-            return -1; // Indica un error en caso de excepción
+            return -1;
         }
     }
 
-    /**
-     * Métodos para cancelar un pedido y devolver los productos al stock
-     */
     public void cancelarPedido(int pedidoId, OperacionCallback callback) {
         try {
-            // Obtener el pedido
             Pedido pedido = pedidoDAO.obtenerPedidoPorId(pedidoId);
             if (pedido == null) {
                 callback.onError("Pedido no encontrado");
                 return;
             }
 
-            // Verificar que el pedido no esté ya entregado
             if ("ENTREGADO".equals(pedido.getEstado())) {
                 callback.onError("No se puede cancelar un pedido ya entregado");
                 return;
             }
 
-            // Obtener los productos del pedido
             List<Producto> productosPedido = productoDAO.obtenerProductosPorPedido(pedidoId);
             if (productosPedido.isEmpty()) {
-                // Cambiar estado y terminar
                 pedido.setEstado("CANCELADO");
                 boolean resultado = pedidoDAO.actualizarPedido(pedido);
                 if (resultado) {
@@ -460,7 +467,6 @@ public class PedidoController {
                 return;
             }
 
-            // Devolver stock de cada producto
             final AtomicInteger productosCompletados = new AtomicInteger(0);
             final int totalProductos = productosPedido.size();
             final AtomicBoolean todosProductosDevueltos = new AtomicBoolean(true);
@@ -468,7 +474,6 @@ public class PedidoController {
             for (Producto productoPedido : productosPedido) {
                 int productoGeneralId = obtenerIdProductoGeneral(productoPedido.getCodigo());
                 if (productoGeneralId > 0) {
-                    // Obtener precio_unitario de pedido_productos
                     double precioUnitario = obtenerPrecioUnitarioPedido(productoGeneralId, pedidoId);
                     double subtotal = precioUnitario * productoPedido.getCantidad();
 
@@ -476,7 +481,6 @@ public class PedidoController {
                             new StockService.OperacionStockCallback() {
                                 @Override
                                 public void onSuccess(int nuevoStock, boolean bajoStock) {
-                                    // Restar el subtotal del total del pedido
                                     actualizarTotalPedido(pedidoId, -subtotal);
                                     if (productosCompletados.incrementAndGet() == totalProductos) {
                                         finalizarCancelacionPedido(pedidoId, todosProductosDevueltos.get(), callback);
@@ -503,6 +507,7 @@ public class PedidoController {
             callback.onError("Error al cancelar el pedido: " + e.getMessage());
         }
     }
+
     private double obtenerPrecioUnitarioPedido(int productoId, int pedidoId) {
         String query = "SELECT " + DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO + " " +
                 "FROM " + DatabaseHelper.TABLE_PEDIDO_PRODUCTOS + " " +
@@ -518,6 +523,7 @@ public class PedidoController {
         }
         return 0;
     }
+
     private void finalizarCancelacionPedido(int pedidoId, boolean exitoso, OperacionCallback callback) {
         try {
             Pedido pedido = pedidoDAO.obtenerPedidoPorId(pedidoId);
@@ -541,13 +547,44 @@ public class PedidoController {
         }
     }
 
+    public boolean actualizarEstado(int pedidoId, String nuevoEstado) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseHelper.COLUMN_PEDIDO_ESTADO, nuevoEstado);
+            if ("ENTREGADO".equals(nuevoEstado)) {
+                values.put(DatabaseHelper.COLUMN_PEDIDO_HORA_ENTREGA, System.currentTimeMillis());
+                values.put(DatabaseHelper.COLUMN_PEDIDO_CONFIRMADO, 1);
+            }
+            int rowsAffected = db.update(
+                    DatabaseHelper.TABLE_PEDIDOS,
+                    values,
+                    DatabaseHelper.COLUMN_PEDIDO_ID + " = ?",
+                    new String[]{String.valueOf(pedidoId)}
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error al actualizar estado del pedido", e);
+            return false;
+        }
+    }
+
+    private boolean esTransicionValida(String estadoActual, String nuevoEstado) {
+        switch (estadoActual) {
+            case "PENDIENTE":
+                return "ASIGNADO".equals(nuevoEstado);
+            case "ASIGNADO":
+                return "EN_RUTA".equals(nuevoEstado);
+            case "EN_RUTA":
+                return "ENTREGADO".equals(nuevoEstado);
+            default:
+                return false;
+        }
+    }
+
     public List<Incidencia> obtenerIncidenciasPorUsuario(int usuarioId) {
         return incidenciaDAO.obtenerIncidenciasPorUsuario(usuarioId);
     }
 
-    /**
-     * Interface para la verificación de stock
-     */
     public interface VerificacionStockCallback {
         void onStockVerificado(boolean stockSuficiente, String mensaje);
     }

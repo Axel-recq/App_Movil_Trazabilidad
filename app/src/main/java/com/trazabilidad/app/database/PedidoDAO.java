@@ -184,7 +184,22 @@ public class PedidoDAO {
             return false;
         }
     }
-
+    public boolean actualizarEstado(int pedidoId, String nuevoEstado) {
+        try (SQLiteDatabase db = dbHelper.getWritableDatabase()) {
+            ContentValues values = new ContentValues();
+            values.put(DatabaseHelper.COLUMN_PEDIDO_ESTADO, nuevoEstado);
+            int rowsAffected = db.update(
+                    DatabaseHelper.TABLE_PEDIDOS,
+                    values,
+                    DatabaseHelper.COLUMN_PEDIDO_ID + " = ?",
+                    new String[]{String.valueOf(pedidoId)}
+            );
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            Log.e(TAG, "Error al actualizar estado del pedido", e);
+            return false;
+        }
+    }
     public void verificarDemora(Pedido pedido) {
         if (pedido == null || pedido.getHoraEstimada() == null) {
             return;
