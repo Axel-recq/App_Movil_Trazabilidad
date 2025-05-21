@@ -443,6 +443,8 @@ public class PedidoController {
     }
 
     public void cancelarPedido(int pedidoId, OperacionCallback callback) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.beginTransaction();
         try {
             Pedido pedido = pedidoDAO.obtenerPedidoPorId(pedidoId);
             if (pedido == null) {
@@ -464,6 +466,7 @@ public class PedidoController {
                 } else {
                     callback.onError("Error al cancelar el pedido");
                 }
+                db.setTransactionSuccessful();
                 return;
             }
 
@@ -477,11 +480,11 @@ public class PedidoController {
                     double precioUnitario = obtenerPrecioUnitarioPedido(productoGeneralId, pedidoId);
                     double subtotal = precioUnitario * productoPedido.getCantidad();
 
-                    stockService.aumentarStock(productoGeneralId, productoPedido.getCantidad(),
+                    stockService.aumentarStock(productoGeneralId, productoPedido.getCantidad(), db,
                             new StockService.OperacionStockCallback() {
                                 @Override
                                 public void onSuccess(int nuevoStock, boolean bajoStock) {
-                                    actualizarTotalPedido(pedidoId, -subtotal);
+                                    actualizarTotalPedido(pedidoId, -subtotal); // Ajustar para usar db si es necesario
                                     if (productosCompletados.incrementAndGet() == totalProductos) {
                                         finalizarCancelacionPedido(pedidoId, todosProductosDevueltos.get(), callback);
                                     }
@@ -503,8 +506,12 @@ public class PedidoController {
                     }
                 }
             }
+            db.setTransactionSuccessful();
         } catch (Exception e) {
             callback.onError("Error al cancelar el pedido: " + e.getMessage());
+        } finally {
+            db.endTransaction();
+            db.close();
         }
     }
 

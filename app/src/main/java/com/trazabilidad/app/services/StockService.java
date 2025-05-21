@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.widget.Toast;
 
@@ -134,27 +135,24 @@ public class StockService {
         notificationManager.notify(producto.getId(), builder.build());
     }
 
-    public void aumentarStock(int productoId, int cantidad, OperacionStockCallback callback) {
+    public void aumentarStock(int productoId, int cantidad, SQLiteDatabase db, OperacionStockCallback callback) {
         if (cantidad <= 0) {
             callback.onError("La cantidad a añadir debe ser mayor que cero");
             return;
         }
 
-        productoController.obtenerProductoPorId(productoId, new ProductoController.ProductoCallback() {
+        productoController.obtenerProductoPorId(productoId, db, new ProductoController.ProductoCallback() {
             @Override
             public void onSuccess(Producto producto) {
-                // Verificar si el producto está activo
                 if (!producto.isActivo()) {
                     callback.onError("No se puede aumentar stock de un producto inactivo");
                     return;
                 }
 
-                // Calcular nuevo stock
                 int nuevoStock = producto.getCantidad() + cantidad;
                 producto.setCantidad(nuevoStock);
 
-                // Actualizar producto en la base de datos
-                productoController.actualizarProducto(producto, new ProductoController.OperacionCallback() {
+                productoController.actualizarProducto(producto, db, new ProductoController.OperacionCallback() {
                     @Override
                     public void onSuccess() {
                         callback.onSuccess(nuevoStock, nuevoStock < STOCK_BAJO_LIMITE);

@@ -29,12 +29,10 @@ public class DevolucionController {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.beginTransaction();
         try {
-            // Validar datos
             if (!validarDevolucion(devolucion, callback, db)) {
                 return;
             }
 
-            // Obtener precio unitario y cantidad actual en pedido_productos
             double precioUnitario = obtenerPrecioUnitario(devolucion.getPedidoId(), devolucion.getProductoId(), db);
             int cantidadActual = obtenerCantidadEnPedido(devolucion.getPedidoId(), devolucion.getProductoId(), db);
 
@@ -43,9 +41,7 @@ public class DevolucionController {
                 return;
             }
 
-            // Actualizar cantidad en pedido_productos o eliminar entrada
             if (devolucion.getCantidad() == cantidadActual) {
-                // Eliminar la entrada si se devuelve toda la cantidad
                 int rowsDeleted = db.delete(
                         DatabaseHelper.TABLE_PEDIDO_PRODUCTOS,
                         DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_PEDIDO_ID + " = ? AND " +
@@ -57,7 +53,6 @@ public class DevolucionController {
                     return;
                 }
             } else {
-                // Reducir la cantidad
                 ContentValues values = new ContentValues();
                 values.put(DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_CANTIDAD, cantidadActual - devolucion.getCantidad());
                 int rowsUpdated = db.update(
@@ -73,23 +68,19 @@ public class DevolucionController {
                 }
             }
 
-            // Actualizar stock usando StockService
-            stockService.aumentarStock(devolucion.getProductoId(), devolucion.getCantidad(), new StockService.OperacionStockCallback() {
+            StockService.OperacionStockCallback stockCallback = new StockService.OperacionStockCallback() {
                 @Override
                 public void onSuccess(int nuevoStock, boolean bajoStock) {
                     try {
-                        // Actualizar el total del pedido
                         double subtotal = precioUnitario * devolucion.getCantidad();
                         actualizarTotalPedido(devolucion.getPedidoId(), -subtotal, db);
 
-                        // Registrar la devolución
-                        boolean resultado = devolucionDAO.insertarDevolucion(devolucion);
+                        boolean resultado = devolucionDAO.insertarDevolucion(devolucion, db);
                         if (!resultado) {
                             callback.onError("Error al registrar la devolución en la base de datos");
                             return;
                         }
 
-                        // Verificar si el pedido quedó sin productos
                         if (pedidoSinProductos(devolucion.getPedidoId(), db)) {
                             ContentValues pedidoValues = new ContentValues();
                             pedidoValues.put(DatabaseHelper.COLUMN_PEDIDO_ESTADO, "DEVUELTO");
@@ -113,7 +104,8 @@ public class DevolucionController {
                 public void onError(String message) {
                     callback.onError("Error al actualizar el stock: " + message);
                 }
-            });
+            };
+            stockService.aumentarStock(devolucion.getProductoId(), devolucion.getCantidad(), db, stockCallback);
         } catch (Exception e) {
             Log.e(TAG, "Error al registrar devolución: " + e.getMessage());
             callback.onError("Error interno: " + e.getMessage());
@@ -122,7 +114,6 @@ public class DevolucionController {
             db.close();
         }
     }
-
     public void obtenerDevolucionesPorPedido(int pedidoId, DevolucionesCallback callback) {
         try {
             List<Devolucion> devoluciones = devolucionDAO.obtenerDevolucionesPorPedido(pedidoId);

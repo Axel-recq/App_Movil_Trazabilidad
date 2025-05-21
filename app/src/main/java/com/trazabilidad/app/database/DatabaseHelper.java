@@ -305,7 +305,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private DatabaseHelper(Context context) {
-        super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION);
+        super(context.getApplicationContext(), DATABASE_NAME, null, DATABASE_VERSION,
+                new SQLiteDatabase.OpenParams.Builder()
+                        .addOpenFlags(SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING)
+                        .build().getErrorHandler());
     }
 
     @Override
@@ -1338,11 +1341,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onConfigure(SQLiteDatabase db) {
         super.onConfigure(db);
         db.setForeignKeyConstraintsEnabled(true);
-        try {
-            db.execSQL("PRAGMA journal_mode=WAL;");
-            Log.d(TAG, "Modo WAL habilitado");
-        } catch (Exception e) {
-            Log.e(TAG, "Error al habilitar WAL", e);
-        }
+        Log.d(TAG, "Base de datos configurada con restricciones de clave foránea");
     }
 }
