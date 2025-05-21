@@ -24,6 +24,7 @@ import com.trazabilidad.app.controllers.PedidoController;
 import com.trazabilidad.app.models.Pedido;
 import com.trazabilidad.app.models.Producto;
 import com.trazabilidad.app.utils.DateUtils;
+import com.trazabilidad.app.utils.SessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +35,10 @@ public class DetallePedidoActivity extends AppCompatActivity {
     private TextView tvNumeroPedido, tvCliente, tvDireccion, tvFecha;
     private Chip chipEstado, chipProductCount;
     private RecyclerView recyclerProductos;
-    private MaterialButton btnVerMapa, btnEntregado, btnIncidencia;
+    private MaterialButton btnVerMapa, btnEntregado, btnIncidencia, btnDevolver;
     private ProgressBar progressBar;
     private PedidoController pedidoController;
+    private SessionManager sessionManager;
     private int pedidoId = -1;
     private Pedido pedidoActual;
 
@@ -52,6 +54,9 @@ public class DetallePedidoActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.detalle_pedido);
         }
+
+        // Inicializar SessionManager
+        sessionManager = new SessionManager(this);
 
         // Inicializar UI y eventos
         inicializarUI();
@@ -90,27 +95,50 @@ public class DetallePedidoActivity extends AppCompatActivity {
         btnVerMapa = findViewById(R.id.btnVerMapa);
         btnEntregado = findViewById(R.id.btnEntregado);
         btnIncidencia = findViewById(R.id.btnIncidencia);
+        btnDevolver = findViewById(R.id.btnDevolver);
         progressBar = findViewById(R.id.progressBar);
         // Set contentDescription programmatically
         btnVerMapa.setContentDescription(getString(R.string.ver_mapa_descripcion));
         btnIncidencia.setContentDescription(getString(R.string.reportar_incidencia));
+        btnDevolver.setContentDescription(getString(R.string.devolver_pedido));
+
+        // Controlar visibilidad de botones según el rol del usuario
+        if (sessionManager.isRepartidor()) {
+            // Repartidores y administradores ven todos los botones menos el de devolver
+            btnVerMapa.setVisibility(View.VISIBLE);
+            btnEntregado.setVisibility(View.VISIBLE);
+            btnIncidencia.setVisibility(View.VISIBLE);
+            btnDevolver.setVisibility(View.GONE);
+        } else if (sessionManager.isCliente()) {
+            // Clientes solo ven el botón de devolver
+            btnVerMapa.setVisibility(View.GONE);
+            btnEntregado.setVisibility(View.GONE);
+            btnIncidencia.setVisibility(View.GONE);
+            btnDevolver.setVisibility(View.VISIBLE);
+        } else {
+            // Por seguridad, ocultar todos los botones si el rol no está definido
+            btnVerMapa.setVisibility(View.GONE);
+            btnEntregado.setVisibility(View.GONE);
+            btnIncidencia.setVisibility(View.GONE);
+            btnDevolver.setVisibility(View.GONE);
+        }
     }
 
     private void configurarEventos() {
         btnVerMapa.setOnClickListener(v -> {
-            if (pedidoActual != null) {
+            if (sessionManager.isRepartidor() && pedidoActual != null) {
                 Intent intent = new Intent(this, MapaActivity.class);
                 intent.putExtra("LATITUD", pedidoActual.getLatitud());
                 intent.putExtra("LONGITUD", pedidoActual.getLongitud());
                 intent.putExtra("DIRECCION", pedidoActual.getDireccion());
                 startActivity(intent);
             } else {
-                Toast.makeText(this, "No hay datos de ubicación disponibles", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "No tienes permiso o no hay datos de ubicación", Toast.LENGTH_SHORT).show();
             }
         });
 
         btnEntregado.setOnClickListener(v -> {
-            if (pedidoActual != null) {
+            if (sessionManager.isRepartidor() && pedidoActual != null) {
                 String estadoActual = pedidoActual.getEstado();
                 String nuevoEstado = determinarNuevoEstado(estadoActual);
                 if (nuevoEstado != null) {
@@ -118,14 +146,28 @@ public class DetallePedidoActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(this, "No se puede cambiar el estado desde " + estadoActual, Toast.LENGTH_SHORT).show();
                 }
+            } else {
+                Toast.makeText(this, "No tienes permiso para cambiar el estado", Toast.LENGTH_SHORT).show();
             }
         });
 
         btnIncidencia.setOnClickListener(v -> {
-            if (pedidoActual != null) {
+            if (sessionManager.isRepartidor() && pedidoActual != null) {
                 Intent intent = new Intent(this, IncidenciaActivity.class);
                 intent.putExtra("PEDIDO_ID", pedidoId);
                 startActivity(intent);
+            } else {
+                Toast.makeText(this, "No tienes permiso para reportar incidencias", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnDevolver.setOnClickListener(v -> {
+            if (sessionManager.isCliente() && pedidoActual != null) {
+                Intent intent = new Intent(this, GestionDevolucionActivity.class);
+                intent.putExtra("pedidoId", pedidoId);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "No tienes permiso para devolver el pedido", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -184,39 +226,41 @@ public class DetallePedidoActivity extends AppCompatActivity {
             // Configurar color del chip según el estado
             configurarChipEstado(pedido.getEstado());
 
-            // Configurar el botón según el estado
-            String estadoActual = pedido.getEstado();
-            switch (estadoActual) {
-                case "PENDIENTE":
-                    btnEntregado.setText("ASIGNAR");
-                    btnEntregado.setIconResource(R.drawable.ic_assignment);
-                    btnEntregado.setContentDescription("Asignar el pedido a un repartidor");
-                    btnEntregado.setEnabled(true);
-                    break;
-                case "ASIGNADO":
-                    btnEntregado.setText("INICIAR RUTA");
-                    btnEntregado.setIconResource(R.drawable.ic_directions);
-                    btnEntregado.setContentDescription("Iniciar la ruta de entrega");
-                    btnEntregado.setEnabled(true);
-                    break;
-                case "EN_RUTA":
-                    btnEntregado.setText("ENTREGADO");
-                    btnEntregado.setIconResource(R.drawable.ic_check_circle);
-                    btnEntregado.setContentDescription("Marcar el pedido como entregado");
-                    btnEntregado.setEnabled(true);
-                    break;
-                case "ENTREGADO":
-                    btnEntregado.setText("ENTREGADO");
-                    btnEntregado.setIconResource(R.drawable.ic_check_circle);
-                    btnEntregado.setContentDescription("Pedido ya entregado");
-                    btnEntregado.setEnabled(false);
-                    break;
-                default:
-                    btnEntregado.setText("ACCIÓN NO DISPONIBLE");
-                    btnEntregado.setIconResource(R.drawable.ic_check_circle);
-                    btnEntregado.setContentDescription("Acción no disponible para el estado actual");
-                    btnEntregado.setEnabled(false);
-                    break;
+            // Configurar el botón según el estado (solo para repartidores/administradores)
+            if (sessionManager.isRepartidor()) {
+                String estadoActual = pedido.getEstado();
+                switch (estadoActual) {
+                    case "PENDIENTE":
+                        btnEntregado.setText("ASIGNAR");
+                        btnEntregado.setIconResource(R.drawable.ic_assignment);
+                        btnEntregado.setContentDescription("Asignar el pedido a un repartidor");
+                        btnEntregado.setEnabled(true);
+                        break;
+                    case "ASIGNADO":
+                        btnEntregado.setText("INICIAR RUTA");
+                        btnEntregado.setIconResource(R.drawable.ic_directions);
+                        btnEntregado.setContentDescription("Iniciar la ruta de entrega");
+                        btnEntregado.setEnabled(true);
+                        break;
+                    case "EN_RUTA":
+                        btnEntregado.setText("ENTREGADO");
+                        btnEntregado.setIconResource(R.drawable.ic_check_circle);
+                        btnEntregado.setContentDescription("Marcar el pedido como entregado");
+                        btnEntregado.setEnabled(true);
+                        break;
+                    case "ENTREGADO":
+                        btnEntregado.setText("ENTREGADO");
+                        btnEntregado.setIconResource(R.drawable.ic_check_circle);
+                        btnEntregado.setContentDescription("Pedido ya entregado");
+                        btnEntregado.setEnabled(false);
+                        break;
+                    default:
+                        btnEntregado.setText("ACCIÓN NO DISPONIBLE");
+                        btnEntregado.setIconResource(R.drawable.ic_check_circle);
+                        btnEntregado.setContentDescription("Acción no disponible para el estado actual");
+                        btnEntregado.setEnabled(false);
+                        break;
+                }
             }
 
             // Configurar el adaptador de productos usando ProductoDetalleAdapter
@@ -235,10 +279,16 @@ public class DetallePedidoActivity extends AppCompatActivity {
 
                             @Override
                             public void onDevolverProducto(int pedidoId, int productoId) {
-                                Intent intent = new Intent(DetallePedidoActivity.this, GestionDevolucionActivity.class);
-                                intent.putExtra("pedidoId", pedidoId);
-                                intent.putExtra("productoId", productoId);
-                                startActivity(intent);
+                                if (sessionManager.isCliente()) {
+                                    Intent intent = new Intent(DetallePedidoActivity.this, GestionDevolucionActivity.class);
+                                    intent.putExtra("pedidoId", pedidoId);
+                                    intent.putExtra("productoId", productoId);
+                                    startActivity(intent);
+                                } else {
+                                    Toast.makeText(DetallePedidoActivity.this,
+                                            "No tienes permiso para devolver productos",
+                                            Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }
                 ));

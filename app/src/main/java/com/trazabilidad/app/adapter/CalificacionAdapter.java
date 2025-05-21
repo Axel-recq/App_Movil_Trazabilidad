@@ -8,33 +8,54 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.models.Calificacion;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
-public class CalificacionAdapter extends RecyclerView.Adapter<CalificacionAdapter.ViewHolder> {
+public class CalificacionAdapter extends ListAdapter<Calificacion, CalificacionAdapter.ViewHolder> {
 
     private final Context context;
-    private final List<Calificacion> calificaciones;
     private final SimpleDateFormat dateFormat;
+    private OnCalificacionClickListener listener;
 
-    public CalificacionAdapter(Context context, List<Calificacion> calificaciones) {
+    public interface OnCalificacionClickListener {
+        void onCalificacionClick(Calificacion calificacion);
+    }
+
+    public CalificacionAdapter(Context context) {
+        super(DIFF_CALLBACK);
         this.context = context;
-        this.calificaciones = new ArrayList<>(calificaciones);
         this.dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
     }
 
-    public void updateCalificaciones(List<Calificacion> newCalificaciones) {
-        calificaciones.clear();
-        calificaciones.addAll(newCalificaciones);
-        notifyDataSetChanged();
+    public void setOnCalificacionClickListener(OnCalificacionClickListener listener) {
+        this.listener = listener;
     }
+
+    private static final DiffUtil.ItemCallback<Calificacion> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<Calificacion>() {
+                @Override
+                public boolean areItemsTheSame(@NonNull Calificacion oldItem, @NonNull Calificacion newItem) {
+                    // Asumiendo que tienes un ID único en tu modelo
+                    return oldItem.getPedidoId() == newItem.getPedidoId();
+                }
+
+                @Override
+                public boolean areContentsTheSame(@NonNull Calificacion oldItem, @NonNull Calificacion newItem) {
+                    // Compara los campos relevantes para determinar si el contenido es el mismo
+                    return oldItem.getValor() == newItem.getValor() &&
+                            oldItem.getCategoria().equals(newItem.getCategoria()) &&
+                            ((oldItem.getComentario() == null && newItem.getComentario() == null) ||
+                                    (oldItem.getComentario() != null && oldItem.getComentario().equals(newItem.getComentario())));
+                }
+            };
 
     @NonNull
     @Override
@@ -46,31 +67,17 @@ public class CalificacionAdapter extends RecyclerView.Adapter<CalificacionAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Calificacion calificacion = calificaciones.get(position);
+        Calificacion calificacion = getItem(position);
 
-        holder.tvPedidoNumero.setText(context.getString(R.string.pedido_numero, String.valueOf(calificacion.getPedidoId())));
-        holder.tvCliente.setText(context.getString(R.string.cliente, calificacion.getNombreCliente() != null ? calificacion.getNombreCliente() : "Usuario ID: " + calificacion.getUsuarioId()));
-        holder.ratingBar.setRating(calificacion.getValor());
-        holder.tvCategoria.setText(context.getString(R.string.categoria, calificacion.getCategoria()));
-        holder.tvComentario.setText(calificacion.getComentario() != null ? calificacion.getComentario() : "Sin comentario");
-        holder.tvFecha.setText(dateFormat.format(calificacion.getFecha()));
+        // Configurar los datos en el ViewHolder
+        holder.bind(calificacion, context, dateFormat);
 
-        switch (calificacion.getCategoria()) {
-            case "Muy bueno":
-                holder.tvCategoria.setTextColor(context.getResources().getColor(R.color.green));
-                break;
-            case "Bueno":
-                holder.tvCategoria.setTextColor(context.getResources().getColor(R.color.yellow));
-                break;
-            case "Malo":
-                holder.tvCategoria.setTextColor(context.getResources().getColor(R.color.red));
-                break;
-        }
-    }
-
-    @Override
-    public int getItemCount() {
-        return calificaciones.size();
+        // Configurar el evento de clic si hay un listener
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onCalificacionClick(calificacion);
+            }
+        });
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -89,6 +96,36 @@ public class CalificacionAdapter extends RecyclerView.Adapter<CalificacionAdapte
             tvCategoria = itemView.findViewById(R.id.tvCategoria);
             tvComentario = itemView.findViewById(R.id.tvComentario);
             tvFecha = itemView.findViewById(R.id.tvFecha);
+        }
+
+        void bind(Calificacion calificacion, Context context, SimpleDateFormat dateFormat) {
+            tvPedidoNumero.setText(context.getString(R.string.pedido_numero, String.valueOf(calificacion.getPedidoId())));
+            tvCliente.setText(context.getString(R.string.cliente,
+                    calificacion.getNombreCliente() != null ? calificacion.getNombreCliente() :
+                            "Usuario ID: " + calificacion.getUsuarioId()));
+
+            ratingBar.setRating(calificacion.getValor());
+            tvCategoria.setText(context.getString(R.string.categoria, calificacion.getCategoria()));
+            tvComentario.setText(calificacion.getComentario() != null ? calificacion.getComentario() : "Sin comentario");
+            tvFecha.setText(dateFormat.format(calificacion.getFecha()));
+
+            // Establecer color según la categoría
+            int colorResId;
+            switch (calificacion.getCategoria()) {
+                case "Muy bueno":
+                    colorResId = R.color.green;
+                    break;
+                case "Bueno":
+                    colorResId = R.color.yellow;
+                    break;
+                case "Malo":
+                    colorResId = R.color.red;
+                    break;
+                default:
+                    colorResId = R.color.colorPrimary;
+                    break;
+            }
+            tvCategoria.setTextColor(ContextCompat.getColor(context, colorResId));
         }
     }
 }

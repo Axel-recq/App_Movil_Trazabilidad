@@ -339,4 +339,31 @@
     <string name="iniciar_ruta">Iniciar la ruta de entrega</string>
     <string name="pedido_ya_entregado">Pedido ya entregado</string>
     <string name="accion_no_disponible">Acción no disponible para el estado actual</string>
+    <string name="devolver_pedido">devolver pedido</string>
+
+
+    <string name="comentario">Comentarios</string>
+    <string name="ver_detalles">Ver detalles</string>
+    <string name="icono_pedido">Icono de pedido</string>
+
+
+
+
+
+    <!-- Nuevos strings -->
+    <string name="error_cargar_calificaciones">Error al cargar las calificaciones</string>
+    <string name="filtrar_calificaciones">Filtrar calificaciones</string>
+    <string name="ordenar_por">Ordenar por</string>
+    <string name="filtrar_por">Filtrar por</string>
+    <string name="calificacion_mas_reciente">Más reciente</string>
+    <string name="calificacion_mas_antigua">Más antigua</string>
+    <string name="calificacion_mayor_valor">Mayor valoración</string>
+    <string name="calificacion_menor_valor">Menor valoración</string>
+    <string name="todas_las_calificaciones">Todas</string>
+    <string name="calificaciones_buenas">Buenas</string>
+    <string name="calificaciones_malas">Malas</string>
+    <string name="aplicar_filtros">Aplicar</string>
+    <string name="restablecer_filtros">Restablecer</string>
+    <string name="detalles_calificacion">Detalles de la calificación</string>
+
 </resources>

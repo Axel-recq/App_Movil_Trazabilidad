@@ -62,7 +62,7 @@ public class SessionManager {
 
     public boolean isUserAdmin() {
         String role = pref.getString(KEY_USER_ROL, "");
-        return ROL_REPARTIDOR.equalsIgnoreCase(role);
+        return ROL_ADMIN.equalsIgnoreCase(role);
     }
 
     public boolean isCliente() {
@@ -70,7 +70,7 @@ public class SessionManager {
         return ROL_CLIENTE.equalsIgnoreCase(role);
     }
 
-    public boolean isRepartidorOrAdmin() {
+    public boolean isRepartidor() {
         String role = pref.getString(KEY_USER_ROL, "");
         return ROL_REPARTIDOR.equalsIgnoreCase(role) || ROL_ADMIN.equalsIgnoreCase(role);
     }

@@ -392,7 +392,14 @@
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone">
-
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDevolver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/devolver_pedido"
+            android:visibility="gone"
+            app:icon="@drawable/ic_return"
+            android:contentDescription="@string/devolver_pedido" />
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"

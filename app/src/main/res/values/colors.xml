@@ -153,4 +153,6 @@
     <color name="error_color">#F44336</color>
     <color name="info_color">#2196F3</color>
 
+
+    <color name="text_disabled">#9E9E9E</color>
 </resources>
