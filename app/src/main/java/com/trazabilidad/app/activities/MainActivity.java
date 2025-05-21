@@ -9,6 +9,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.badge.ExperimentalBadgeUtils;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
@@ -251,19 +254,86 @@ public class MainActivity extends AppCompatActivity implements
             bottomSheetDialog.setContentView(bottomSheetView);
 
             RecyclerView rvNotifications = bottomSheetView.findViewById(R.id.rvNotifications);
+            LinearLayout emptyStateContainer = bottomSheetView.findViewById(R.id.emptyStateContainer);
+            ProgressBar progressBar = bottomSheetView.findViewById(R.id.progressBar);
+            ChipGroup chipGroup = bottomSheetView.findViewById(R.id.chipGroup);
+            MaterialButton btnMarkAllRead = bottomSheetView.findViewById(R.id.btnMarkAllRead);
+
             rvNotifications.setLayoutManager(new LinearLayoutManager(this));
 
+            // Mostrar el ProgressBar mientras se cargan las notificaciones
+            progressBar.setVisibility(View.VISIBLE);
+            emptyStateContainer.setVisibility(View.GONE);
+            rvNotifications.setVisibility(View.GONE);
+
+            // Obtener notificaciones iniciales (sin filtro)
             notificationManager.obtenerNotificaciones(new NotificationManager.NotificationCallback() {
                 @Override
                 public void onSuccess(List<Notificacion> notificaciones) {
+                    progressBar.setVisibility(View.GONE);
                     NotificationAdapter adapter = new NotificationAdapter(MainActivity.this, notificaciones);
                     rvNotifications.setAdapter(adapter);
-                    notificationManager.marcarComoLeidas();
-                    actualizarBadgeNotificaciones();
+
+                    // Configurar el listener para el estado vacío
+                    adapter.setOnNotificationActionListener(new NotificationAdapter.OnNotificationActionListener() {
+                        @Override
+                        public void onNotificationRead(int position) {
+                            actualizarBadgeNotificaciones();
+                        }
+
+                        @Override
+                        public void onNotificationDeleted(int position) {
+                            actualizarBadgeNotificaciones();
+                        }
+
+                        @Override
+                        public void onEmptyState(boolean isEmpty) {
+                            emptyStateContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                            rvNotifications.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+                        }
+                    });
+
+                    // Configurar los filtros de los chips
+                    chipGroup.setOnCheckedChangeListener((group, checkedId) -> {
+                        Notificacion.Tipo tipoFiltro = null;
+                        if (checkedId == R.id.chipStock) {
+                            tipoFiltro = Notificacion.Tipo.BAJO_STOCK;
+                        } else if (checkedId == R.id.chipDevolucion) {
+                            tipoFiltro = Notificacion.Tipo.DEVOLUCION;
+                        } else if (checkedId == R.id.chipCalificacion) {
+                            tipoFiltro = Notificacion.Tipo.CALIFICACION;
+                        }
+                        adapter.filtrarPorTipo(tipoFiltro);
+                    });
+
+                    // Configurar el botón "Marcar todas como leídas"
+                    btnMarkAllRead.setOnClickListener(v1 -> {
+                        int checkedChipId = chipGroup.getCheckedChipId();
+                        if (checkedChipId == R.id.chipAll || checkedChipId == -1) {
+                            adapter.marcarTodasComoLeidas();
+                        } else {
+                            Notificacion.Tipo tipoFiltro = null;
+                            if (checkedChipId == R.id.chipStock) {
+                                tipoFiltro = Notificacion.Tipo.BAJO_STOCK;
+                            } else if (checkedChipId == R.id.chipDevolucion) {
+                                tipoFiltro = Notificacion.Tipo.DEVOLUCION;
+                            } else if (checkedChipId == R.id.chipCalificacion) {
+                                tipoFiltro = Notificacion.Tipo.CALIFICACION;
+                            }
+                            notificationManager.marcarComoLeidasPorTipo(tipoFiltro);
+                            adapter.filtrarPorTipo(tipoFiltro); // Refrescar la lista con el filtro actual
+                        }
+                        actualizarBadgeNotificaciones();
+                    });
+
+                    // Mostrar la lista de notificaciones
+                    rvNotifications.setVisibility(View.VISIBLE);
+                    emptyStateContainer.setVisibility(notificaciones.isEmpty() ? View.VISIBLE : View.GONE);
                 }
 
                 @Override
                 public void onError(String message) {
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, "Error al cargar notificaciones: " + message, Toast.LENGTH_SHORT).show();
                 }
             });
