@@ -89,6 +89,10 @@ public class ProductoDetalleAdapter extends RecyclerView.Adapter<ProductoDetalle
         notifyDataSetChanged();
     }
 
+    public List<Producto> getProductos() {
+        return productos;
+    }
+
     static class ProductoViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombre, tvCodigo, tvCantidad, tvPrecio;
         MaterialButton btnDevolver;

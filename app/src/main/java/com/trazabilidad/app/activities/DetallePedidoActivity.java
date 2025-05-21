@@ -1,11 +1,11 @@
 package com.trazabilidad.app.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +16,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.trazabilidad.app.R;
 import com.trazabilidad.app.adapter.ProductoDetalleAdapter;
@@ -33,7 +34,7 @@ public class DetallePedidoActivity extends AppCompatActivity {
     private TextView tvNumeroPedido, tvCliente, tvDireccion, tvFecha;
     private Chip chipEstado, chipProductCount;
     private RecyclerView recyclerProductos;
-    private Button btnVerMapa, btnEntregado, btnIncidencia;
+    private MaterialButton btnVerMapa, btnEntregado, btnIncidencia;
     private ProgressBar progressBar;
     private PedidoController pedidoController;
     private int pedidoId = -1;
@@ -90,6 +91,9 @@ public class DetallePedidoActivity extends AppCompatActivity {
         btnEntregado = findViewById(R.id.btnEntregado);
         btnIncidencia = findViewById(R.id.btnIncidencia);
         progressBar = findViewById(R.id.progressBar);
+        // Set contentDescription programmatically
+        btnVerMapa.setContentDescription(getString(R.string.ver_mapa_descripcion));
+        btnIncidencia.setContentDescription(getString(R.string.reportar_incidencia));
     }
 
     private void configurarEventos() {
@@ -107,7 +111,13 @@ public class DetallePedidoActivity extends AppCompatActivity {
 
         btnEntregado.setOnClickListener(v -> {
             if (pedidoActual != null) {
-                marcarComoEntregado();
+                String estadoActual = pedidoActual.getEstado();
+                String nuevoEstado = determinarNuevoEstado(estadoActual);
+                if (nuevoEstado != null) {
+                    actualizarEstadoPedido(nuevoEstado);
+                } else {
+                    Toast.makeText(this, "No se puede cambiar el estado desde " + estadoActual, Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -118,6 +128,19 @@ public class DetallePedidoActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    private String determinarNuevoEstado(String estadoActual) {
+        switch (estadoActual) {
+            case "PENDIENTE":
+                return "ASIGNADO";
+            case "ASIGNADO":
+                return "EN_RUTA";
+            case "EN_RUTA":
+                return "ENTREGADO";
+            default:
+                return null; // No hay transición disponible
+        }
     }
 
     private void cargarDetallePedido() {
@@ -161,9 +184,40 @@ public class DetallePedidoActivity extends AppCompatActivity {
             // Configurar color del chip según el estado
             configurarChipEstado(pedido.getEstado());
 
-            // Verificar si el pedido puede ser marcado como entregado
-            boolean entregable = "ASIGNADO".equals(pedido.getEstado()) || "EN_RUTA".equals(pedido.getEstado());
-            btnEntregado.setEnabled(entregable);
+            // Configurar el botón según el estado
+            String estadoActual = pedido.getEstado();
+            switch (estadoActual) {
+                case "PENDIENTE":
+                    btnEntregado.setText("ASIGNAR");
+                    btnEntregado.setIconResource(R.drawable.ic_assignment);
+                    btnEntregado.setContentDescription("Asignar el pedido a un repartidor");
+                    btnEntregado.setEnabled(true);
+                    break;
+                case "ASIGNADO":
+                    btnEntregado.setText("INICIAR RUTA");
+                    btnEntregado.setIconResource(R.drawable.ic_directions);
+                    btnEntregado.setContentDescription("Iniciar la ruta de entrega");
+                    btnEntregado.setEnabled(true);
+                    break;
+                case "EN_RUTA":
+                    btnEntregado.setText("ENTREGADO");
+                    btnEntregado.setIconResource(R.drawable.ic_check_circle);
+                    btnEntregado.setContentDescription("Marcar el pedido como entregado");
+                    btnEntregado.setEnabled(true);
+                    break;
+                case "ENTREGADO":
+                    btnEntregado.setText("ENTREGADO");
+                    btnEntregado.setIconResource(R.drawable.ic_check_circle);
+                    btnEntregado.setContentDescription("Pedido ya entregado");
+                    btnEntregado.setEnabled(false);
+                    break;
+                default:
+                    btnEntregado.setText("ACCIÓN NO DISPONIBLE");
+                    btnEntregado.setIconResource(R.drawable.ic_check_circle);
+                    btnEntregado.setContentDescription("Acción no disponible para el estado actual");
+                    btnEntregado.setEnabled(false);
+                    break;
+            }
 
             // Configurar el adaptador de productos usando ProductoDetalleAdapter
             if (!productos.isEmpty()) {
@@ -223,28 +277,48 @@ public class DetallePedidoActivity extends AppCompatActivity {
         chipEstado.setChipBackgroundColorResource(colorFondo);
     }
 
-    private void marcarComoEntregado() {
-        progressBar.setVisibility(View.VISIBLE);
+    private void actualizarEstadoPedido(String nuevoEstado) {
+        // Mostrar indicador de carga
+        findViewById(R.id.loadingContainer).setVisibility(View.VISIBLE);
         btnEntregado.setEnabled(false);
 
-        pedidoController.marcarPedidoComoEntregado(pedidoId, new PedidoController.OperacionCallback() {
+        pedidoController.actualizarEstadoPedido(pedidoId, nuevoEstado, new PedidoController.OperacionCallback() {
+            @SuppressLint("NotifyDataSetChanged")
             @Override
             public void onSuccess() {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(DetallePedidoActivity.this, R.string.pedido_marcado_entregado, Toast.LENGTH_SHORT).show();
-                pedidoActual.setEstado("ENTREGADO");
-                chipEstado.setText("ENTREGADO");
-                configurarChipEstado("ENTREGADO");
-                btnEntregado.setEnabled(false);
+                // Ocultar indicador de carga
+                findViewById(R.id.loadingContainer).setVisibility(View.GONE);
+                Toast.makeText(DetallePedidoActivity.this, "Pedido actualizado a " + nuevoEstado, Toast.LENGTH_SHORT).show();
+
+                // Actualizar el estado del pedido actual
+                pedidoActual.setEstado(nuevoEstado);
+
+                // Actualizar la UI
+                chipEstado.setText(nuevoEstado);
+                configurarChipEstado(nuevoEstado);
+                actualizarUI(pedidoActual, obtenerProductosActuales());
+
+                // Notificar cambio (opcional)
+                if (recyclerProductos.getAdapter() != null) {
+                    recyclerProductos.getAdapter().notifyDataSetChanged();
+                }
             }
 
             @Override
             public void onError(String message) {
-                progressBar.setVisibility(View.GONE);
+                // Ocultar indicador de carga
+                findViewById(R.id.loadingContainer).setVisibility(View.GONE);
                 btnEntregado.setEnabled(true);
                 Toast.makeText(DetallePedidoActivity.this, message, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private List<Producto> obtenerProductosActuales() {
+        if (recyclerProductos.getAdapter() != null) {
+            return ((ProductoDetalleAdapter) recyclerProductos.getAdapter()).getProductos();
+        }
+        return new ArrayList<>();
     }
 
     @Override

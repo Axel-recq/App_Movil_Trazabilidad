@@ -279,7 +279,7 @@
                         android:paddingVertical="8dp"
                         android:scrollbars="none"
                         tools:itemCount="3"
-                        tools:listitem="@layout/item_producto" />
+                        tools:listitem="@layout/item_producto_detalle" />
 
                     <!-- Estado vacío mejorado con animación -->
                     <LinearLayout
@@ -335,6 +335,7 @@
                 android:layout_height="56dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
+                android:contentDescription="@string/ver_mapa_descripcion"
                 android:text="@string/ver_mapa"
                 android:textAllCaps="false"
                 app:cornerRadius="8dp"
@@ -344,7 +345,7 @@
                 app:iconSize="20dp"
                 app:iconTint="@color/colorPrimary" />
 
-            <!-- Botón Entregado con icono animado y estilo prominente -->
+            <!-- Botón Entregado con ícono dinámico y estilo prominente -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEntregado"
                 style="@style/App.Button"
@@ -352,8 +353,10 @@
                 android:layout_height="56dp"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1.2"
+                android:contentDescription="@string/cambiar_estado_pedido"
                 android:text="@string/entregado"
                 android:textAllCaps="false"
+                android:textSize="14sp"
                 app:cornerRadius="8dp"
                 app:icon="@drawable/ic_check_circle"
                 app:iconGravity="textStart"
@@ -367,6 +370,7 @@
                 android:layout_width="0dp"
                 android:layout_height="56dp"
                 android:layout_weight="1"
+                android:contentDescription="@string/reportar_incidencia"
                 android:text="@string/incidencia"
                 android:textAllCaps="false"
                 android:textColor="@color/error"

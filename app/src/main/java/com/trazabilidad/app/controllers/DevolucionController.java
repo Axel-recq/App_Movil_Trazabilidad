@@ -208,10 +208,11 @@ public class DevolucionController {
             if (cursor.moveToFirst()) {
                 return cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PEDIDO_PRODUCTO_PRECIO_UNITARIO));
             }
+            throw new IllegalStateException("No se encontró precio unitario para pedidoId: " + pedidoId + ", productoId: " + productoId);
         } catch (Exception e) {
             Log.e(TAG, "Error al obtener precio unitario: " + e.getMessage());
+            throw e;
         }
-        return 0;
     }
 
     private int obtenerCantidadEnPedido(int pedidoId, int productoId, SQLiteDatabase db) {
