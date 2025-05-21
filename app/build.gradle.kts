@@ -89,7 +89,6 @@ dependencies {
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.mpandroidchart)
     implementation(libs.circleimageview)
-    implementation(libs.androidx.scenecore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso.core)

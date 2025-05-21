@@ -298,7 +298,7 @@
     <string name="motivo_devolucion">Motivo de devolución</string>
     <string name="ingrese_cantidad">Ingrese la cantidad</string>
     <string name="ingrese_motivo">Ingrese el motivo</string>
-    <string name="producto_cantidad">%s (Cantidad comprada: %d)</string>
+    <string name="producto_cantidad">%1$s (Cantidad comprada: %2$d)</string>
 
     <!-- Mensajes de error y validación -->
     <string name="error_cantidad_negativa">La cantidad no puede ser negativa</string>
