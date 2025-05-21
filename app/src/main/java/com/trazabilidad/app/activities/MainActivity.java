@@ -209,12 +209,6 @@ public class MainActivity extends AppCompatActivity implements
                 case MainViewPagerAdapter.OVERVIEW_PAGE:
                     tab.setText(R.string.overview);
                     break;
-                case MainViewPagerAdapter.PEDIDOS_PAGE:
-                    tab.setText(R.string.pedidos);
-                    break;
-                case MainViewPagerAdapter.INCIDENCIAS_PAGE:
-                    tab.setText(R.string.incidencias);
-                    break;
             }
         }).attach();
 
@@ -233,12 +227,7 @@ public class MainActivity extends AppCompatActivity implements
                 case MainViewPagerAdapter.OVERVIEW_PAGE:
                     showNewActionBottomSheet();
                     break;
-                case MainViewPagerAdapter.PEDIDOS_PAGE:
-                    startActivity(new Intent(MainActivity.this, NuevoPedidoActivity.class));
-                    break;
-                case MainViewPagerAdapter.INCIDENCIAS_PAGE:
-                    startActivity(new Intent(MainActivity.this, IncidenciaActivity.class));
-                    break;
+
             }
         });
 
@@ -250,14 +239,6 @@ public class MainActivity extends AppCompatActivity implements
             case MainViewPagerAdapter.OVERVIEW_PAGE:
                 fabNuevo.setText(R.string.nuevo);
                 fabNuevo.setIconResource(R.drawable.ic_add);
-                break;
-            case MainViewPagerAdapter.PEDIDOS_PAGE:
-                fabNuevo.setText(R.string.nuevo_pedido);
-                fabNuevo.setIconResource(R.drawable.ic_add_package);
-                break;
-            case MainViewPagerAdapter.INCIDENCIAS_PAGE:
-                fabNuevo.setText(R.string.nueva_incidencia);
-                fabNuevo.setIconResource(R.drawable.ic_warning);
                 break;
         }
         fabNuevo.extend();
